@@ -18,7 +18,7 @@ public class AlgorithmBacktrack2 : IAlgorithm
         return GoGenerateInternal(innerMap, random);
     }
 
-    private Maze GoGenerateInternal<M>(M map, IRandom random) where M : InnerMap
+    private static Maze GoGenerateInternal<M>(M map, IRandom random) where M : InnerMap
     {
         long totSteps = (map.Width - 1L) / 2L * ((map.Height - 1L) / 2L);
         long currentStep = 1;

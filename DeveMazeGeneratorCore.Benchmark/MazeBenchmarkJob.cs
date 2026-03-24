@@ -40,7 +40,7 @@ public class MazeBenchmarkJob
     private InnerMapFactory<BitArreintjeFastInnerMap> _innerMapFactory = new InnerMapFactory<BitArreintjeFastInnerMap>();
     private RandomFactory<XorShiftRandom> _randomFactory = new RandomFactory<XorShiftRandom>();
 
-    public IEnumerable<object> Algorithms()
+    public static IEnumerable<object> Algorithms()
     {
         //yield return new AlgorithmBacktrack();
         //yield return new AlgorithmBacktrack2();

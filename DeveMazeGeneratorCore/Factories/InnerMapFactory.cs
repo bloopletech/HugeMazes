@@ -17,12 +17,4 @@ public class InnerMapFactory<T> : IInnerMapFactory<T> where T : InnerMap
         var createdObject = typeSwitcher.Switch(typeof(T));
         return (T)createdObject;
     }
-
-    public T Create(int desiredWidth, int desiredHeight, int startX, int startY)
-    {
-        var castedObject = Create(desiredWidth, desiredHeight);
-        castedObject.StartX = startX;
-        castedObject.StartY = startY;
-        return castedObject;
-    }
 }
