@@ -5,7 +5,6 @@ using BenchmarkDotNet.Reports;
 using DeveMazeGeneratorCore.Factories;
 using DeveMazeGeneratorCore.Generators;
 using DeveMazeGeneratorCore.Generators.Helpers;
-using DeveMazeGeneratorCore.Generators.SpeedOptimization;
 using DeveMazeGeneratorCore.InnerMaps;
 using DeveMazeGeneratorCore.Mazes;
 using System.Collections.Generic;
@@ -40,7 +39,6 @@ public class MazeBenchmarkJob
 
     private InnerMapFactory<BitArreintjeFastInnerMap> _innerMapFactory = new InnerMapFactory<BitArreintjeFastInnerMap>();
     private RandomFactory<XorShiftRandom> _randomFactory = new RandomFactory<XorShiftRandom>();
-    private NoAction _action = new NoAction();
 
     public IEnumerable<object> Algorithms()
     {
@@ -56,9 +54,9 @@ public class MazeBenchmarkJob
 
     [Benchmark]
     [ArgumentsSource(nameof(Algorithms))]
-    public void Simple(IAlgorithm<Maze> algorithm)
+    public void Simple(IAlgorithm algorithm)
     {
-        algorithm.GoGenerate(SIZE, SIZE, SEED, _innerMapFactory, _randomFactory, _action);
+        algorithm.GoGenerate(SIZE, SIZE, SEED, _innerMapFactory, _randomFactory);
     }
 
     private class Config : ManualConfig

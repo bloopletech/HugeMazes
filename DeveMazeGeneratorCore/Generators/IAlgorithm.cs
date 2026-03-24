@@ -1,10 +1,10 @@
 ﻿using DeveMazeGeneratorCore.Factories;
-using DeveMazeGeneratorCore.Generators.SpeedOptimization;
 using DeveMazeGeneratorCore.InnerMaps;
+using DeveMazeGeneratorCore.Mazes;
 
 namespace DeveMazeGeneratorCore.Generators;
 
-public interface IAlgorithm<out MazeType>
+public interface IAlgorithm
 {
-    MazeType GoGenerate<M, TAction>(int width, int height, int seed, IInnerMapFactory<M> mapFactory, IRandomFactory randomFactory, TAction pixelChangedCallback) where M : InnerMap where TAction : struct, IProgressAction;
+    Maze GoGenerate<M>(int width, int height, int seed, IInnerMapFactory<M> mapFactory, IRandomFactory randomFactory) where M : InnerMap;
 }

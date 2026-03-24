@@ -1,7 +1,6 @@
 ﻿using DeveMazeGeneratorCore.Factories;
 using DeveMazeGeneratorCore.Generators;
 using DeveMazeGeneratorCore.Generators.Helpers;
-using DeveMazeGeneratorCore.Generators.SpeedOptimization;
 using DeveMazeGeneratorCore.Imageification;
 using DeveMazeGeneratorCore.InnerMaps;
 using DeveMazeGeneratorCore.PathFinders;
@@ -29,7 +28,7 @@ public class MazeSamples
         var randomFactory = new RandomFactory<NetRandom>();
 
         var algorithm = new AlgorithmBacktrack();
-        var generatedMap = algorithm.GoGenerate(128, 128, 1337, mapFactory, randomFactory, new NoAction());
+        var generatedMap = algorithm.GoGenerate(128, 128, 1337, mapFactory, randomFactory);
 
         var path = PathFinderDepthFirstSmartWithPos.GoFind(map, null);
 

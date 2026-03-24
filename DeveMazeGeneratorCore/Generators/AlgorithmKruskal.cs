@@ -1,7 +1,6 @@
 ﻿using DeveMazeGeneratorCore.ExtensionMethods;
 using DeveMazeGeneratorCore.Factories;
 using DeveMazeGeneratorCore.Generators.Helpers;
-using DeveMazeGeneratorCore.Generators.SpeedOptimization;
 using DeveMazeGeneratorCore.InnerMaps;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Structures;
@@ -9,19 +8,18 @@ using System.Collections.Generic;
 
 namespace DeveMazeGeneratorCore.Generators;
 
-public class AlgorithmKruskal : IAlgorithm<Maze>
+public class AlgorithmKruskal : IAlgorithm
 {
-    public Maze GoGenerate<M, TAction>(int width, int height, int seed, IInnerMapFactory<M> mapFactory, IRandomFactory randomFactory, TAction pixelChangedCallback)
+    public Maze GoGenerate<M>(int width, int height, int seed, IInnerMapFactory<M> mapFactory, IRandomFactory randomFactory)
         where M : InnerMap
-        where TAction : struct, IProgressAction
     {
         var innerMap = mapFactory.Create(width, height);
         var random = randomFactory.Create(seed);
 
-        return GoGenerateInternal(innerMap, random, pixelChangedCallback);
+        return GoGenerateInternal(innerMap, random);
     }
 
-    private Maze GoGenerateInternal<M, TAction>(M map, IRandom random, TAction pixelChangedCallback) where M : InnerMap where TAction : struct, IProgressAction
+    private Maze GoGenerateInternal<M>(M map, IRandom random) where M : InnerMap
     {
         long totSteps = (map.Width - 1L) / 2L * ((map.Height - 1L) / 2L) * 2;
         long currentStep = 1;
@@ -41,7 +39,6 @@ public class AlgorithmKruskal : IAlgorithm<Maze>
                 if ((x + 1) % 2 == 0 && (y + 1) % 2 == 0 && x != map.Width - 1 && y != map.Height - 1)
                 {
                     currentStep++;
-                    //pixelChangedCallback(x, y, currentStep, totSteps);
                     c.Solid = false;
                     c.CellSet.Add(c);
                 }
@@ -96,7 +93,6 @@ public class AlgorithmKruskal : IAlgorithm<Maze>
             {
                 wall.Solid = false;
                 currentStep++;
-                pixelChangedCallback.Invoke(wall.X, wall.Y, currentStep, totSteps);
                 List<KruskalCell> l1 = cell1.CellSet;
                 List<KruskalCell> l2 = cell2.CellSet;
 

@@ -35,9 +35,7 @@ public class Program
         var innerMapFactory = new InnerMapFactory<BitArreintjeFastInnerMap>();
         var randomFactory = new RandomFactory<XorShiftRandom>();
 
-        var actionThing = new NoAction();
-
-        var maze = alg.GoGenerate(width, height, seed, innerMapFactory, randomFactory, actionThing);
+        var maze = alg.GoGenerate(width, height, seed, innerMapFactory, randomFactory);
 
         using (var fs = new FileStream($"GeneratedMazeNoPath{alg.GetType().Name}.png", FileMode.Create))
         {

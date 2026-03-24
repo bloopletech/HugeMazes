@@ -2,8 +2,6 @@
 using DeveMazeGeneratorCore.Generators.Helpers;
 using DeveMazeGeneratorCore.Helpers;
 using DeveMazeGeneratorCore.InnerMaps;
-using System;
-using System.Diagnostics;
 using Xunit;
 
 namespace DeveMazeGeneratorCore.Tests.Generators
@@ -16,23 +14,11 @@ namespace DeveMazeGeneratorCore.Tests.Generators
             public void GeneratesAMaze()
             {
                 //Arrange
-                long current = 0;
-                long total = 0;
-                var mazeAction = new Action<int, int, long, long>((x, y, cur, tot) =>
-                {
-                    current = cur;
-                    total = tot;
-                });
 
                 //Act
-                var maze = MazeGenerator.Generate<AlgorithmBacktrack, BitArreintjeFastInnerMap, NetRandom>(128, 128, mazeAction);
+                var maze = MazeGenerator.Generate<AlgorithmBacktrack, BitArreintjeFastInnerMap, NetRandom>(128, 128);
 
                 //Assert
-                Trace.WriteLine("Taken steps: " + current);
-                Trace.WriteLine("Total steps: " + total);
-
-                Assert.NotEqual(0, total);
-                Assert.Equal(total, current);
                 Assert.False(maze.InnerMap[0, 0]);
                 Assert.True(maze.InnerMap[1, 1]);
             }
@@ -43,16 +29,8 @@ namespace DeveMazeGeneratorCore.Tests.Generators
                 //Arrange
                 var generator = new AlgorithmBacktrack();
 
-                long current = 0;
-                long total = 0;
-                var mazeAction = new Action<int, int, long, long>((x, y, cur, tot) =>
-                {
-                    current = cur;
-                    total = tot;
-                });
-
                 //Act
-                var maze = MazeGenerator.Generate<AlgorithmBacktrack, BitArreintjeFastInnerMap, NetRandom>(128, 128, mazeAction);
+                var maze = MazeGenerator.Generate<AlgorithmBacktrack, BitArreintjeFastInnerMap, NetRandom>(128, 128);
 
                 Assert.True(MazeVerifier.IsPerfectMaze(maze.InnerMap));
             }

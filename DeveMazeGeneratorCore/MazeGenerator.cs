@@ -1,7 +1,6 @@
 ﻿using DeveMazeGeneratorCore.Factories;
 using DeveMazeGeneratorCore.Generators;
 using DeveMazeGeneratorCore.Generators.Helpers;
-using DeveMazeGeneratorCore.Generators.SpeedOptimization;
 using DeveMazeGeneratorCore.InnerMaps;
 using DeveMazeGeneratorCore.Mazes;
 using System;
@@ -17,12 +16,12 @@ public static class MazeGenerator
     /// <param name="height">The height of the maze to generate</param>
     /// <param name="map">The inner map to generate the maze in</param>
     /// <param name="pixelChangedCallback">When a pixel is changed you can define a callback here to for example draw the maze while its being generated, add null if you don't want this. Last 2 longs are for the current step and the total steps (can be used to calculate how far the maze is done being generated)</param>
-    public static Maze Generate<AlgorithmType, InnerMapType, RandomType>(int width, int height, Action<int, int, long, long> pixelChangedCallback)
-        where AlgorithmType : IAlgorithm<Maze>, new()
+    public static Maze Generate<AlgorithmType, InnerMapType, RandomType>(int width, int height)
+        where AlgorithmType : IAlgorithm, new()
         where InnerMapType : InnerMap
         where RandomType : IRandom
     {
-        return Generate<AlgorithmType, InnerMapType, RandomType>(width, height, Environment.TickCount, pixelChangedCallback);
+        return Generate<AlgorithmType, InnerMapType, RandomType>(width, height, Environment.TickCount);
     }
 
 
@@ -33,8 +32,8 @@ public static class MazeGenerator
     /// <param name="height">The height of the maze to generate</param>
     /// <param name="seed">The seed that is used to generate a maze</param>
     /// <param name="pixelChangedCallback">When a pixel is changed you can define a callback here to for example draw the maze while its being generated, add null if you don't want this. Last 2 longs are for the current step and the total steps (can be used to calculate how far the maze is done being generated)</param>
-    public static Maze Generate<AlgorithmType, InnerMapType, RandomType>(int width, int height, int seed, Action<int, int, long, long> pixelChangedCallback)
-        where AlgorithmType : IAlgorithm<Maze>, new()
+    public static Maze Generate<AlgorithmType, InnerMapType, RandomType>(int width, int height, int seed)
+        where AlgorithmType : IAlgorithm, new()
         where InnerMapType : InnerMap
         where RandomType : IRandom
     {
@@ -43,14 +42,6 @@ public static class MazeGenerator
 
         var alg = new AlgorithmType();
 
-        if (pixelChangedCallback == null)
-        {
-            var test = alg.GoGenerate(width, height, seed, innerMapFactory, randomFactory, new NoAction());
-            return test;
-        }
-        else
-        {
-            return alg.GoGenerate(width, height, seed, innerMapFactory, randomFactory, new ProgressAction(pixelChangedCallback));
-        }
+        return alg.GoGenerate(width, height, seed, innerMapFactory, randomFactory);
     }
 }
