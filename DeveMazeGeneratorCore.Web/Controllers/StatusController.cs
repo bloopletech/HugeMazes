@@ -3,26 +3,25 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
-namespace DeveMazeGeneratorCore.Web.Controllers
+namespace DeveMazeGeneratorCore.Web.Controllers;
+
+[Route("[controller]")]
+[ApiController]
+public class StatusController : ControllerBase
 {
-    [Route("[controller]")]
-    [ApiController]
-    public class StatusController : ControllerBase
+    private readonly ILogger<StatusController> _logger;
+
+    public StatusController(ILogger<StatusController> logger)
     {
-        private readonly ILogger<StatusController> _logger;
+        _logger = logger;
+    }
 
-        public StatusController(ILogger<StatusController> logger)
-        {
-            _logger = logger;
-        }
+    [HttpGet]
+    public Task<StatusModel> GetAsync()
+    {
+        _logger.Log(LogLevel.Information, "### Status Controller Get() called");
 
-        [HttpGet]
-        public Task<StatusModel> GetAsync()
-        {
-            _logger.Log(LogLevel.Information, "### Status Controller Get() called");
-
-            var statusModel = StatusObtainer.GetStatus();
-            return Task.FromResult(statusModel);
-        }
+        var statusModel = StatusObtainer.GetStatus();
+        return Task.FromResult(statusModel);
     }
 }

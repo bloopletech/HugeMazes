@@ -1,11 +1,10 @@
-﻿namespace DeveMazeGeneratorCore.InnerMaps
-{
-    public interface IMapPart
-    {
-        int Width { get; }
-        int Height { get; }
+﻿namespace DeveMazeGeneratorCore.InnerMaps;
 
-        int StartX { get; }
-        int StartY { get; }
-    }
+public interface IMapPart
+{
+    int Width { get; }
+    int Height { get; }
+
+    int StartX { get; }
+    int StartY { get; }
 }

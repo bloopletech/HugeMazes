@@ -1,7 +1,6 @@
-﻿namespace DeveMazeGeneratorCore.Generators.SpeedOptimization
+﻿namespace DeveMazeGeneratorCore.Generators.SpeedOptimization;
+
+public interface IProgressAction
 {
-    public interface IProgressAction
-    {
-        void Invoke(int step, int total, long x, long y);
-    }
+    void Invoke(int step, int total, long x, long y);
 }

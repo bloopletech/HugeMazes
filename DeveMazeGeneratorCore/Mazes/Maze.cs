@@ -1,14 +1,13 @@
 ﻿using DeveMazeGeneratorCore.InnerMaps;
 
-namespace DeveMazeGeneratorCore.Mazes
-{
-    public class Maze
-    {
-        public InnerMap InnerMap { get; }
+namespace DeveMazeGeneratorCore.Mazes;
 
-        public Maze(InnerMap innerMap)
-        {
-            InnerMap = innerMap;
-        }
+public class Maze
+{
+    public InnerMap InnerMap { get; }
+
+    public Maze(InnerMap innerMap)
+    {
+        InnerMap = innerMap;
     }
 }

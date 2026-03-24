@@ -1,9 +1,8 @@
 ﻿using DeveMazeGeneratorCore.Generators.Helpers;
 
-namespace DeveMazeGeneratorCore.Factories
+namespace DeveMazeGeneratorCore.Factories;
+
+public interface IRandomFactory
 {
-    public interface IRandomFactory
-    {
-        IRandom Create(int seed);
-    }
+    IRandom Create(int seed);
 }

@@ -1,6 +1,5 @@
-﻿namespace DeveMazeGeneratorCore.Generators.SpeedOptimization
+﻿namespace DeveMazeGeneratorCore.Generators.SpeedOptimization;
+
+public interface IMazeDirGeneric
 {
-    public interface IMazeDirGeneric
-    {
-    }
 }

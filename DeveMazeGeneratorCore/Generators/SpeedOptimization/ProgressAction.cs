@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace DeveMazeGeneratorCore.Generators.SpeedOptimization
+namespace DeveMazeGeneratorCore.Generators.SpeedOptimization;
+
+public readonly struct ProgressAction : IProgressAction
 {
-    public readonly struct ProgressAction : IProgressAction
+    private readonly Action<int, int, long, long> _pixelChangedCallback;
+
+    public ProgressAction(Action<int, int, long, long> pixelChangedCallback)
     {
-        private readonly Action<int, int, long, long> _pixelChangedCallback;
+        _pixelChangedCallback = pixelChangedCallback;
+    }
 
-        public ProgressAction(Action<int, int, long, long> pixelChangedCallback)
-        {
-            _pixelChangedCallback = pixelChangedCallback;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Invoke(int step, int total, long x, long y)
-        {
-            _pixelChangedCallback(step, total, x, y);
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Invoke(int step, int total, long x, long y)
+    {
+        _pixelChangedCallback(step, total, x, y);
     }
 }

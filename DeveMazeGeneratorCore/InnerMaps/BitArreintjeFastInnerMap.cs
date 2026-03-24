@@ -1,52 +1,51 @@
 ﻿using DeveMazeGeneratorCore.InnerMaps.InnerStuff;
 using System.Runtime.CompilerServices;
 
-namespace DeveMazeGeneratorCore.InnerMaps
+namespace DeveMazeGeneratorCore.InnerMaps;
+
+public class BitArreintjeFastInnerMap : InnerMap
 {
-    public class BitArreintjeFastInnerMap : InnerMap
+    private BitArreintjeFastInnerMapArray[] _innerData;
+
+    public BitArreintjeFastInnerMap(int width, int height)
+        : base(width, height)
     {
-        private BitArreintjeFastInnerMapArray[] _innerData;
-
-        public BitArreintjeFastInnerMap(int width, int height)
-            : base(width, height)
+        _innerData = new BitArreintjeFastInnerMapArray[width];
+        for (int i = 0; i < width; i++)
         {
-            _innerData = new BitArreintjeFastInnerMapArray[width];
-            for (int i = 0; i < width; i++)
-            {
-                _innerData[i] = new BitArreintjeFastInnerMapArray(height);
-            }
+            _innerData[i] = new BitArreintjeFastInnerMapArray(height);
         }
+    }
 
-        public override void FillMap(bool state)
+    public override void FillMap(bool state)
+    {
+        for (int i = 0; i < _innerData.Length; i++)
         {
-            for (int i = 0; i < _innerData.Length; i++)
-            {
-                _innerData[i].FillMap(state);
-            }
+            _innerData[i].FillMap(state);
         }
+    }
 
-        public override InnerMap Clone()
+    public override InnerMap Clone()
+    {
+        var innerMapTarget = new BitArreintjeFastInnerMap(Width, Height);
+        for (int i = 0; i < _innerData.Length; i++)
         {
-            var innerMapTarget = new BitArreintjeFastInnerMap(Width, Height);
-            for (int i = 0; i < _innerData.Length; i++)
-            {
-                innerMapTarget._innerData[i] = _innerData[i].Clone();
-            }
-            return innerMapTarget;
+            innerMapTarget._innerData[i] = _innerData[i].Clone();
         }
+        return innerMapTarget;
+    }
 
-        public override bool this[int x, int y]
+    public override bool this[int x, int y]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _innerData[x][y];
-            }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set
-            {
-                _innerData[x][y] = value;
-            }
+            return _innerData[x][y];
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set
+        {
+            _innerData[x][y] = value;
         }
     }
 }

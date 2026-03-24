@@ -1,22 +1,21 @@
-﻿namespace DeveMazeGeneratorCore.Generators.SpeedOptimization
+﻿namespace DeveMazeGeneratorCore.Generators.SpeedOptimization;
+
+public struct MazeDirGenericLeft : IMazeDirGeneric
 {
-    public struct MazeDirGenericLeft : IMazeDirGeneric
-    {
 
-    }
+}
 
-    public struct MazeDirGenericRight : IMazeDirGeneric
-    {
+public struct MazeDirGenericRight : IMazeDirGeneric
+{
 
-    }
+}
 
-    public struct MazeDirGenericUp : IMazeDirGeneric
-    {
+public struct MazeDirGenericUp : IMazeDirGeneric
+{
 
-    }
+}
 
-    public struct MazeDirGenericDown : IMazeDirGeneric
-    {
+public struct MazeDirGenericDown : IMazeDirGeneric
+{
 
-    }
 }

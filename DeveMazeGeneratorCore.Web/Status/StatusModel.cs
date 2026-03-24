@@ -1,9 +1,8 @@
-﻿namespace DeveMazeGeneratorCore.Web.Status
+﻿namespace DeveMazeGeneratorCore.Web.Status;
+
+public class StatusModel
 {
-    public class StatusModel
-    {
-        public string ApplicationName { get; set; }
-        public string Version { get; set; }
-        public string UpTime { get; set; }
-    }
+    public string ApplicationName { get; set; }
+    public string Version { get; set; }
+    public string UpTime { get; set; }
 }
