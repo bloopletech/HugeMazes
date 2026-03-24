@@ -2,12 +2,7 @@
 
 namespace DeveMazeGeneratorCore.Mazes;
 
-public class Maze
+public class Maze(InnerMap innerMap)
 {
-    public InnerMap InnerMap { get; }
-
-    public Maze(InnerMap innerMap)
-    {
-        InnerMap = innerMap;
-    }
+    public InnerMap InnerMap { get; } = innerMap;
 }

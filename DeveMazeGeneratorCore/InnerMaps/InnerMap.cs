@@ -10,24 +10,18 @@ namespace DeveMazeGeneratorCore.InnerMaps;
 /// 0 = False = Wall = Black
 /// 1 = True = Empty = White
 /// </summary>
-public abstract class InnerMap : IMapPart
+public abstract class InnerMap(int width, int height) : IMapPart
 {
     ///// <summary>
     ///// This data can be used by some algorithms to also generate path data
     ///// </summary>
     //public InnerMap PathData { get; set; }
 
-    public int Width { get; private set; }
-    public int Height { get; private set; }
+    public int Width { get; private set; } = width;
+    public int Height { get; private set; } = height;
 
     public int StartX { get; set; }
     public int StartY { get; set; }
-
-    public InnerMap(int width, int height)
-    {
-        Width = width;
-        Height = height;
-    }
 
     /// <summary>
     /// Fills the map cell by cell.

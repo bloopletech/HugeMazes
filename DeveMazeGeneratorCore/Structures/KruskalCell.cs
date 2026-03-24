@@ -2,18 +2,12 @@
 
 namespace DeveMazeGeneratorCore.Structures;
 
-public class KruskalCell
+public class KruskalCell(int x, int y)
 {
-    public int Y { get; set; }
-    public int X { get; set; }
+    public int Y { get; set; } = y;
+    public int X { get; set; } = x;
     public bool Solid { get; set; }
     public List<KruskalCell> CellSet { get; set; } = new List<KruskalCell>();
-
-    public KruskalCell(int x, int y)
-    {
-        X = x;
-        Y = y;
-    }
 
     public string xeny()
     {

@@ -7,14 +7,9 @@ namespace DeveMazeGeneratorCore.Web.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class StatusController : ControllerBase
+public class StatusController(ILogger<StatusController> logger) : ControllerBase
 {
-    private readonly ILogger<StatusController> _logger;
-
-    public StatusController(ILogger<StatusController> logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<StatusController> _logger = logger;
 
     [HttpGet]
     public Task<StatusModel> GetAsync()

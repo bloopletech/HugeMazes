@@ -3,15 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace DeveMazeGeneratorCore.InnerMaps.InnerStuff;
 
-public class BitArreintjeFastInnerMapArray
+public class BitArreintjeFastInnerMapArray(int height)
 {
     //Internal since it's used by some other classes (because this is so awesome)
-    internal long[] _innerData;
-
-    public BitArreintjeFastInnerMapArray(int height)
-    {
-        _innerData = new long[height / 64 + 1];
-    }
+    internal long[] _innerData = new long[height / 64 + 1];
 
     public BitArreintjeFastInnerMapArray Clone()
     {

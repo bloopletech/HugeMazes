@@ -4,15 +4,9 @@
 /// Contains a position.
 /// Note: Struct really is faster then class
 /// </summary>
-public struct MazePoint
+public struct MazePoint(int X, int Y)
 {
-    public int X, Y;
-
-    public MazePoint(int X, int Y)
-    {
-        this.X = X;
-        this.Y = Y;
-    }
+    public int X = X, Y = Y;
 
     public override string ToString()
     {

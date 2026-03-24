@@ -1,12 +1,9 @@
-﻿using DeveCoolLib.DeveConsoleMenu;
-using DeveMazeGeneratorCore.Factories;
+﻿using DeveMazeGeneratorCore.Factories;
 using DeveMazeGeneratorCore.Generators;
 using DeveMazeGeneratorCore.Generators.Helpers;
-using DeveMazeGeneratorCore.Generators.SpeedOptimization;
 using DeveMazeGeneratorCore.Helpers;
 using DeveMazeGeneratorCore.Imageification;
 using DeveMazeGeneratorCore.InnerMaps;
-using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.PathFinders;
 using System;
 using System.Diagnostics;

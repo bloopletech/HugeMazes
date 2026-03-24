@@ -2,17 +2,12 @@
 
 namespace DeveMazeGeneratorCore.Factories;
 
-public class InnerMapFactoryCustom<T> : IInnerMapFactory<T> where T : InnerMap
+public class InnerMapFactoryCustom<T>(T map) : IInnerMapFactory<T> where T : InnerMap
 {
     public int Width => map.Width;
     public int Height => map.Height;
 
-    private T map;
-
-    public InnerMapFactoryCustom(T map)
-    {
-        this.map = map;
-    }
+    private T map = map;
 
     public T Create()
     {

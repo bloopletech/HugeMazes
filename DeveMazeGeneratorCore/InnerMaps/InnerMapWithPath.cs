@@ -1,23 +1,13 @@
 ﻿namespace DeveMazeGeneratorCore.InnerMaps;
 
-public class InnerMapWithPath<M> : IMapPart where M : InnerMap
+public class InnerMapWithPath<M>(int width, int height, int startX, int startY, M map, M pathMap) : IMapPart where M : InnerMap
 {
-    public int Width { get; }
-    public int Height { get; }
+    public int Width { get; } = width;
+    public int Height { get; } = height;
 
-    public int StartX { get; }
-    public int StartY { get; }
+    public int StartX { get; } = startX;
+    public int StartY { get; } = startY;
 
-    public M Map { get; }
-    public M PathMap { get; }
-
-    public InnerMapWithPath(int width, int height, int startX, int startY, M map, M pathMap)
-    {
-        Width = width;
-        Height = height;
-        StartX = startX;
-        StartY = startY;
-        Map = map;
-        PathMap = pathMap;
-    }
+    public M Map { get; } = map;
+    public M PathMap { get; } = pathMap;
 }
