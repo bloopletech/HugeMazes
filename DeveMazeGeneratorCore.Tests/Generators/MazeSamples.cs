@@ -1,9 +1,6 @@
-﻿using DeveMazeGeneratorCore.Factories;
-using DeveMazeGeneratorCore.Generators;
-using DeveMazeGeneratorCore.Generators.Helpers;
-using DeveMazeGeneratorCore.Imageification;
+﻿using DeveMazeGeneratorCore.Imageification;
 using DeveMazeGeneratorCore.InnerMaps;
-using DeveMazeGeneratorCore.PathFinders;
+using System;
 using System.IO;
 using Xunit;
 
@@ -24,13 +21,12 @@ public class MazeSamples
             }
         }
 
-        var mapFactory = new InnerMapFactoryCustom<BitArreintjeFastInnerMap>(map);
-        var randomFactory = new RandomFactory<NetRandom>();
+        var random = new Random(1337);
 
-        var algorithm = new AlgorithmBacktrack();
-        var generatedMap = algorithm.GoGenerate(128, 128, 1337, mapFactory, randomFactory);
+        var algorithm = new AlgorithmBacktrack(map, random);
+        algorithm.Generate();
 
-        var path = PathFinderDepthFirstSmartWithPos.GoFind(map, null);
+        var path = PathFinder.GoFind(map, null);
 
         using (var fs = new FileStream("GeneratingAMazeWithABlockInTheMiddleWorks.png", FileMode.Create))
         {

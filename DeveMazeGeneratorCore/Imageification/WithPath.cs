@@ -1,20 +1,17 @@
 ﻿using DeveMazeGeneratorCore.Helpers;
-using DeveMazeGeneratorCore.InnerMaps;
 using DeveMazeGeneratorCore.Structures;
 
 #if !BLAZOR
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 
 namespace DeveMazeGeneratorCore.Imageification;
 
 public static class WithPath
 {
-    public static void SaveMazeAsImageDeluxePng(InnerMap map, List<MazePointPos> pathPosjes, Stream stream)
+    public static void SaveMazeAsImageDeluxePng(Maze map, List<MazePointPos> pathPosjes, Stream stream)
     {
         var roundedUpWidth = MathHelper.RoundUpToNextEven(map.Width);
         var roundedUpHeight = MathHelper.RoundUpToNextEven(map.Height);
@@ -81,7 +78,7 @@ public static class WithPath
         Debug.WriteLine($"First image conversion time: {timeForFirstImageSavePart}, Time for saving as PNG: {timeForSaveAsPng}");
     }
 
-    public static void SaveMazeAsImageDeluxePng(InnerMap map, InnerMap pathMap, Stream stream)
+    public static void SaveMazeAsImageDeluxePng(Maze map, Maze pathMap, Stream stream)
     {
         var roundedUpWidth = MathHelper.RoundUpToNextEven(map.Width);
         var roundedUpHeight = MathHelper.RoundUpToNextEven(map.Height);
@@ -125,7 +122,7 @@ public static class WithPath
         Debug.WriteLine($"First image conversion time: {timeForFirstImageSavePart}, Time for saving as PNG: {timeForSaveAsPng}");
     }
 
-    public static void SaveMazeAsImageDeluxePngWithParts(InnerMap map, InnerMap pathMap, int xPart, int yPart, int widthPart, int heightPart, Stream stream)
+    public static void SaveMazeAsImageDeluxePngWithParts(Maze map, Maze pathMap, int xPart, int yPart, int widthPart, int heightPart, Stream stream)
     {
         var w = Stopwatch.StartNew();
         var image = new Image<Argb32>(widthPart, heightPart);

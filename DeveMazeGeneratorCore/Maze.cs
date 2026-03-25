@@ -1,16 +1,14 @@
-﻿using DeveMazeGeneratorCore.Structures;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
+using DeveMazeGeneratorCore.InnerMaps;
 
-namespace DeveMazeGeneratorCore.InnerMaps;
+namespace DeveMazeGeneratorCore;
 
 /// <summary>
 /// Info about mazes:
 /// 0 = False = Wall = Black
 /// 1 = True = Empty = White
 /// </summary>
-public abstract class InnerMap(int width, int height) : IMapPart
+public abstract class Maze(int width, int height)
 {
     ///// <summary>
     ///// This data can be used by some algorithms to also generate path data
@@ -44,7 +42,7 @@ public abstract class InnerMap(int width, int height) : IMapPart
     /// an exact copy of itself (if this is implemented by the child class)
     /// </summary>
     /// <returns>Cloned inner map</returns>
-    public virtual InnerMap Clone()
+    public virtual Maze Clone()
     {
         var innerMapTarget = new BitArreintjeFastInnerMap(Width, Height);
         CloneInto(innerMapTarget);
@@ -56,7 +54,7 @@ public abstract class InnerMap(int width, int height) : IMapPart
     /// </summary>
     /// <param name="mapTarget">The map to clone into</param>
     /// <returns>The cloned maze</returns>
-    public void CloneInto(InnerMap mapTarget)
+    public void CloneInto(Maze mapTarget)
     {
         if (Width != mapTarget.Width) throw new ArgumentException($"Width of the target ({mapTarget.Width}) is not equal to that of the source ({Width}).");
         if (Height != mapTarget.Height) throw new ArgumentException($"Height of the target ({mapTarget.Height}) is not equal to that of the source ({Height}).");

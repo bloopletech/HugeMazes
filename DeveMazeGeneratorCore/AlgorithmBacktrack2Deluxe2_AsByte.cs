@@ -1,42 +1,27 @@
-﻿using DeveMazeGeneratorCore.Factories;
-using DeveMazeGeneratorCore.Generators.Helpers;
-using DeveMazeGeneratorCore.InnerMaps;
-using DeveMazeGeneratorCore.Mazes;
-using DeveMazeGeneratorCore.Structures;
-using System.Collections.Generic;
+﻿using DeveMazeGeneratorCore.Structures;
 using System.Runtime.CompilerServices;
 
-namespace DeveMazeGeneratorCore.Generators;
+namespace DeveMazeGeneratorCore;
 
-public class AlgorithmBacktrack2Deluxe2WithBorder_AsByte : IAlgorithm
+public class AlgorithmBacktrack2Deluxe2_AsByte(Maze map, Random random)
 {
-    public Maze GoGenerate<M>(int width, int height, int seed, IInnerMapFactory<M> mapFactory, IRandomFactory randomFactory)
-        where M : InnerMap
+    public void Generate()
     {
-        var innerMap = mapFactory.Create(width + 4, height + 4);
-        innerMap.MarkBorderInaccessible();
-        var random = randomFactory.Create(seed);
+        int width = map.Width - 1;
+        int height = map.Height - 1;
 
-        return GoGenerateInternal(innerMap, random);
-    }
-
-    private static Maze GoGenerateInternal<M>(M map, IRandom random) where M : InnerMap
-    {
-        long totSteps = (map.Width - 5L) / 2L * ((map.Height - 5L) / 2L);
-        long currentStep = 1;
-
-        var stackje = new Stack<MazePoint>();
-        stackje.Push(new MazePoint(3, 3));
-        map[3, 3] = true;
+        var stackje = new Stack<ImmutableMazePoint>();
+        stackje.Push(new ImmutableMazePoint(1, 1));
+        map[1, 1] = true;
 
         while (stackje.Count != 0)
         {
-            MazePoint cur = stackje.Peek();
+            var cur = stackje.Peek();
 
-            bool validLeft = !map[cur.X - 2, cur.Y];
-            bool validRight = !map[cur.X + 2, cur.Y];
-            bool validUp = !map[cur.X, cur.Y - 2];
-            bool validDown = !map[cur.X, cur.Y + 2];
+            bool validLeft = cur.X - 2 > 0 && !map[cur.X - 2, cur.Y];
+            bool validRight = cur.X + 2 < width && !map[cur.X + 2, cur.Y];
+            bool validUp = cur.Y - 2 > 0 && !map[cur.X, cur.Y - 2];
+            bool validDown = cur.Y + 2 < height && !map[cur.X, cur.Y + 2];
 
             int validLeftByte = Unsafe.As<bool, byte>(ref validLeft);
             int validRightByte = Unsafe.As<bool, byte>(ref validRight);
@@ -51,7 +36,6 @@ public class AlgorithmBacktrack2Deluxe2WithBorder_AsByte : IAlgorithm
             }
             else
             {
-                currentStep++;
                 var chosenDirection = random.Next(targetCount);
                 int countertje = 0;
 
@@ -76,13 +60,10 @@ public class AlgorithmBacktrack2Deluxe2WithBorder_AsByte : IAlgorithm
                 var nextXInBetween = cur.X - actuallyGoingLeftByte + actuallyGoingRightByte;
                 var nextYInBetween = cur.Y - actuallyGoingUpByte + actuallyGoingDownByte;
 
-                stackje.Push(new MazePoint(nextX, nextY));
+                stackje.Push(new ImmutableMazePoint(nextX, nextY));
                 map[nextXInBetween, nextYInBetween] = true;
                 map[nextX, nextY] = true;
             }
         }
-
-
-        return new Maze(map);
     }
 }

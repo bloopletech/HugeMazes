@@ -1,28 +1,11 @@
-﻿using DeveMazeGeneratorCore.Factories;
-using DeveMazeGeneratorCore.Generators.Helpers;
-using DeveMazeGeneratorCore.InnerMaps;
-using DeveMazeGeneratorCore.Mazes;
-using DeveMazeGeneratorCore.Structures;
-using System.Collections.Generic;
+﻿using DeveMazeGeneratorCore.Structures;
 
-namespace DeveMazeGeneratorCore.Generators;
+namespace DeveMazeGeneratorCore;
 
-public class AlgorithmBacktrack : IAlgorithm
+public class AlgorithmBacktrack(Maze map, Random random)
 {
-    public Maze GoGenerate<M>(int width, int height, int seed, IInnerMapFactory<M> mapFactory, IRandomFactory randomFactory)
-        where M : InnerMap
+    public void Generate()
     {
-        var innerMap = mapFactory.Create(width, height);
-        var random = randomFactory.Create(seed);
-
-        return GoGenerateInternal(innerMap, random);
-    }
-
-    private static Maze GoGenerateInternal<M>(M map, IRandom random) where M : InnerMap
-    {
-        long totSteps = (map.Width - 1L) / 2L * ((map.Height - 1L) / 2L);
-        long currentStep = 1;
-
         int width = map.Width - 1;
         int height = map.Height - 1;
         int x = 1;
@@ -36,7 +19,7 @@ public class AlgorithmBacktrack : IAlgorithm
 
         while (stackje.Count != 0)
         {
-            MazePoint cur = stackje.Peek();
+            var cur = stackje.Peek();
             x = cur.X;
             y = cur.Y;
 
@@ -76,8 +59,6 @@ public class AlgorithmBacktrack : IAlgorithm
                 stackje.Push(target);
                 map[target.X, target.Y] = true;
 
-                currentStep++;
-
                 if (target.X < x)
                 {
                     map[x - 1, y] = true;
@@ -100,7 +81,5 @@ public class AlgorithmBacktrack : IAlgorithm
                 stackje.Pop();
             }
         }
-
-        return new Maze(map);
     }
 }

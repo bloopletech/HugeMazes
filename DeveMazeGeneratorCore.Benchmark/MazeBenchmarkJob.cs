@@ -2,12 +2,7 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Reports;
-using DeveMazeGeneratorCore.Factories;
-using DeveMazeGeneratorCore.Generators;
-using DeveMazeGeneratorCore.Generators.Helpers;
 using DeveMazeGeneratorCore.InnerMaps;
-using DeveMazeGeneratorCore.Mazes;
-using System.Collections.Generic;
 
 namespace DeveMazeGeneratorCore.Benchmark;
 
@@ -23,8 +18,8 @@ namespace DeveMazeGeneratorCore.Benchmark;
 [
     //DeveJob(RuntimeMoniker.Net60, launchCount: 1, warmupCount: 4, targetCount: 50, invocationCount: 1),
     //DeveJob(RuntimeMoniker.Net70, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
-    DeveJob(RuntimeMoniker.Net80, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
-    DeveJob(RuntimeMoniker.Net90, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
+    //DeveJob(RuntimeMoniker.Net80, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
+    //DeveJob(RuntimeMoniker.Net90, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
     DeveJob(RuntimeMoniker.Net10_0, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
 ]
 [AsciiDocExporter]
@@ -37,26 +32,13 @@ public class MazeBenchmarkJob
     private const int SIZE = 4096 * 2 * 2;
     private const int SEED = 1337;
 
-    private InnerMapFactory<BitArreintjeFastInnerMap> _innerMapFactory = new InnerMapFactory<BitArreintjeFastInnerMap>();
-    private RandomFactory<XorShiftRandom> _randomFactory = new RandomFactory<XorShiftRandom>();
-
-    public static IEnumerable<object> Algorithms()
-    {
-        //yield return new AlgorithmBacktrack();
-        //yield return new AlgorithmBacktrack2();
-        //yield return new AlgorithmBacktrack2Deluxe_AsByte();
-        yield return new AlgorithmBacktrack2Deluxe2_AsByte();
-        //yield return new AlgorithmBacktrack2Deluxe2WithBorder_AsByte();
-        //yield return new AlgorithmBacktrack3();
-        //yield return new AlgorithmBacktrack4();
-        //yield return new AlgorithmKruskal();
-    }
-
     [Benchmark]
-    [ArgumentsSource(nameof(Algorithms))]
-    public void Simple(IAlgorithm algorithm)
+    public void Simple()
     {
-        algorithm.GoGenerate(SIZE, SIZE, SEED, _innerMapFactory, _randomFactory);
+        var map = new BitArreintjeFastInnerMap(SIZE, SIZE);
+        var random = new Random(SEED);
+        var algorithm = new AlgorithmBacktrack2Deluxe2_AsByte(map, random);
+        algorithm.Generate();
     }
 
     private class Config : ManualConfig

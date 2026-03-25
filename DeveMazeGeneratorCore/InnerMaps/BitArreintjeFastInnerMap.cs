@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DeveMazeGeneratorCore.InnerMaps;
 
-public class BitArreintjeFastInnerMap : InnerMap
+public class BitArreintjeFastInnerMap : Maze
 {
     private BitArreintjeFastInnerMapArray[] _innerData;
 
@@ -25,7 +25,7 @@ public class BitArreintjeFastInnerMap : InnerMap
         }
     }
 
-    public override InnerMap Clone()
+    public override Maze Clone()
     {
         var innerMapTarget = new BitArreintjeFastInnerMap(Width, Height);
         for (int i = 0; i < _innerData.Length; i++)

@@ -2,7 +2,6 @@
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
-using System;
 
 namespace DeveMazeGeneratorCore.Benchmark;
 

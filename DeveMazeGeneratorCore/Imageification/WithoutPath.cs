@@ -1,17 +1,15 @@
 ﻿using DeveMazeGeneratorCore.Helpers;
-using DeveMazeGeneratorCore.InnerMaps;
 
 #if !BLAZOR
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
-using System.IO;
 
 namespace DeveMazeGeneratorCore.Imageification;
 
 public class WithoutPath
 {
-    public static void MazeToImage(InnerMap map, Stream stream)
+    public static void MazeToImage(Maze map, Stream stream)
     {
         var roundedUpWidth = MathHelper.RoundUpToNextEven(map.Width);
         var roundedUpHeight = MathHelper.RoundUpToNextEven(map.Height);
@@ -41,7 +39,7 @@ public class WithoutPath
         image.Save(stream, new PngEncoder());
     }
 
-    public static void SaveMaze(string fileName, InnerMap maze)
+    public static void SaveMaze(string fileName, Maze maze)
     {
         var dir = "Images";
         Directory.CreateDirectory(dir);

@@ -1,14 +1,7 @@
-﻿using DeveMazeGeneratorCore.Generators;
-using DeveMazeGeneratorCore.Generators.Helpers;
-using DeveMazeGeneratorCore.Imageification;
-using DeveMazeGeneratorCore.InnerMaps;
-using DeveMazeGeneratorCore.PathFinders;
+﻿using DeveMazeGeneratorCore.Imageification;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.Fonts;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
 
 namespace DeveMazeGeneratorCore.Web.Controllers;
@@ -41,11 +34,11 @@ public class MazesController : ControllerBase
     [HttpGet("Maze/{width}/{height}", Name = "GenerateMaze")]
     public ActionResult GenerateMaze(int width, int height)
     {
-        var maze = MazeGenerator.Generate<AlgorithmBacktrack, BitArreintjeFastInnerMap, NetRandom>(width, height);
+        var maze = MazeGenerator.Generate(width, height);
 
         using (var memoryStream = new MemoryStream())
         {
-            WithoutPath.MazeToImage(maze.InnerMap, memoryStream);
+            WithoutPath.MazeToImage(maze, memoryStream);
 
             var data = memoryStream.ToArray();
             return File(data, "image/png");
@@ -57,17 +50,17 @@ public class MazesController : ControllerBase
     public ActionResult GenerateMazeWithPath(int width, int height)
     {
         var w = Stopwatch.StartNew();
-        var maze = MazeGenerator.Generate<AlgorithmBacktrack, BitArreintjeFastInnerMap, NetRandom>(width, height);
+        var maze = MazeGenerator.Generate(width, height);
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        var path = PathFinderDepthFirstSmartWithPos.GoFind(maze.InnerMap, null);
+        var path = PathFinder.GoFind(maze, null);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();
         using (var memoryStream = new MemoryStream())
         {
-            WithPath.SaveMazeAsImageDeluxePng(maze.InnerMap, path, memoryStream);
+            WithPath.SaveMazeAsImageDeluxePng(maze, path, memoryStream);
             var toImageTime = w.Elapsed;
 
             Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");
@@ -81,20 +74,18 @@ public class MazesController : ControllerBase
     [HttpGet("MazePathSeed/{seed}/{width}/{height}", Name = "GenerateMazeWithPathSeed")]
     public ActionResult GenerateMazeWithPathSeed(int seed, int width, int height)
     {
-        var alg = new AlgorithmBacktrack();
-
         var w = Stopwatch.StartNew();
-        var maze = MazeGenerator.Generate<AlgorithmBacktrack, BitArreintjeFastInnerMap, NetRandom>(width, height, seed);
+        var maze = MazeGenerator.Generate(width, height, seed);
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        var path = PathFinderDepthFirstSmartWithPos.GoFind(maze.InnerMap, null);
+        var path = PathFinder.GoFind(maze, null);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();
         using (var memoryStream = new MemoryStream())
         {
-            WithPath.SaveMazeAsImageDeluxePng(maze.InnerMap, path, memoryStream);
+            WithPath.SaveMazeAsImageDeluxePng(maze, path, memoryStream);
             var toImageTime = w.Elapsed;
 
             Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");

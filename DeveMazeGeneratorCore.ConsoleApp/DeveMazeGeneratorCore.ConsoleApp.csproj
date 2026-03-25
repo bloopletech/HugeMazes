@@ -8,6 +8,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <TieredCompilationQuickJitForLoops>false</TieredCompilationQuickJitForLoops>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>

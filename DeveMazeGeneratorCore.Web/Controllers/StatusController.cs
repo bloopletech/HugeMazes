@@ -1,7 +1,5 @@
 ﻿using DeveMazeGeneratorCore.Web.Status;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace DeveMazeGeneratorCore.Web.Controllers;
 

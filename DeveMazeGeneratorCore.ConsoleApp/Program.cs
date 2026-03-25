@@ -1,13 +1,6 @@
-﻿using DeveMazeGeneratorCore.Factories;
-using DeveMazeGeneratorCore.Generators;
-using DeveMazeGeneratorCore.Generators.Helpers;
-using DeveMazeGeneratorCore.Helpers;
-using DeveMazeGeneratorCore.Imageification;
+﻿using DeveMazeGeneratorCore.Imageification;
 using DeveMazeGeneratorCore.InnerMaps;
-using DeveMazeGeneratorCore.PathFinders;
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
 
 namespace DeveMazeGeneratorCore.ConsoleApp;
@@ -20,36 +13,35 @@ public class Program
 
         var width = int.Parse(args[0], System.Globalization.NumberStyles.None);
         var height = int.Parse(args[1], System.Globalization.NumberStyles.None);
-        var seed = args.Length > 2 ? int.Parse(args[2], System.Globalization.NumberStyles.None) : Environment.TickCount;
+        int? seed = args.Length > 2 ? int.Parse(args[2], System.Globalization.NumberStyles.None) : null;
 
         Generate(width, height, seed);
     }
 
-    public static void Generate(int width, int height, int seed)
+    public static void Generate(int width, int height, int? seed)
     {
-        var alg = new AlgorithmBacktrack2Deluxe2_AsByte();
+        var map = new BitArreintjeFastInnerMap(width, height);
+        var random = seed != null ? new Random(seed.Value) : new Random();
+        var alg = new AlgorithmBacktrack2Deluxe2_AsByte(map, random);
 
-        var innerMapFactory = new InnerMapFactory<BitArreintjeFastInnerMap>();
-        var randomFactory = new RandomFactory<XorShiftRandom>();
-
-        var maze = alg.GoGenerate(width, height, seed, innerMapFactory, randomFactory);
+        alg.Generate();
 
         using (var fs = new FileStream($"GeneratedMazeNoPath{alg.GetType().Name}.png", FileMode.Create))
         {
-            WithPath.SaveMazeAsImageDeluxePng(maze.InnerMap, new System.Collections.Generic.List<Structures.MazePointPos>(), fs);
+            WithPath.SaveMazeAsImageDeluxePng(map, [], fs);
         }
 
         Console.WriteLine("Finding path");
 
-        var path = PathFinderDepthFirstSmartWithPos.GoFind(maze.InnerMap, null);
+        var path = PathFinder.GoFind(map, null);
         Console.WriteLine("Found path :)");
 
         using (var fs = new FileStream($"GeneratedMaze{alg.GetType().Name}.png", FileMode.Create))
         {
-            WithPath.SaveMazeAsImageDeluxePng(maze.InnerMap, path, fs);
+            WithPath.SaveMazeAsImageDeluxePng(map, path, fs);
         }
 
-        var result = MazeVerifier.IsPerfectMaze(maze.InnerMap);
+        var result = MazeVerifier.IsPerfectMaze(map);
         Console.WriteLine($"Is our maze perfect?: {result}");
     }
 
