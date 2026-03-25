@@ -26,7 +26,7 @@ public class MazeSamples
         var algorithm = new AlgorithmBacktrack(map, random);
         algorithm.Generate();
 
-        var path = PathFinder.GoFind(map, null);
+        var path = PathFinder.GoFind(map);
 
         using (var fs = new FileStream("GeneratingAMazeWithABlockInTheMiddleWorks.png", FileMode.Create))
         {

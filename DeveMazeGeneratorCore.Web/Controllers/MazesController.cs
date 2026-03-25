@@ -54,7 +54,7 @@ public class MazesController : ControllerBase
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        var path = PathFinder.GoFind(maze, null);
+        var path = PathFinder.GoFind(maze);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();
@@ -79,7 +79,7 @@ public class MazesController : ControllerBase
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        var path = PathFinder.GoFind(maze, null);
+        var path = PathFinder.GoFind(maze);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();

@@ -10,13 +10,13 @@ public class AlgorithmBacktrack2Deluxe2_AsByte(Maze map, Random random)
         int width = map.Width - 1;
         int height = map.Height - 1;
 
-        var stackje = new Stack<ImmutableMazePoint>();
-        stackje.Push(new ImmutableMazePoint(1, 1));
+        var stack = new Stack<MazePoint>();
+        stack.Push(new(1, 1));
         map[1, 1] = true;
 
-        while (stackje.Count != 0)
+        while (stack.Count != 0)
         {
-            var cur = stackje.Peek();
+            var cur = stack.Peek();
 
             bool validLeft = cur.X - 2 > 0 && !map[cur.X - 2, cur.Y];
             bool validRight = cur.X + 2 < width && !map[cur.X + 2, cur.Y];
@@ -32,7 +32,7 @@ public class AlgorithmBacktrack2Deluxe2_AsByte(Maze map, Random random)
 
             if (targetCount == 0)
             {
-                stackje.Pop();
+                stack.Pop();
             }
             else
             {
@@ -60,7 +60,7 @@ public class AlgorithmBacktrack2Deluxe2_AsByte(Maze map, Random random)
                 var nextXInBetween = cur.X - actuallyGoingLeftByte + actuallyGoingRightByte;
                 var nextYInBetween = cur.Y - actuallyGoingUpByte + actuallyGoingDownByte;
 
-                stackje.Push(new ImmutableMazePoint(nextX, nextY));
+                stack.Push(new(nextX, nextY));
                 map[nextXInBetween, nextYInBetween] = true;
                 map[nextX, nextY] = true;
             }

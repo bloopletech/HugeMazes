@@ -11,52 +11,44 @@ public class AlgorithmBacktrack(Maze map, Random random)
         int x = 1;
         int y = 1;
 
-        var stackje = new Stack<MazePoint>();
-        stackje.Push(new MazePoint(x, y));
+        var stack = new Stack<MazePoint>();
+        stack.Push(new(x, y));
         map[x, y] = true;
 
         var targets = new MazePoint[4];
 
-        while (stackje.Count != 0)
+        while (stack.Count != 0)
         {
-            var cur = stackje.Peek();
+            var cur = stack.Peek();
             x = cur.X;
             y = cur.Y;
 
             int targetCount = 0;
             if (x - 2 > 0 && !map[x - 2, y])
             {
-                ref var curTarget = ref targets[targetCount];
-                curTarget.X = x - 2;
-                curTarget.Y = y;
+                targets[targetCount] = new(x - 2, y);
                 targetCount++;
             }
             if (x + 2 < width && !map[x + 2, y])
             {
-                ref var curTarget = ref targets[targetCount];
-                curTarget.X = x + 2;
-                curTarget.Y = y;
+                targets[targetCount] = new(x + 2, y);
                 targetCount++;
             }
             if (y - 2 > 0 && !map[x, y - 2])
             {
-                ref var curTarget = ref targets[targetCount];
-                curTarget.X = x;
-                curTarget.Y = y - 2;
+                targets[targetCount] = new(x, y - 2);
                 targetCount++;
             }
             if (y + 2 < height && !map[x, y + 2])
             {
-                ref var curTarget = ref targets[targetCount];
-                curTarget.X = x;
-                curTarget.Y = y + 2;
+                targets[targetCount] = new(x, y + 2);
                 targetCount++;
             }
 
             if (targetCount > 0)
             {
                 var target = targets[random.Next(targetCount)];
-                stackje.Push(target);
+                stack.Push(target);
                 map[target.X, target.Y] = true;
 
                 if (target.X < x)
@@ -78,7 +70,7 @@ public class AlgorithmBacktrack(Maze map, Random random)
             }
             else
             {
-                stackje.Pop();
+                stack.Pop();
             }
         }
     }

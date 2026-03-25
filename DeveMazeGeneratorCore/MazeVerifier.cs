@@ -31,8 +31,8 @@ public class MazeVerifier
 
     public static void FloodFill(Maze map)
     {
-        var stackje = new Stack<ImmutableMazePoint>();
-        stackje.Push(new ImmutableMazePoint(0, 0));
+        var stackje = new Stack<MazePoint>();
+        stackje.Push(new MazePoint(0, 0));
 
         int x = 0;
         int y = 0;
@@ -48,10 +48,10 @@ public class MazeVerifier
 
             map[x, y] = true;
 
-            if (x - 1 > 0 && !map[x - 1, y]) stackje.Push(new ImmutableMazePoint(x - 1, y));
-            if (x + 1 < width - 1 && !map[x + 1, y]) stackje.Push(new ImmutableMazePoint(x + 1, y));
-            if (y - 1 > 0 && !map[x, y - 1]) stackje.Push(new ImmutableMazePoint(x, y - 1));
-            if (y + 1 < height - 1 && !map[x, y + 1]) stackje.Push(new ImmutableMazePoint(x, y + 1));
+            if (x - 1 > 0 && !map[x - 1, y]) stackje.Push(new MazePoint(x - 1, y));
+            if (x + 1 < width - 1 && !map[x + 1, y]) stackje.Push(new MazePoint(x + 1, y));
+            if (y - 1 > 0 && !map[x, y - 1]) stackje.Push(new MazePoint(x, y - 1));
+            if (y + 1 < height - 1 && !map[x, y + 1]) stackje.Push(new MazePoint(x, y + 1));
         }
     }
 }

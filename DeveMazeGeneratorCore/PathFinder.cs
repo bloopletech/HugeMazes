@@ -12,11 +12,13 @@ public static class PathFinder
     /// Finds the path between the start and the endpoint in a maze
     /// </summary>
     /// <param name="map">The maze.InnerMap</param>
-    /// <param name="callBack">The callback that can be used to see what the pathfinder is doing (or null), the boolean true = a new path find thingy or false when it determined that path is not correct</param>
     /// <returns>The shortest path in a list of points</returns>
-    public static List<MazePointPos> GoFind(Maze map, Action<int, int, bool> callBack)
+    public static List<MazePointPos> GoFind(Maze map)
     {
-        return GoFind(new MazePoint(1, 1), new MazePoint(MathHelper.RoundUpToNextEven(map.Width) - 3, MathHelper.RoundUpToNextEven(map.Height) - 3), map, callBack);
+        return GoFind(
+            map,
+            new MazePoint(1, 1),
+            new MazePoint(MathHelper.RoundUpToNextEven(map.Width) - 3, MathHelper.RoundUpToNextEven(map.Height) - 3));
     }
 
     /// <summary>
@@ -25,17 +27,11 @@ public static class PathFinder
     /// <param name="start">The start point</param>
     /// <param name="end">The end point</param>
     /// <param name="map">The maze.InnerMap</param>
-    /// <param name="callBack">The callback that can be used to see what the pathfinder is doing (or null), the boolean true = a new path find thingy or false when it determined that path is not correct</param>
     /// <returns>The shortest path in a list of points</returns>
-    public static List<MazePointPos> GoFind(MazePoint startBefore, MazePoint endBefore, Maze map, Action<int, int, bool> callBack)
+    public static List<MazePointPos> GoFind(Maze map, MazePoint startBefore, MazePoint endBefore)
     {
-        if (callBack == null)
-        {
-            callBack = (x, y, z) => { };
-        }
-
-        var start = new MazePointPos(startBefore.X, startBefore.Y);
-        var end = new MazePointPos(endBefore.X, endBefore.Y);
+        var start = new MazePoint(startBefore.X, startBefore.Y);
+        var end = new MazePoint(endBefore.X, endBefore.Y);
 
         //Callback won't work nice with this since it will find its path from back to front
         //Swap them so we don't have to reverse at the end ;)
@@ -43,29 +39,23 @@ public static class PathFinder
         //start = end;
         //end = temp;
 
-
-
         int width = map.Width;
         int height = map.Height;
 
+        var stack = new Stack<MazePoint>();
+        stack.Push(start);
 
-        List<MazePointPos> stackje = new List<MazePointPos>();
-        stackje.Add(start);
-
-        MazePointPos cur = new MazePointPos();
-        MazePointPos prev = new MazePointPos(-1, -1);
-
+        MazePoint cur;
+        MazePoint prev = new(-1, -1);
 
         var lastBackTrackDir = -1;
 
-        while (stackje.Count != 0)
+        while (stack.Count != 0)
         {
-            cur = stackje[stackje.Count - 1];
+            cur = stack.Peek();
 
             var x = cur.X;
             var y = cur.Y;
-
-            callBack.Invoke(x, y, true);
 
             if (x == end.X && y == end.Y)
             {
@@ -73,52 +63,55 @@ public static class PathFinder
                 break;
             }
 
-
-            MazePointPos target = new MazePointPos(-1, -1);
             //Make sure the point was not the previous point, also make sure that if we backtracked we don't go to a direction we already went to, also make sure that the point is white
             if ((prev.X != x + 1 || prev.Y != y) && lastBackTrackDir < 0 && x + 1 < width - 1 && map[x + 1, y])
             {
-                target = new MazePointPos(x + 1, y);
+                stack.Push(new(x + 1, y));
+                lastBackTrackDir = -1;
+                prev = cur;
             }
             else if ((prev.X != x || prev.Y != y + 1) && lastBackTrackDir < 1 && y + 1 < height - 1 && map[x, y + 1])
             {
-                target = new MazePointPos(x, y + 1);
+                stack.Push(new(x, y + 1));
+                lastBackTrackDir = -1;
+                prev = cur;
             }
             else if ((prev.X != x - 1 || prev.Y != y) && lastBackTrackDir < 2 && x - 1 > 0 && map[x - 1, y])
             {
-                target = new MazePointPos(x - 1, y);
+                stack.Push(new(x - 1, y));
+                lastBackTrackDir = -1;
+                prev = cur;
             }
             else if ((prev.X != x || prev.Y != y - 1) && lastBackTrackDir < 3 && y - 1 > 0 && map[x, y - 1])
             {
-                target = new MazePointPos(x, y - 1);
+                stack.Push(new(x, y - 1));
+                lastBackTrackDir = -1;
+                prev = cur;
             }
             else
             {
-                var prepoppy = stackje[stackje.Count - 1];
-                stackje.RemoveAt(stackje.Count - 1);
+                var prepoppy = stack.Pop();
 
-                if (stackje.Count == 0)
+                if (stack.Count == 0)
                 {
                     //No path found
                     break;
                 }
 
-                var newcur = stackje[stackje.Count - 1];
+                var newcur = stack.Peek();
 
                 //Set the new previous point
-                if (stackje.Count == 1)
+                if (stack.Count == 1)
                 {
-                    prev = new MazePointPos(-1, -1);
+                    prev = new MazePoint(-1, -1);
                 }
                 else
                 {
-                    prev = stackje.ElementAt(stackje.Count - 2);
+                    prev = stack.ElementAt(stack.Count - 2);
                 }
 
                 //Console.WriteLine("Backtracking to X: " + newcur.X + " Y: " + newcur.Y);
                 //Console.WriteLine("Setting new prev: " + prev.X + " Y: " + prev.Y);
-
-                callBack.Invoke(prepoppy.X, prepoppy.Y, false);
 
                 //Set the direction we backtracked from
                 if (prepoppy.X > newcur.X)
@@ -139,25 +132,17 @@ public static class PathFinder
                 }
 
                 //Console.WriteLine("Lastbacktrackdir: " + lastBackTrackDir);
-                continue;
-
             }
-
-            lastBackTrackDir = -1;
-
-            //Console.WriteLine("Going to X: " + target.X + " Y: " + target.Y);
-            stackje.Add(target);
-
-            prev = cur;
         }
 
-        for (int i = 0; i < stackje.Count; i++)
+        var points = new List<MazePointPos>(stack.Count);
+
+        foreach (var item in stack)
         {
-            byte formulathing = (byte)(i / (double)stackje.Count * 255.0);
-            var currentStackjeThing = stackje[i];
-            stackje[i] = new MazePointPos(currentStackjeThing.X, currentStackjeThing.Y, formulathing);
+            byte formulathing = (byte)(points.Count / (double)stack.Count * 255.0);
+            points.Add(new MazePointPos(item.X, item.Y, formulathing));
         }
 
-        return stackje;
+        return points;
     }
 }

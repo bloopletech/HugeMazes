@@ -78,50 +78,6 @@ public static class WithPath
         Debug.WriteLine($"First image conversion time: {timeForFirstImageSavePart}, Time for saving as PNG: {timeForSaveAsPng}");
     }
 
-    public static void SaveMazeAsImageDeluxePng(Maze map, Maze pathMap, Stream stream)
-    {
-        var roundedUpWidth = MathHelper.RoundUpToNextEven(map.Width);
-        var roundedUpHeight = MathHelper.RoundUpToNextEven(map.Height);
-
-        var w = Stopwatch.StartNew();
-        var image = new Image<Argb32>(roundedUpWidth - 1, roundedUpHeight - 1);
-
-        for (int y = 0; y < roundedUpHeight - 1; y++)
-        {
-            for (int x = 0; x < roundedUpWidth - 1; x++)
-            {
-                int r = 0;
-                int g = 0;
-                int b = 0;
-
-                if (pathMap[x, y])
-                {
-                    r = 255;
-                }
-                else
-                {
-                    if (map[x, y])
-                    {
-                        r = 255;
-                        g = 255;
-                        b = 255;
-                    }
-                }
-                image[x, y] = new Argb32((byte)r, (byte)g, (byte)b);
-            }
-            //lineSavingProgress(y, this.Height - 2);
-        }
-
-        var timeForFirstImageSavePart = w.Elapsed;
-        w.Restart();
-
-        image.SaveAsPng(stream, new PngEncoder() { CompressionLevel = PngCompressionLevel.Level9 });
-
-        var timeForSaveAsPng = w.Elapsed;
-
-        Debug.WriteLine($"First image conversion time: {timeForFirstImageSavePart}, Time for saving as PNG: {timeForSaveAsPng}");
-    }
-
     public static void SaveMazeAsImageDeluxePngWithParts(Maze map, Maze pathMap, int xPart, int yPart, int widthPart, int heightPart, Stream stream)
     {
         var w = Stopwatch.StartNew();

@@ -33,7 +33,7 @@ public class Program
 
         Console.WriteLine("Finding path");
 
-        var path = PathFinder.GoFind(map, null);
+        var path = PathFinder.GoFind(map);
         Console.WriteLine("Found path :)");
 
         using (var fs = new FileStream($"GeneratedMaze{alg.GetType().Name}.png", FileMode.Create))
