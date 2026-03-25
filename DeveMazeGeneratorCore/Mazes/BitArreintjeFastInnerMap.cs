@@ -1,7 +1,7 @@
-﻿using DeveMazeGeneratorCore.InnerMaps.InnerStuff;
+﻿using DeveMazeGeneratorCore.Mazes.InnerStuff;
 using System.Runtime.CompilerServices;
 
-namespace DeveMazeGeneratorCore.InnerMaps;
+namespace DeveMazeGeneratorCore.Mazes;
 
 public class BitArreintjeFastInnerMap : Maze
 {

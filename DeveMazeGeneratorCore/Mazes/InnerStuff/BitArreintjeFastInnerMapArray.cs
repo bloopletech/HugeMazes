@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace DeveMazeGeneratorCore.InnerMaps.InnerStuff;
+namespace DeveMazeGeneratorCore.Mazes.InnerStuff;
 
 public class BitArreintjeFastInnerMapArray(int height)
 {

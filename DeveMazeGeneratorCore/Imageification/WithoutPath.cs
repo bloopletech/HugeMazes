@@ -9,10 +9,10 @@ namespace DeveMazeGeneratorCore.Imageification;
 
 public class WithoutPath
 {
-    public static void MazeToImage(Maze map, Stream stream)
+    public static void MazeToImage(Maze maze, Stream stream)
     {
-        var roundedUpWidth = MathHelper.RoundUpToNextEven(map.Width);
-        var roundedUpHeight = MathHelper.RoundUpToNextEven(map.Height);
+        var roundedUpWidth = MathHelper.RoundUpToNextEven(maze.Width);
+        var roundedUpHeight = MathHelper.RoundUpToNextEven(maze.Height);
 
         var image = new Image<Argb32>(roundedUpWidth - 1, roundedUpHeight - 1);
 
@@ -23,7 +23,7 @@ public class WithoutPath
         {
             for (int x = 0; x < roundedUpWidth - 1; x++)
             {
-                var wall = map[x, y];
+                var wall = maze[x, y];
 
                 if (!wall)
                 {

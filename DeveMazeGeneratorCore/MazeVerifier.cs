@@ -5,21 +5,21 @@ namespace DeveMazeGeneratorCore;
 
 public class MazeVerifier
 {
-    public static bool IsPerfectMaze(Maze map)
+    public static bool IsPerfectMaze(Maze maze)
     {
-        var copiedInnerMap = map.Clone();
+        var copiedMaze = maze.Clone();
 
-        FloodFill(copiedInnerMap);
+        FloodFill(copiedMaze);
 
         //Make uneven because a maze actually is this size and not an even number
-        var unevenHeight = MathHelper.MakeUneven(copiedInnerMap.Height);
-        var unevenWidth = MathHelper.MakeUneven(copiedInnerMap.Width);
+        var unevenHeight = MathHelper.MakeUneven(copiedMaze.Height);
+        var unevenWidth = MathHelper.MakeUneven(copiedMaze.Width);
 
         for (int y = 0; y < unevenHeight; y++)
         {
             for (int x = 0; x < unevenWidth; x++)
             {
-                if (copiedInnerMap[x, y] == false)
+                if (copiedMaze[x, y] == false)
                 {
                     return false;
                 }
@@ -29,29 +29,29 @@ public class MazeVerifier
         return true;
     }
 
-    public static void FloodFill(Maze map)
+    public static void FloodFill(Maze maze)
     {
-        var stackje = new Stack<MazePoint>();
-        stackje.Push(new MazePoint(0, 0));
+        var stack = new Stack<MazePoint>();
+        stack.Push(new(0, 0));
 
-        int x = 0;
-        int y = 0;
+        int x;
+        int y;
 
-        int width = map.Width;
-        int height = map.Height;
+        int width = maze.Width;
+        int height = maze.Height;
 
-        while (stackje.Count != 0)
+        while (stack.Count != 0)
         {
-            var cur = stackje.Pop();
+            var cur = stack.Pop();
             x = cur.X;
             y = cur.Y;
 
-            map[x, y] = true;
+            maze[x, y] = true;
 
-            if (x - 1 > 0 && !map[x - 1, y]) stackje.Push(new MazePoint(x - 1, y));
-            if (x + 1 < width - 1 && !map[x + 1, y]) stackje.Push(new MazePoint(x + 1, y));
-            if (y - 1 > 0 && !map[x, y - 1]) stackje.Push(new MazePoint(x, y - 1));
-            if (y + 1 < height - 1 && !map[x, y + 1]) stackje.Push(new MazePoint(x, y + 1));
+            if (x - 1 > 0 && !maze[x - 1, y]) stack.Push(new(x - 1, y));
+            if (x + 1 < width - 1 && !maze[x + 1, y]) stack.Push(new(x + 1, y));
+            if (y - 1 > 0 && !maze[x, y - 1]) stack.Push(new(x, y - 1));
+            if (y + 1 < height - 1 && !maze[x, y + 1]) stack.Push(new(x, y + 1));
         }
     }
 }

@@ -11,10 +11,10 @@ namespace DeveMazeGeneratorCore.Imageification;
 
 public static class WithPath
 {
-    public static void SaveMazeAsImageDeluxePng(Maze map, List<MazePointPos> pathPosjes, Stream stream)
+    public static void SaveMazeAsImageDeluxePng(Maze maze, List<MazePointPos> pathPosjes, Stream stream)
     {
-        var roundedUpWidth = MathHelper.RoundUpToNextEven(map.Width);
-        var roundedUpHeight = MathHelper.RoundUpToNextEven(map.Height);
+        var roundedUpWidth = MathHelper.RoundUpToNextEven(maze.Width);
+        var roundedUpHeight = MathHelper.RoundUpToNextEven(maze.Height);
 
         pathPosjes.Sort((first, second) =>
         {
@@ -50,14 +50,14 @@ public static class WithPath
                         b = 0;
                         curpos++;
                     }
-                    else if (map[x, y])
+                    else if (maze[x, y])
                     {
                         r = 255;
                         g = 255;
                         b = 255;
                     }
                 }
-                else if (map[x, y])
+                else if (maze[x, y])
                 {
                     r = 255;
                     g = 255;
@@ -78,7 +78,7 @@ public static class WithPath
         Debug.WriteLine($"First image conversion time: {timeForFirstImageSavePart}, Time for saving as PNG: {timeForSaveAsPng}");
     }
 
-    public static void SaveMazeAsImageDeluxePngWithParts(Maze map, Maze pathMap, int xPart, int yPart, int widthPart, int heightPart, Stream stream)
+    public static void SaveMazeAsImageDeluxePngWithParts(Maze maze, Maze pathMap, int xPart, int yPart, int widthPart, int heightPart, Stream stream)
     {
         var w = Stopwatch.StartNew();
         var image = new Image<Argb32>(widthPart, heightPart);
@@ -103,7 +103,7 @@ public static class WithPath
                 }
                 else
                 {
-                    if (map[xInPart, yInPart])
+                    if (maze[xInPart, yInPart])
                     {
                         r = 255;
                         g = 255;

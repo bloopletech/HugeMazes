@@ -3,25 +3,25 @@ using System.Runtime.CompilerServices;
 
 namespace DeveMazeGeneratorCore;
 
-public class AlgorithmBacktrack2Deluxe2_AsByte(Maze map, Random random)
+public class AlgorithmBacktrack2Deluxe2_AsByte(Maze maze, Random random)
 {
     public void Generate()
     {
-        int width = map.Width - 1;
-        int height = map.Height - 1;
+        int width = maze.Width - 1;
+        int height = maze.Height - 1;
 
         var stack = new Stack<MazePoint>();
         stack.Push(new(1, 1));
-        map[1, 1] = true;
+        maze[1, 1] = true;
 
         while (stack.Count != 0)
         {
             var cur = stack.Peek();
 
-            bool validLeft = cur.X - 2 > 0 && !map[cur.X - 2, cur.Y];
-            bool validRight = cur.X + 2 < width && !map[cur.X + 2, cur.Y];
-            bool validUp = cur.Y - 2 > 0 && !map[cur.X, cur.Y - 2];
-            bool validDown = cur.Y + 2 < height && !map[cur.X, cur.Y + 2];
+            bool validLeft = cur.X - 2 > 0 && !maze[cur.X - 2, cur.Y];
+            bool validRight = cur.X + 2 < width && !maze[cur.X + 2, cur.Y];
+            bool validUp = cur.Y - 2 > 0 && !maze[cur.X, cur.Y - 2];
+            bool validDown = cur.Y + 2 < height && !maze[cur.X, cur.Y + 2];
 
             int validLeftByte = Unsafe.As<bool, byte>(ref validLeft);
             int validRightByte = Unsafe.As<bool, byte>(ref validRight);
@@ -61,8 +61,8 @@ public class AlgorithmBacktrack2Deluxe2_AsByte(Maze map, Random random)
                 var nextYInBetween = cur.Y - actuallyGoingUpByte + actuallyGoingDownByte;
 
                 stack.Push(new(nextX, nextY));
-                map[nextXInBetween, nextYInBetween] = true;
-                map[nextX, nextY] = true;
+                maze[nextXInBetween, nextYInBetween] = true;
+                maze[nextX, nextY] = true;
             }
         }
     }

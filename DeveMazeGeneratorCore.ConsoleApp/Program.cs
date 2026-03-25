@@ -1,5 +1,5 @@
 ﻿using DeveMazeGeneratorCore.Imageification;
-using DeveMazeGeneratorCore.InnerMaps;
+using DeveMazeGeneratorCore.Mazes;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -20,28 +20,28 @@ public class Program
 
     public static void Generate(int width, int height, int? seed)
     {
-        var map = new BitArreintjeFastInnerMap(width, height);
+        var maze = new BitArreintjeFastInnerMap(width, height);
         var random = seed != null ? new Random(seed.Value) : new Random();
-        var alg = new AlgorithmBacktrack2Deluxe2_AsByte(map, random);
+        var alg = new AlgorithmBacktrack2Deluxe2_AsByte(maze, random);
 
         alg.Generate();
 
         using (var fs = new FileStream($"GeneratedMazeNoPath{alg.GetType().Name}.png", FileMode.Create))
         {
-            WithPath.SaveMazeAsImageDeluxePng(map, [], fs);
+            WithPath.SaveMazeAsImageDeluxePng(maze, [], fs);
         }
 
         Console.WriteLine("Finding path");
 
-        var path = PathFinder.GoFind(map);
+        var path = PathFinder.GoFind(maze);
         Console.WriteLine("Found path :)");
 
         using (var fs = new FileStream($"GeneratedMaze{alg.GetType().Name}.png", FileMode.Create))
         {
-            WithPath.SaveMazeAsImageDeluxePng(map, path, fs);
+            WithPath.SaveMazeAsImageDeluxePng(maze, path, fs);
         }
 
-        var result = MazeVerifier.IsPerfectMaze(map);
+        var result = MazeVerifier.IsPerfectMaze(maze);
         Console.WriteLine($"Is our maze perfect?: {result}");
     }
 

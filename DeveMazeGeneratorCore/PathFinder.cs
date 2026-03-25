@@ -11,14 +11,14 @@ public static class PathFinder
     /// <summary>
     /// Finds the path between the start and the endpoint in a maze
     /// </summary>
-    /// <param name="map">The maze.InnerMap</param>
+    /// <param name="maze">The maze.InnerMap</param>
     /// <returns>The shortest path in a list of points</returns>
-    public static List<MazePointPos> GoFind(Maze map)
+    public static List<MazePointPos> GoFind(Maze maze)
     {
         return GoFind(
-            map,
+            maze,
             new MazePoint(1, 1),
-            new MazePoint(MathHelper.RoundUpToNextEven(map.Width) - 3, MathHelper.RoundUpToNextEven(map.Height) - 3));
+            new MazePoint(MathHelper.RoundUpToNextEven(maze.Width) - 3, MathHelper.RoundUpToNextEven(maze.Height) - 3));
     }
 
     /// <summary>
@@ -26,9 +26,9 @@ public static class PathFinder
     /// </summary>
     /// <param name="start">The start point</param>
     /// <param name="end">The end point</param>
-    /// <param name="map">The maze.InnerMap</param>
+    /// <param name="maze">The maze.InnerMap</param>
     /// <returns>The shortest path in a list of points</returns>
-    public static List<MazePointPos> GoFind(Maze map, MazePoint startBefore, MazePoint endBefore)
+    public static List<MazePointPos> GoFind(Maze maze, MazePoint startBefore, MazePoint endBefore)
     {
         var start = new MazePoint(startBefore.X, startBefore.Y);
         var end = new MazePoint(endBefore.X, endBefore.Y);
@@ -39,8 +39,8 @@ public static class PathFinder
         //start = end;
         //end = temp;
 
-        int width = map.Width;
-        int height = map.Height;
+        int width = maze.Width;
+        int height = maze.Height;
 
         var stack = new Stack<MazePoint>();
         stack.Push(start);
@@ -64,25 +64,25 @@ public static class PathFinder
             }
 
             //Make sure the point was not the previous point, also make sure that if we backtracked we don't go to a direction we already went to, also make sure that the point is white
-            if ((prev.X != x + 1 || prev.Y != y) && lastBackTrackDir < 0 && x + 1 < width - 1 && map[x + 1, y])
+            if ((prev.X != x + 1 || prev.Y != y) && lastBackTrackDir < 0 && x + 1 < width - 1 && maze[x + 1, y])
             {
                 stack.Push(new(x + 1, y));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
-            else if ((prev.X != x || prev.Y != y + 1) && lastBackTrackDir < 1 && y + 1 < height - 1 && map[x, y + 1])
+            else if ((prev.X != x || prev.Y != y + 1) && lastBackTrackDir < 1 && y + 1 < height - 1 && maze[x, y + 1])
             {
                 stack.Push(new(x, y + 1));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
-            else if ((prev.X != x - 1 || prev.Y != y) && lastBackTrackDir < 2 && x - 1 > 0 && map[x - 1, y])
+            else if ((prev.X != x - 1 || prev.Y != y) && lastBackTrackDir < 2 && x - 1 > 0 && maze[x - 1, y])
             {
                 stack.Push(new(x - 1, y));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
-            else if ((prev.X != x || prev.Y != y - 1) && lastBackTrackDir < 3 && y - 1 > 0 && map[x, y - 1])
+            else if ((prev.X != x || prev.Y != y - 1) && lastBackTrackDir < 3 && y - 1 > 0 && maze[x, y - 1])
             {
                 stack.Push(new(x, y - 1));
                 lastBackTrackDir = -1;

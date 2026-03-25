@@ -2,7 +2,7 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Reports;
-using DeveMazeGeneratorCore.InnerMaps;
+using DeveMazeGeneratorCore.Mazes;
 
 namespace DeveMazeGeneratorCore.Benchmark;
 
@@ -35,9 +35,9 @@ public class MazeBenchmarkJob
     [Benchmark]
     public void Simple()
     {
-        var map = new BitArreintjeFastInnerMap(SIZE, SIZE);
+        var maze = new BitArreintjeFastInnerMap(SIZE, SIZE);
         var random = new Random(SEED);
-        var algorithm = new AlgorithmBacktrack2Deluxe2_AsByte(map, random);
+        var algorithm = new AlgorithmBacktrack2Deluxe2_AsByte(maze, random);
         algorithm.Generate();
     }
 

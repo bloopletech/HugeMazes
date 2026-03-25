@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using DeveMazeGeneratorCore.InnerMaps;
+using DeveMazeGeneratorCore.Mazes;
 
 namespace DeveMazeGeneratorCore;
 
