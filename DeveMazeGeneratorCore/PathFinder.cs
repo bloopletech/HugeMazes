@@ -42,8 +42,10 @@ public static class PathFinder
         int width = maze.Width;
         int height = maze.Height;
 
-        var stack = new Stack<MazePoint>();
-        stack.Push(start);
+        var stack = new List<MazePoint>()
+        {
+            start
+        };
 
         MazePoint cur;
         MazePoint prev = new(-1, -1);
@@ -52,7 +54,7 @@ public static class PathFinder
 
         while (stack.Count != 0)
         {
-            cur = stack.Peek();
+            cur = stack[^1];
 
             var x = cur.X;
             var y = cur.Y;
@@ -66,31 +68,32 @@ public static class PathFinder
             //Make sure the point was not the previous point, also make sure that if we backtracked we don't go to a direction we already went to, also make sure that the point is white
             if ((prev.X != x + 1 || prev.Y != y) && lastBackTrackDir < 0 && x + 1 < width - 1 && maze[x + 1, y])
             {
-                stack.Push(new(x + 1, y));
+                stack.Add(new(x + 1, y));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
             else if ((prev.X != x || prev.Y != y + 1) && lastBackTrackDir < 1 && y + 1 < height - 1 && maze[x, y + 1])
             {
-                stack.Push(new(x, y + 1));
+                stack.Add(new(x, y + 1));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
             else if ((prev.X != x - 1 || prev.Y != y) && lastBackTrackDir < 2 && x - 1 > 0 && maze[x - 1, y])
             {
-                stack.Push(new(x - 1, y));
+                stack.Add(new(x - 1, y));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
             else if ((prev.X != x || prev.Y != y - 1) && lastBackTrackDir < 3 && y - 1 > 0 && maze[x, y - 1])
             {
-                stack.Push(new(x, y - 1));
+                stack.Add(new(x, y - 1));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
             else
             {
-                var prepoppy = stack.Pop();
+                var prepoppy = stack[^1];
+                stack.RemoveAt(stack.Count - 1);
 
                 if (stack.Count == 0)
                 {
@@ -98,7 +101,7 @@ public static class PathFinder
                     break;
                 }
 
-                var newcur = stack.Peek();
+                var newcur = stack[^1];
 
                 //Set the new previous point
                 if (stack.Count == 1)
