@@ -18,17 +18,17 @@ public class AlgorithmBacktrack2Deluxe2_AsByte(Maze maze, Random random)
         {
             var cur = stack.Peek();
 
-            bool validLeft = cur.X - 2 > 0 && !maze[cur.X - 2, cur.Y];
-            bool validRight = cur.X + 2 < width && !maze[cur.X + 2, cur.Y];
-            bool validUp = cur.Y - 2 > 0 && !maze[cur.X, cur.Y - 2];
-            bool validDown = cur.Y + 2 < height && !maze[cur.X, cur.Y + 2];
+            var validLeft = cur.X - 2 > 0 && !maze[cur.X - 2, cur.Y];
+            var validRight = cur.X + 2 < width && !maze[cur.X + 2, cur.Y];
+            var validUp = cur.Y - 2 > 0 && !maze[cur.X, cur.Y - 2];
+            var validDown = cur.Y + 2 < height && !maze[cur.X, cur.Y + 2];
 
             int validLeftByte = Unsafe.As<bool, byte>(ref validLeft);
             int validRightByte = Unsafe.As<bool, byte>(ref validRight);
             int validUpByte = Unsafe.As<bool, byte>(ref validUp);
             int validDownByte = Unsafe.As<bool, byte>(ref validDown);
 
-            int targetCount = validLeftByte + validRightByte + validUpByte + validDownByte;
+            var targetCount = validLeftByte + validRightByte + validUpByte + validDownByte;
 
             if (targetCount == 0)
             {
@@ -37,21 +37,21 @@ public class AlgorithmBacktrack2Deluxe2_AsByte(Maze maze, Random random)
             else
             {
                 var chosenDirection = random.Next(targetCount);
-                int countertje = 0;
+                var countertje = 0;
 
-                bool actuallyGoingLeft = validLeft & chosenDirection == countertje;
+                var actuallyGoingLeft = validLeft & chosenDirection == countertje;
                 byte actuallyGoingLeftByte = Unsafe.As<bool, byte>(ref actuallyGoingLeft);
                 countertje += validLeftByte;
 
-                bool actuallyGoingRight = validRight & chosenDirection == countertje;
+                var actuallyGoingRight = validRight & chosenDirection == countertje;
                 byte actuallyGoingRightByte = Unsafe.As<bool, byte>(ref actuallyGoingRight);
                 countertje += validRightByte;
 
-                bool actuallyGoingUp = validUp & chosenDirection == countertje;
+                var actuallyGoingUp = validUp & chosenDirection == countertje;
                 byte actuallyGoingUpByte = Unsafe.As<bool, byte>(ref actuallyGoingUp);
                 countertje += validUpByte;
 
-                bool actuallyGoingDown = validDown & chosenDirection == countertje;
+                var actuallyGoingDown = validDown & chosenDirection == countertje;
                 byte actuallyGoingDownByte = Unsafe.As<bool, byte>(ref actuallyGoingDown);
 
                 var nextX = cur.X + actuallyGoingLeftByte * -2 + actuallyGoingRightByte * 2;

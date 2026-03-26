@@ -1,11 +1,15 @@
-﻿using BenchmarkDotNet.Attributes;
+﻿#pragma warning disable CA1822 // Mark members as static
+
+using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Reports;
 using DeveMazeGeneratorCore.Mazes;
+using Microsoft.VSDiagnostics;
 
 namespace DeveMazeGeneratorCore.Benchmark;
 
+[CPUUsageDiagnoser]
 [MemoryDiagnoser]
 //[InliningDiagnoser]
 //[TailCallDiagnoser]
@@ -15,16 +19,16 @@ namespace DeveMazeGeneratorCore.Benchmark;
 //[ThreadingDiagnoser]
 [JsonExporterAttribute.Full]
 [JsonExporterAttribute.FullCompressed]
-[
-    //DeveJob(RuntimeMoniker.Net60, launchCount: 1, warmupCount: 4, targetCount: 50, invocationCount: 1),
-    //DeveJob(RuntimeMoniker.Net70, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
-    //DeveJob(RuntimeMoniker.Net80, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
-    //DeveJob(RuntimeMoniker.Net90, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
-    DeveJob(RuntimeMoniker.Net10_0, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
-]
-[AsciiDocExporter]
-[HtmlExporter]
-[MarkdownExporterAttribute.GitHub]
+//[
+//    //DeveJob(RuntimeMoniker.Net60, launchCount: 1, warmupCount: 4, targetCount: 50, invocationCount: 1),
+//    //DeveJob(RuntimeMoniker.Net70, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
+//    //DeveJob(RuntimeMoniker.Net80, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
+//    //DeveJob(RuntimeMoniker.Net90, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
+//    DeveJob(RuntimeMoniker.Net10_0, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
+//]
+//[AsciiDocExporter]
+//[HtmlExporter]
+//[MarkdownExporterAttribute.GitHub]
 [MinColumn, MaxColumn]
 [Config(typeof(Config))]
 public class MazeBenchmarkJob
@@ -33,7 +37,16 @@ public class MazeBenchmarkJob
     private const int SEED = 1337;
 
     [Benchmark]
-    public void Simple()
+    public void GenerateBaseline()
+    {
+        var maze = new BitArreintjeFastInnerMap(SIZE, SIZE);
+        var random = new Random(SEED);
+        var algorithm = new AlgorithmBacktrack(maze, random);
+        algorithm.Generate();
+    }
+
+    [Benchmark]
+    public void GenerateFast()
     {
         var maze = new BitArreintjeFastInnerMap(SIZE, SIZE);
         var random = new Random(SEED);
