@@ -3,9 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace DeveMazeGeneratorCore;
 
-public class AlgorithmBacktrack2Deluxe2_AsByte(Maze maze, Random random)
+public class AlgorithmBacktrack2Deluxe2_AsByte : IAlgorithm
 {
-    public void Generate()
+    public void Generate(Maze maze, Random random)
     {
         int width = maze.Width - 1;
         int height = maze.Height - 1;

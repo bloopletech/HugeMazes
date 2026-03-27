@@ -33,25 +33,16 @@ namespace DeveMazeGeneratorCore.Benchmark;
 [Config(typeof(Config))]
 public class MazeBenchmarkJob
 {
-    private const int SIZE = 4096 * 2 * 2;
-    private const int SEED = 1337;
-
     [Benchmark]
     public void GenerateBaseline()
     {
-        var maze = new BitArreintjeFastInnerMap(SIZE, SIZE);
-        var random = new Random(SEED);
-        var algorithm = new AlgorithmBacktrack(maze, random);
-        algorithm.Generate();
+        MazeGenerator.Benchmark(new AlgorithmBacktrack());
     }
 
-    [Benchmark]
+    //[Benchmark]
     public void GenerateFast()
     {
-        var maze = new BitArreintjeFastInnerMap(SIZE, SIZE);
-        var random = new Random(SEED);
-        var algorithm = new AlgorithmBacktrack2Deluxe2_AsByte(maze, random);
-        algorithm.Generate();
+        MazeGenerator.Benchmark(new AlgorithmBacktrack2Deluxe2_AsByte());
     }
 
     private class Config : ManualConfig

@@ -2,9 +2,9 @@
 
 namespace DeveMazeGeneratorCore;
 
-public class AlgorithmBacktrack(Maze maze, Random random)
+public class AlgorithmBacktrack : IAlgorithm
 {
-    public void Generate()
+    public void Generate(Maze maze, Random random)
     {
         var width = maze.Width - 1;
         var height = maze.Height - 1;
