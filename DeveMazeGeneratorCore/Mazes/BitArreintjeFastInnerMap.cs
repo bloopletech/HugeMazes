@@ -11,24 +11,16 @@ public class BitArreintjeFastInnerMap : Maze
         : base(width, height)
     {
         _innerData = new BitArreintjeFastInnerMapArray[width];
-        for (int i = 0; i < width; i++)
+        for(int i = 0; i < width; i++)
         {
             _innerData[i] = new BitArreintjeFastInnerMapArray(height);
-        }
-    }
-
-    public override void FillMap(bool state)
-    {
-        for (int i = 0; i < _innerData.Length; i++)
-        {
-            _innerData[i].FillMap(state);
         }
     }
 
     public override Maze Clone()
     {
         var innerMapTarget = new BitArreintjeFastInnerMap(Width, Height);
-        for (int i = 0; i < _innerData.Length; i++)
+        for(int i = 0; i < _innerData.Length; i++)
         {
             innerMapTarget._innerData[i] = _innerData[i].Clone();
         }
@@ -47,5 +39,15 @@ public class BitArreintjeFastInnerMap : Maze
         {
             _innerData[x][y] = value;
         }
+    }
+
+    protected override Task Read(BinaryReader reader)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override Task Write(BinaryWriter writer)
+    {
+        throw new NotImplementedException();
     }
 }

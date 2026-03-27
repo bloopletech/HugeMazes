@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Reports;
+using DeveMazeGeneratorCore.Algorithms;
 using DeveMazeGeneratorCore.Mazes;
 using Microsoft.VSDiagnostics;
 
@@ -36,13 +37,13 @@ public class MazeBenchmarkJob
     [Benchmark]
     public void GenerateBaseline()
     {
-        MazeGenerator.Benchmark(new AlgorithmBacktrack());
+        DeveMazeGeneratorCore.BenchmarkBaseline();
     }
 
     //[Benchmark]
     public void GenerateFast()
     {
-        MazeGenerator.Benchmark(new AlgorithmBacktrack2Deluxe2_AsByte());
+        DeveMazeGeneratorCore.BenchmarkFast();
     }
 
     private class Config : ManualConfig

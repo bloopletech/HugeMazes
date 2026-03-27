@@ -17,9 +17,9 @@ public class BitArreintjeFastInnerMapArray(int height)
 
     public void FillMap(bool state)
     {
-        if (state)
+        if(state)
         {
-            for (int i = 0; i < _innerData.Length; i++)
+            for(int i = 0; i < _innerData.Length; i++)
             {
                 //-1 is all 1's
                 _innerData[i] = -1;
@@ -27,7 +27,7 @@ public class BitArreintjeFastInnerMapArray(int height)
         }
         else
         {
-            for (int i = 0; i < _innerData.Length; i++)
+            for(int i = 0; i < _innerData.Length; i++)
             {
                 //0 is all 0's
                 _innerData[i] = 0;
@@ -40,7 +40,7 @@ public class BitArreintjeFastInnerMapArray(int height)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            if (value)
+            if(value)
             {
                 long a = 1L << y;
                 _innerData[y / 64] |= a;

@@ -17,24 +17,16 @@
 //        var chunkCount = _chunksPerRow * (height / ChunkSize);
 
 //        _innerData = new BitArreintjeFastInnerMapArray[chunkCount];
-//        for (int i = 0; i < chunkCount; i++)
+//        for(int i = 0; i < chunkCount; i++)
 //        {
 //            _innerData[i] = new BitArreintjeFastInnerMapArray(ChunkSize * ChunkSize);
-//        }
-//    }
-
-//    public override void FillMap(bool state)
-//    {
-//        for (int i = 0; i < _innerData.Length; i++)
-//        {
-//            _innerData[i].FillMap(state);
 //        }
 //    }
 
 //    public override InnerMap Clone()
 //    {
 //        var innerMapTarget = new BitArreintjeFastChunkedInnerMap(Width, Height);
-//        for (int i = 0; i < _innerData.Length; i++)
+//        for(int i = 0; i < _innerData.Length; i++)
 //        {
 //            innerMapTarget._innerData[i] = _innerData[i].Clone();
 //        }

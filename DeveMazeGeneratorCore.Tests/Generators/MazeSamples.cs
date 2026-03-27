@@ -1,4 +1,4 @@
-﻿using DeveMazeGeneratorCore.Imageification;
+﻿using DeveMazeGeneratorCore.Algorithms;
 using DeveMazeGeneratorCore.Mazes;
 using System;
 using System.IO;
@@ -13,9 +13,9 @@ public class MazeSamples
     {
         var maze = new BitArreintjeFastInnerMap(128, 128);
 
-        for (int y = 33; y < 96; y++)
+        for(int y = 33; y < 96; y++)
         {
-            for (int x = 33; x < 96; x++)
+            for(int x = 33; x < 96; x++)
             {
                 maze[x, y] = true;
             }
@@ -26,11 +26,11 @@ public class MazeSamples
         var algorithm = new AlgorithmBacktrack(maze, random);
         algorithm.Generate();
 
-        var path = PathFinder.GoFind(maze);
+        var path = Solver.Solve(maze);
 
-        using (var fs = new FileStream("GeneratingAMazeWithABlockInTheMiddleWorks.png", FileMode.Create))
-        {
-            WithPath.SaveMazeAsImageDeluxePng(maze, path, fs);
-        }
+        var image = ImageCreator.CreateImage(maze, path);
+
+        using var fs = new FileStream("GeneratingAMazeWithABlockInTheMiddleWorks.png", FileMode.Create);
+        ImageCreator.SaveImage(image, fs);
     }
 }

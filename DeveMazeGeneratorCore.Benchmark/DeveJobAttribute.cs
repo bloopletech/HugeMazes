@@ -34,48 +34,48 @@ public class DeveJobAttribute : JobConfigBaseAttribute
     {
         Job job = new Job(id);
         int num = 0;
-        if (launchCount != -1)
+        if(launchCount != -1)
         {
             job.Run.LaunchCount = launchCount;
             num++;
         }
 
-        if (warmupCount != -1)
+        if(warmupCount != -1)
         {
             job.Run.WarmupCount = warmupCount;
             num++;
         }
 
-        if (targetCount != -1)
+        if(targetCount != -1)
         {
             job.Run.IterationCount = targetCount;
             num++;
         }
 
-        if (invocationCount != -1)
+        if(invocationCount != -1)
         {
             job.Run.InvocationCount = invocationCount;
             num++;
             int num2 = job.Run.ResolveValue(RunMode.UnrollFactorCharacteristic, EnvironmentResolver.Instance);
-            if (invocationCount % num2 != 0)
+            if(invocationCount % num2 != 0)
             {
                 job.Run.UnrollFactor = 1;
                 num++;
             }
         }
 
-        if (runStrategy.HasValue)
+        if(runStrategy.HasValue)
         {
             job.Run.RunStrategy = runStrategy.Value;
             num++;
         }
 
-        if (baseline)
+        if(baseline)
         {
             job.Meta.Baseline = true;
         }
 
-        if (disableTieredCompilation)
+        if(disableTieredCompilation)
         {
             job.Environment.SetEnvironmentVariable(new EnvironmentVariable("COMPlus_TieredCompilation", "0"));
         }

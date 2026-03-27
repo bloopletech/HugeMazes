@@ -1,74 +1,124 @@
-﻿using DeveMazeGeneratorCore.Imageification;
-using DeveMazeGeneratorCore.Mazes;
-using System.Diagnostics;
-using System.Reflection;
+﻿using DeveMazeGeneratorCore;
+using DeveMazeGeneratorCore.ConsoleApp;
 
-namespace DeveMazeGeneratorCore.ConsoleApp;
+var options = new Options(args);
+Maze? maze = null;
+string? mazeFileName = null;
+MazePath? path = null;
+string? pathFileName = null;
 
-public class Program
+while(options.HasNext())
 {
-    public static void Main(string[] args)
+    var task = options.Next();
+    if(task == "generate")
     {
-        Console.WriteLine($"DeveMazeGeneratorCore version: {Assembly.GetEntryAssembly().GetName().Version}");
+        await Generate();
+    }
+    else if(task == "verify")
+    {
+        await Verify();
+    }
+    else if(task == "solve")
+    {
+        await Solve();
+    }
+    else if(task == "image")
+    {
+        await MazeImage();
+    }
+    else if(task == "path-image")
+    {
+        await PathImage();
+    }
+    else if(task == "benchmark")
+    {
+        Benchmark();
+    }
+}
 
-        var width = int.Parse(args[0], System.Globalization.NumberStyles.None);
-        var height = int.Parse(args[1], System.Globalization.NumberStyles.None);
-        int? seed = args.Length > 2 ? int.Parse(args[2], System.Globalization.NumberStyles.None) : null;
+async Task Generate()
+{
+    var width = options.NextInt();
+    var height = options.NextInt();
+    int? seed = options.HasNextInt() ? options.NextInt() : null;
+    mazeFileName = options.NextFilename($"{Environment.TickCount}.maze");
 
-        Generate(width, height, seed);
+    maze = DeveMazeGeneratorCore.DeveMazeGeneratorCore.Generate(width, height, seed);
+    await maze.Save(mazeFileName);
+    Console.WriteLine($"Saved maze to {mazeFileName}");
+}
+
+async Task Verify()
+{
+    if(maze == null)
+    {
+        mazeFileName = options.Next();
+        maze = await Maze.Load(mazeFileName);
     }
 
-    public static void Generate(int width, int height, int? seed)
+    var result = Verifier.IsPerfectMaze(maze);
+    Console.WriteLine($"Is our maze perfect?: {result}");
+}
+
+async Task Solve()
+{
+    if(maze == null)
     {
-        var maze = new BitArreintjeFastInnerMap(width, height);
-        var random = seed != null ? new Random(seed.Value) : new Random();
-        var alg = new AlgorithmBacktrack2Deluxe2_AsByte(maze, random);
-
-        alg.Generate();
-
-        using (var fs = new FileStream($"GeneratedMazeNoPath{alg.GetType().Name}.png", FileMode.Create))
-        {
-            WithPath.SaveMazeAsImageDeluxePng(maze, [], fs);
-        }
-
-        Console.WriteLine("Finding path");
-
-        var path = PathFinder.GoFind(maze);
-        Console.WriteLine("Found path :)");
-
-        using (var fs = new FileStream($"GeneratedMaze{alg.GetType().Name}.png", FileMode.Create))
-        {
-            WithPath.SaveMazeAsImageDeluxePng(maze, path, fs);
-        }
-
-        var result = MazeVerifier.IsPerfectMaze(maze);
-        Console.WriteLine($"Is our maze perfect?: {result}");
+        mazeFileName = options.Next();
+        maze = await Maze.Load(mazeFileName);
     }
 
-    public static void ActualBenchmark2(int width, int height, int seed)
+    pathFileName = options.NextFilename(Path.ChangeExtension(mazeFileName, ".path")!);
+
+    path = Solver.Solve(maze);
+    await path.Save(pathFileName);
+
+    Console.WriteLine($"Saved solution to {pathFileName}");
+}
+
+async Task MazeImage()
+{
+    if(maze == null)
     {
-        var fastestElapsed = TimeSpan.MaxValue;
-
-        Console.WriteLine($"Generating mazes using AlgorithmBacktrack2Deluxe2_AsByte...");
-
-        while (true)
-        {
-            var w = Stopwatch.StartNew();
-            Generate(width, height, seed);
-            w.Stop();
-
-            bool foundFastest = false;
-            if (w.Elapsed < fastestElapsed)
-            {
-                foundFastest = true;
-                fastestElapsed = w.Elapsed;
-            }
-
-            var strToPrint = $"Generation time: {w.Elapsed}" + (foundFastest ? " <<<<<<<< new fastest time" : "");
-            var strToPrint2 = $"{strToPrint.PadRight(68, ' ')} Fastest: {fastestElapsed}";
-
-            Console.WriteLine(strToPrint2);
-            seed++;
-        }
+        mazeFileName = options.Next();
+        maze = await Maze.Load(mazeFileName);
     }
+
+    var imageFileName = options.NextFilename(Path.ChangeExtension(mazeFileName, ".png")!);
+   
+    using var image = ImageCreator.CreateImage(maze);
+    using var fs = File.Open(imageFileName, FileMode.Create);
+    ImageCreator.SaveImage(image, fs);
+
+    Console.WriteLine($"Saved maze image to {imageFileName}");
+}
+
+async Task PathImage()
+{
+    if(maze == null)
+    {
+        mazeFileName = options.Next();
+        maze = await Maze.Load(mazeFileName);
+    }
+
+    if(path == null)
+    {
+        pathFileName = options.Next();
+        path = await MazePath.Load(pathFileName);
+    }
+
+    var imageFileName = options.NextFilename(Path.ChangeExtension(pathFileName, ".path.png")!);
+
+    using var image = ImageCreator.CreateImage(maze, path);
+    using var fs = File.Open(imageFileName, FileMode.Create);
+    ImageCreator.SaveImage(image, fs);
+
+    Console.WriteLine($"Saved maze with solution image to {imageFileName}");
+}
+
+void Benchmark()
+{
+    var maze = DeveMazeGeneratorCore.DeveMazeGeneratorCore.BenchmarkBaseline();
+    var result = Verifier.IsPerfectMaze(maze);
+    if(!result) throw new InvalidOperationException("Maze is not perfect");
 }

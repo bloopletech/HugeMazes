@@ -8,34 +8,16 @@ namespace DeveMazeGeneratorCore;
 /// 0 = False = Wall = Black
 /// 1 = True = Empty = White
 /// </summary>
-public abstract class Maze(int width, int height)
+public abstract class Maze(int width, int height) : IMaze
 {
-    ///// <summary>
-    ///// This data can be used by some algorithms to also generate path data
-    ///// </summary>
-    //public InnerMap PathData { get; set; }
+    public static readonly char[] MagicHeader = ['D', 'E', 'V', 'E', 'M', 'A', 'Z', 'E'];
+    public const short Version = 1;
 
-    public int Width { get; private set; } = width;
-    public int Height { get; private set; } = height;
+    public int Width => width;
+    public int Height => height;
 
-    public int StartX { get; set; }
-    public int StartY { get; set; }
-
-    /// <summary>
-    /// Fills the map cell by cell.
-    /// This method is really slow and should be overidden where possible
-    /// </summary>
-    /// <param name="state">false = 0 = Wall, true = 1 = Empty</param>
-    public virtual void FillMap(bool state)
-    {
-        for (int y = 0; y < Height; y++)
-        {
-            for (int x = 0; x < Width; x++)
-            {
-                this[x, y] = state;
-            }
-        }
-    }
+    //abstract must be overidden
+    public abstract bool this[int x, int y] { get; set; }
 
     /// <summary>
     /// Clones the map into either an instance of BitArreintjeFastInnerMap or 
@@ -56,12 +38,12 @@ public abstract class Maze(int width, int height)
     /// <returns>The cloned maze</returns>
     public void CloneInto(Maze mapTarget)
     {
-        if (Width != mapTarget.Width) throw new ArgumentException($"Width of the target ({mapTarget.Width}) is not equal to that of the source ({Width}).");
-        if (Height != mapTarget.Height) throw new ArgumentException($"Height of the target ({mapTarget.Height}) is not equal to that of the source ({Height}).");
+        if(Width != mapTarget.Width) throw new ArgumentException($"Width of the target ({mapTarget.Width}) is not equal to that of the source ({Width}).");
+        if(Height != mapTarget.Height) throw new ArgumentException($"Height of the target ({mapTarget.Height}) is not equal to that of the source ({Height}).");
 
-        for (int y = 0; y < Height; y++)
+        for(int y = 0; y < Height; y++)
         {
-            for (int x = 0; x < Width; x++)
+            for(int x = 0; x < Width; x++)
             {
                 mapTarget[x, y] = this[x, y];
             }
@@ -72,12 +54,12 @@ public abstract class Maze(int width, int height)
     public virtual string GenerateMapAsString()
     {
         var stringBuilder = new StringBuilder();
-        for (int y = 0; y < Height; y++)
+        for(int y = 0; y < Height; y++)
         {
-            for (int x = 0; x < Width; x++)
+            for(int x = 0; x < Width; x++)
             {
                 bool b = this[x, y];
-                if (b)
+                if(b)
                 {
                     stringBuilder.Append(' ');
                 }
@@ -91,38 +73,49 @@ public abstract class Maze(int width, int height)
         return stringBuilder.ToString();
     }
 
-    public void MarkBorderInaccessible()
+    public static async Task<Maze> Read(Stream stream)
     {
-        int borderWidth = 2; // Hardcoded border width
+        using var reader = new BinaryReader(stream);
+        var magic = reader.ReadChars(8);
+        if(!magic.SequenceEqual(MagicHeader)) throw new InvalidDataException("Magic header not present");
 
-        // Check if the height and width are even. If so, adjust the border painting accordingly
-        bool isHeightEven = Height % 2 == 0;
-        bool isWidthEven = Width % 2 == 0;
+        var version = reader.ReadInt16();
+        if(version != 1) throw new InvalidDataException($"Maze version is {version} but we only understand version 1");
 
-        int adjustedHeight = isHeightEven ? Height - 2 : Height - 1;
-        int adjustedWidth = isWidthEven ? Width - 2 : Width - 1;
-
-        // Mark top and bottom borders
-        for (int x = 0; x < Width; x++)
+        var type = reader.ReadInt16();
+        if(type == ContiguousArrayMaze.TypeId)
         {
-            for (int y = 0; y < borderWidth; y++)
-            {
-                this[x, y] = true;                   // Top border
-                this[x, adjustedHeight - y] = true;   // Bottom border
-            }
+            var maze = new ContiguousArrayMaze(reader);
+            await maze.Read(reader);
+            return maze;
         }
-
-        // Mark left and right borders
-        for (int y = 0; y < Height; y++)
+        else
         {
-            for (int x = 0; x < borderWidth; x++)
-            {
-                this[x, y] = true;                  // Left border
-                this[adjustedWidth - x, y] = true;  // Right border
-            }
+            throw new InvalidDataException($"Unknown maze type {type}");
         }
     }
 
-    //abstract must be overidden
-    public abstract bool this[int x, int y] { get; set; }
+    protected abstract Task Read(BinaryReader reader);
+
+    public static async Task<Maze> Load(string fileName)
+    {
+        using var fs = File.Open(fileName, FileMode.Open);
+        return await Read(fs);
+    }
+
+    public virtual async Task Write(Stream stream)
+    {
+        using var writer = new BinaryWriter(stream);
+        writer.Write(MagicHeader);
+        writer.Write(Version);
+        await Write(writer);
+    }
+
+    protected abstract Task Write(BinaryWriter writer);
+
+    public virtual async Task Save(string fileName)
+    {
+        using var fs = File.Open(fileName, FileMode.Create);
+        await Write(fs);
+    }
 }
