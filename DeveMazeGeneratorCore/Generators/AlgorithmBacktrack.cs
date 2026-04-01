@@ -1,19 +1,24 @@
-﻿using DeveMazeGeneratorCore.Structures;
+﻿using DeveMazeGeneratorCore.Extensions;
+using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Structures;
 
-namespace DeveMazeGeneratorCore.Algorithms;
+namespace DeveMazeGeneratorCore.Generators;
 
-public class AlgorithmBacktrack(Maze maze, Random random) : Algorithm(maze, random)
+public class AlgorithmBacktrack(IMaze maze, Random random) : IAlgorithm
 {
-    public override void Generate()
+    public void Generate()
     {
-        var width = Maze.Width - 1;
-        var height = Maze.Height - 1;
+        maze.EnsureMinimumSize();
+        maze.EnsureOddSize();
+
+        var width = maze.Width - 1;
+        var height = maze.Height - 1;
 
         var capacityEstimate = Convert.ToInt32(Math.Ceiling(width * height * 0.05));
 
         var stack = new Stack<MazePoint>(capacityEstimate);
         stack.Push(new(1, 1));
-        Maze[1, 1] = true;
+        maze[1, 1] = true;
 
         Span<MazePoint> targets = stackalloc MazePoint[4];
         targets.Clear();
@@ -25,22 +30,22 @@ public class AlgorithmBacktrack(Maze maze, Random random) : Algorithm(maze, rand
             var y = cur.Y;
 
             var targetCount = 0;
-            if(x - 2 > 0 && !Maze[x - 2, y])
+            if(x - 2 > 0 && !maze[x - 2, y])
             {
                 targets[targetCount].Set(x - 2, y);
                 targetCount++;
             }
-            if(x + 2 < width && !Maze[x + 2, y])
+            if(x + 2 < width && !maze[x + 2, y])
             {
                 targets[targetCount].Set(x + 2, y);
                 targetCount++;
             }
-            if(y - 2 > 0 && !Maze[x, y - 2])
+            if(y - 2 > 0 && !maze[x, y - 2])
             {
                 targets[targetCount].Set(x, y - 2);
                 targetCount++;
             }
-            if(y + 2 < height && !Maze[x, y + 2])
+            if(y + 2 < height && !maze[x, y + 2])
             {
                 targets[targetCount].Set(x, y + 2);
                 targetCount++;
@@ -48,25 +53,25 @@ public class AlgorithmBacktrack(Maze maze, Random random) : Algorithm(maze, rand
 
             if(targetCount > 0)
             {
-                var target = targets[Random.Next(targetCount)];
+                var target = targets[random.Next(targetCount)];
                 stack.Push(target);
-                Maze[target.X, target.Y] = true;
+                maze[target.X, target.Y] = true;
 
                 if(target.X < x)
                 {
-                    Maze[x - 1, y] = true;
+                    maze[x - 1, y] = true;
                 }
                 else if(target.X > x)
                 {
-                    Maze[x + 1, y] = true;
+                    maze[x + 1, y] = true;
                 }
                 else if(target.Y < y)
                 {
-                    Maze[x, y - 1] = true;
+                    maze[x, y - 1] = true;
                 }
                 else if(target.Y > y)
                 {
-                    Maze[x, y + 1] = true;
+                    maze[x, y + 1] = true;
                 }
             }
             else

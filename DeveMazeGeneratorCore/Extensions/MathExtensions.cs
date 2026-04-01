@@ -1,6 +1,6 @@
-﻿namespace DeveMazeGeneratorCore.Helpers;
+﻿namespace DeveMazeGeneratorCore.Extensions;
 
-public static class MathHelper
+public static class MathExtensions
 {
     public static int RoundUpToNextEven(int x) => (x + 1) & ~1;
 

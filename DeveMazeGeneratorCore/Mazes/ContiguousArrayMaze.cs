@@ -2,47 +2,59 @@
 
 namespace DeveMazeGeneratorCore.Mazes;
 
-public class ContiguousArrayMaze : Maze
+public class ContiguousArrayMaze : IMaze
 {
     public const short TypeId = 1;
 
-    private readonly BitList store;
+    private readonly int width;
+    private readonly int height;
+    private readonly BitGrid grid;
 
-    public ContiguousArrayMaze(int width, int height) : base(width, height)
-    {
-        store = new(width * height);
-    }
-
-    public ContiguousArrayMaze(ContiguousArrayMaze source) : base(source.Width, source.Height)
-    {
-        store = new(source.store);
-    }
-
-    public ContiguousArrayMaze(BinaryReader reader) : this(reader.ReadInt32(), reader.ReadInt32())
+    public ContiguousArrayMaze(int width, int height) : this(width, height, new(width, height))
     {
     }
 
-    public override Maze Clone() => new ContiguousArrayMaze(this);
+    public ContiguousArrayMaze(ContiguousArrayMaze source) : this(source.Width, source.Height, new(source.grid))
+    {
+    }
 
-    public override bool this[int x, int y]
+    private ContiguousArrayMaze(int width, int height, BitGrid grid)
+    {
+        if(width != grid.Width) throw new ArgumentException($"width {width} != grid width {grid.Width}");
+        if(height != grid.Height) throw new ArgumentException($"height {height} != grid height {grid.Height}");
+
+        this.width = width;
+        this.height = height;
+        this.grid = grid;
+    }
+
+    public int Width => width;
+    public int Height => height;
+
+    public IMaze Clone() => new ContiguousArrayMaze(this);
+
+    public bool this[int x, int y]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => store[x + (y * Height)];
+        get => grid[x, y];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => store[x + (y * Height)] = value;
+        set => grid[x, y] = value;
     }
 
-    protected override async Task Read(BinaryReader reader)
-    {
-        await store.Read(reader.BaseStream);
-    }
-
-    protected override async Task Write(BinaryWriter writer)
+    public async Task Write(BinaryWriter writer)
     {
         writer.Write(TypeId);
         writer.Write(Width);
         writer.Write(Height);
-        await store.Write(writer.BaseStream);
+        await grid.Write(writer);
+    }
+
+    public static async Task<ContiguousArrayMaze> Read(BinaryReader reader)
+    {
+        var width = reader.ReadInt32();
+        var height = reader.ReadInt32();
+        var grid = await BitGrid.Read(reader);
+        return new ContiguousArrayMaze(width, height, grid);
     }
 }

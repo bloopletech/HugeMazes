@@ -1,4 +1,5 @@
-﻿using DeveMazeGeneratorCore.Helpers;
+﻿using DeveMazeGeneratorCore.Extensions;
+using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore;
@@ -6,41 +7,22 @@ namespace DeveMazeGeneratorCore;
 /// <summary>
 /// This class specifically ads a position to the path it returns which can be used to more efficiently save the maze path later
 /// </summary>
-public static class Solver
+public static class PathFinder
 {
     /// <summary>
     /// Finds the path between the start and the endpoint in a maze
     /// </summary>
     /// <param name="maze">The maze.InnerMap</param>
     /// <returns>The shortest path in a list of points</returns>
-    public static MazePath Solve(Maze maze)
+    public static MazePath Find(IMaze maze)
     {
-        return Solve(
-            maze,
-            new MazePoint(1, 1),
-            new MazePoint(MathHelper.RoundUpToNextEven(maze.Width) - 3, MathHelper.RoundUpToNextEven(maze.Height) - 3));
-    }
+        maze.EnsureMinimumSize();
 
-    /// <summary>
-    /// Finds the path between the start and the endpoint in a maze
-    /// </summary>
-    /// <param name="start">The start point</param>
-    /// <param name="end">The end point</param>
-    /// <param name="maze">The maze.InnerMap</param>
-    /// <returns>The shortest path in a list of points</returns>
-    private static MazePath Solve(Maze maze, MazePoint startBefore, MazePoint endBefore)
-    {
-        var start = new MazePoint(startBefore.X, startBefore.Y);
-        var end = new MazePoint(endBefore.X, endBefore.Y);
+        var start = new MazePoint(1, 1);
+        var end = new MazePoint(maze.Width - 2, maze.Height - 2);
 
-        //Callback won't work nice with this since it will find its path from back to front
-        //Swap them so we don't have to reverse at the end ;)
-        //MazePoint temp = start;
-        //start = end;
-        //end = temp;
-
-        int width = maze.Width;
-        int height = maze.Height;
+        var width = maze.Width;
+        var height = maze.Height;
 
         var points = new List<MazePoint>()
         {
@@ -131,6 +113,8 @@ public static class Solver
             }
         }
 
-        return new MazePath(points.ToArray());
+        var path = new MazePath(width, height);
+        foreach(var point in points) path[point.X, point.Y] = true;
+        return path;
     }
 }

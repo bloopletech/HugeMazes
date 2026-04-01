@@ -1,14 +1,31 @@
-﻿using DeveMazeGeneratorCore.Structures;
+﻿using System.Runtime.CompilerServices;
+using DeveMazeGeneratorCore.Mazes;
 
 namespace DeveMazeGeneratorCore;
 
-public class MazePath(MazePoint[] points)
+public class MazePath
 {
-    public static readonly char[] MagicHeader = ['D', 'E', 'V', 'E', 'P', 'A', 'T', 'H'];
-    public const short Version = 1;
     public const short TypeId = 1;
 
-    public MazePoint[] Points => points;
+    private readonly BitGrid grid;
+
+    public MazePath(int width, int height) : this(new(width, height))
+    {
+    }
+
+    private MazePath(BitGrid grid)
+    {
+        this.grid = grid;
+    }
+
+    public bool this[int x, int y]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => grid[x, y];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set => grid[x, y] = value;
+    }
 
     public void Highlight()
     {
@@ -21,48 +38,14 @@ public class MazePath(MazePoint[] points)
         //}
     }
 
-    public async Task Write(Stream stream)
+    public async Task Write(BinaryWriter writer)
     {
-        using var writer = new BinaryWriter(stream);
-        writer.Write(MagicHeader);
-        writer.Write(Version);
         writer.Write(TypeId);
-
-        writer.Write(points.Length);
-        foreach(var point in points)
-        {
-            writer.Write(point.X);
-            writer.Write(point.Y);
-        }
+        await grid.Write(writer);
     }
 
-    public async Task Save(string fileName)
+    public static async Task<MazePath> Read(BinaryReader reader)
     {
-        using var fs = File.Open(fileName, FileMode.Create);
-        await Write(fs);
-    }
-
-    public static MazePath Read(Stream stream)
-    {
-        using var reader = new BinaryReader(stream);
-        var magic = reader.ReadChars(8);
-        if(!magic.SequenceEqual(MagicHeader)) throw new InvalidDataException("Magic header not present");
-
-        var version = reader.ReadInt16();
-        if(version != 1) throw new InvalidDataException($"Path version is {version} but we only understand version 1");
-
-        var type = reader.ReadInt16();
-        if(type != TypeId) throw new InvalidDataException($"Unknown path type {type}");
-
-        var points = new MazePoint[reader.ReadInt32()];
-        for(var i = 0; i < points.Length; i++) points[i].Set(reader.ReadInt32(), reader.ReadInt32());
-
-        return new MazePath(points);
-    }
-
-    public static async Task<MazePath> Load(string fileName)
-    {
-        using var fs = File.Open(fileName, FileMode.Open);
-        return Read(fs);
+        return new MazePath(await BitGrid.Read(reader));
     }
 }

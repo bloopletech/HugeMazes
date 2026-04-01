@@ -1,8 +1,12 @@
 ﻿using DeveMazeGeneratorCore;
 using DeveMazeGeneratorCore.ConsoleApp;
+using DeveMazeGeneratorCore.Extensions;
+using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Serializers;
 
+var slowMode = true;
 var options = new Options(args);
-Maze? maze = null;
+IMaze? maze = null;
 string? mazeFileName = null;
 MazePath? path = null;
 string? pathFileName = null;
@@ -36,82 +40,84 @@ while(options.HasNext())
     }
 }
 
+async Task LoadMaze()
+{
+    if (maze == null)
+    {
+        mazeFileName = options.Next();
+        maze = await MazeSerializer.Load(mazeFileName);
+    }
+    else if (slowMode)
+    {
+        maze = await MazeSerializer.Load(mazeFileName);
+    }
+}
+
+async Task LoadPath()
+{
+    if (path == null)
+    {
+        pathFileName = options.Next();
+        path = await MazePathSerializer.Load(pathFileName);
+    }
+    else if (slowMode)
+    {
+        path = await MazePathSerializer.Load(pathFileName);
+    }
+}
+
 async Task Generate()
 {
-    var width = options.NextInt();
-    var height = options.NextInt();
+    var width = MathExtensions.MakeUneven(options.NextInt());
+    var height = MathExtensions.MakeUneven(options.NextInt());
     int? seed = options.HasNextInt() ? options.NextInt() : null;
     mazeFileName = options.NextFilename($"{Environment.TickCount}.maze");
 
     maze = DeveMazeGeneratorCore.DeveMazeGeneratorCore.Generate(width, height, seed);
-    await maze.Save(mazeFileName);
+    await MazeSerializer.Save(mazeFileName, maze);
     Console.WriteLine($"Saved maze to {mazeFileName}");
 }
 
 async Task Verify()
 {
-    if(maze == null)
-    {
-        mazeFileName = options.Next();
-        maze = await Maze.Load(mazeFileName);
-    }
-
+    await LoadMaze();
     var result = Verifier.IsPerfectMaze(maze);
     Console.WriteLine($"Is our maze perfect?: {result}");
 }
 
 async Task Solve()
 {
-    if(maze == null)
-    {
-        mazeFileName = options.Next();
-        maze = await Maze.Load(mazeFileName);
-    }
+    await LoadMaze();
 
     pathFileName = options.NextFilename(Path.ChangeExtension(mazeFileName, ".path")!);
 
-    path = Solver.Solve(maze);
-    await path.Save(pathFileName);
+    path = PathFinder.Find(maze);
+    await MazePathSerializer.Save(pathFileName, path);
 
     Console.WriteLine($"Saved solution to {pathFileName}");
 }
 
 async Task MazeImage()
 {
-    if(maze == null)
-    {
-        mazeFileName = options.Next();
-        maze = await Maze.Load(mazeFileName);
-    }
+    await LoadMaze();
 
     var imageFileName = options.NextFilename(Path.ChangeExtension(mazeFileName, ".png")!);
    
     using var image = ImageCreator.CreateImage(maze);
-    using var fs = File.Open(imageFileName, FileMode.Create);
-    ImageCreator.SaveImage(image, fs);
+    await ImageCreator.SaveImage(imageFileName, image);
 
     Console.WriteLine($"Saved maze image to {imageFileName}");
 }
 
 async Task PathImage()
 {
-    if(maze == null)
-    {
-        mazeFileName = options.Next();
-        maze = await Maze.Load(mazeFileName);
-    }
-
-    if(path == null)
-    {
-        pathFileName = options.Next();
-        path = await MazePath.Load(pathFileName);
-    }
+    await LoadMaze();
+    await LoadPath();
 
     var imageFileName = options.NextFilename(Path.ChangeExtension(pathFileName, ".path.png")!);
 
     using var image = ImageCreator.CreateImage(maze, path);
-    using var fs = File.Open(imageFileName, FileMode.Create);
-    ImageCreator.SaveImage(image, fs);
+    await ImageCreator.SaveImage(imageFileName, image);
 
     Console.WriteLine($"Saved maze with solution image to {imageFileName}");
 }

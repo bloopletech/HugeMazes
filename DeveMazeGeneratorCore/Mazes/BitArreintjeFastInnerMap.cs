@@ -3,13 +3,18 @@ using System.Runtime.CompilerServices;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
-public class BitArreintjeFastInnerMap : Maze
+public class BitArreintjeFastInnerMap : IMaze
 {
+    private readonly int width;
+    private readonly int height;
     private BitArreintjeFastInnerMapArray[] _innerData;
 
     public BitArreintjeFastInnerMap(int width, int height)
-        : base(width, height)
     {
+        if(width < 3) throw new ArgumentOutOfRangeException(nameof(width), width, "Width must >= 3");
+        if(height < 3) throw new ArgumentOutOfRangeException(nameof(height), height, "Height must >= 3");
+        this.width = width;
+        this.height = height;
         _innerData = new BitArreintjeFastInnerMapArray[width];
         for(int i = 0; i < width; i++)
         {
@@ -17,9 +22,12 @@ public class BitArreintjeFastInnerMap : Maze
         }
     }
 
-    public override Maze Clone()
+    public int Width => width;
+    public int Height => height;
+
+    public IMaze Clone()
     {
-        var innerMapTarget = new BitArreintjeFastInnerMap(Width, Height);
+        var innerMapTarget = new BitArreintjeFastInnerMap(width, height);
         for(int i = 0; i < _innerData.Length; i++)
         {
             innerMapTarget._innerData[i] = _innerData[i].Clone();
@@ -27,7 +35,7 @@ public class BitArreintjeFastInnerMap : Maze
         return innerMapTarget;
     }
 
-    public override bool this[int x, int y]
+    public bool this[int x, int y]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -41,12 +49,7 @@ public class BitArreintjeFastInnerMap : Maze
         }
     }
 
-    protected override Task Read(BinaryReader reader)
-    {
-        throw new NotImplementedException();
-    }
-
-    protected override Task Write(BinaryWriter writer)
+    public Task Write(BinaryWriter writer)
     {
         throw new NotImplementedException();
     }

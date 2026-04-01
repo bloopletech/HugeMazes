@@ -1,27 +1,32 @@
-﻿using DeveMazeGeneratorCore.Structures;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
+using DeveMazeGeneratorCore.Extensions;
+using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Structures;
 
-namespace DeveMazeGeneratorCore.Algorithms;
+namespace DeveMazeGeneratorCore.Generators;
 
-public class AlgorithmBacktrack2Deluxe2_AsByte(Maze maze, Random random) : Algorithm(maze, random)
+public class AlgorithmBacktrack2Deluxe2_AsByte(IMaze maze, Random random)
 {
-    public override void Generate()
+    public void Generate()
     {
-        int width = Maze.Width - 1;
-        int height = Maze.Height - 1;
+        maze.EnsureMinimumSize();
+        maze.EnsureOddSize();
+
+        int width = maze.Width - 1;
+        int height = maze.Height - 1;
 
         var stack = new Stack<MazePoint>();
         stack.Push(new(1, 1));
-        Maze[1, 1] = true;
+        maze[1, 1] = true;
 
         while(stack.Count != 0)
         {
             var cur = stack.Peek();
 
-            var validLeft = cur.X - 2 > 0 && !Maze[cur.X - 2, cur.Y];
-            var validRight = cur.X + 2 < width && !Maze[cur.X + 2, cur.Y];
-            var validUp = cur.Y - 2 > 0 && !Maze[cur.X, cur.Y - 2];
-            var validDown = cur.Y + 2 < height && !Maze[cur.X, cur.Y + 2];
+            var validLeft = cur.X - 2 > 0 && !maze[cur.X - 2, cur.Y];
+            var validRight = cur.X + 2 < width && !maze[cur.X + 2, cur.Y];
+            var validUp = cur.Y - 2 > 0 && !maze[cur.X, cur.Y - 2];
+            var validDown = cur.Y + 2 < height && !maze[cur.X, cur.Y + 2];
 
             int validLeftByte = Unsafe.As<bool, byte>(ref validLeft);
             int validRightByte = Unsafe.As<bool, byte>(ref validRight);
@@ -36,7 +41,7 @@ public class AlgorithmBacktrack2Deluxe2_AsByte(Maze maze, Random random) : Algor
             }
             else
             {
-                var chosenDirection = Random.Next(targetCount);
+                var chosenDirection = random.Next(targetCount);
                 var countertje = 0;
 
                 var actuallyGoingLeft = validLeft & chosenDirection == countertje;
@@ -61,8 +66,8 @@ public class AlgorithmBacktrack2Deluxe2_AsByte(Maze maze, Random random) : Algor
                 var nextYInBetween = cur.Y - actuallyGoingUpByte + actuallyGoingDownByte;
 
                 stack.Push(new(nextX, nextY));
-                Maze[nextXInBetween, nextYInBetween] = true;
-                Maze[nextX, nextY] = true;
+                maze[nextXInBetween, nextYInBetween] = true;
+                maze[nextX, nextY] = true;
             }
         }
     }

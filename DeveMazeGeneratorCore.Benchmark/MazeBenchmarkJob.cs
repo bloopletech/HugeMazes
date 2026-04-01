@@ -4,7 +4,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Reports;
-using DeveMazeGeneratorCore.Algorithms;
+using DeveMazeGeneratorCore.Generators;
 using DeveMazeGeneratorCore.Mazes;
 using Microsoft.VSDiagnostics;
 

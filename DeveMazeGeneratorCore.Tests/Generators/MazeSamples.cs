@@ -1,4 +1,4 @@
-﻿using DeveMazeGeneratorCore.Algorithms;
+﻿using DeveMazeGeneratorCore.Generators;
 using DeveMazeGeneratorCore.Mazes;
 using System;
 using System.IO;
@@ -26,7 +26,7 @@ public class MazeSamples
         var algorithm = new AlgorithmBacktrack(maze, random);
         algorithm.Generate();
 
-        var path = Solver.Solve(maze);
+        var path = PathFinder.Find(maze);
 
         var image = ImageCreator.CreateImage(maze, path);
 

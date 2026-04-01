@@ -1,22 +1,19 @@
 ﻿#if !BLAZOR
 using System.Diagnostics;
+using DeveMazeGeneratorCore.Mazes;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
-using DeveMazeGeneratorCore.Helpers;
 
 namespace DeveMazeGeneratorCore;
 
 public static class ImageCreator
 {
-    public static Image<Argb32> CreateImage(Maze maze)
+    public static Image<Argb32> CreateImage(IMaze maze)
     {
-        var roundedUpWidth = MathHelper.RoundUpToNextEven(maze.Width);
-        var roundedUpHeight = MathHelper.RoundUpToNextEven(maze.Height);
-
         var w = Stopwatch.StartNew();
 
-        var image = new Image<Argb32>(roundedUpWidth - 1, roundedUpHeight - 1, Color.Black);
+        var image = new Image<Argb32>(maze.Width, maze.Height, Color.Black);
 
         image.ProcessPixelRows(rows =>
         {
@@ -40,10 +37,8 @@ public static class ImageCreator
         return image;
     }
 
-    public static Image<Argb32> CreateImage(Maze maze, MazePath path)
+    public static Image<Argb32> CreateImage(IMaze maze, MazePath path)
     {
-        var points = path.Points;
-
         var image = CreateImage(maze);
 
         var w = Stopwatch.StartNew();
@@ -57,7 +52,21 @@ public static class ImageCreator
         //    return first.Y - second.Y;
         //});
 
-        foreach(var point in points) image[point.X, point.Y] = Color.Lime;
+        image.ProcessPixelRows(rows =>
+        {
+            for(int y = 0; y < rows.Height; y++)
+            {
+                var row = rows.GetRowSpan(y);
+                for(int x = 0; x < row.Length; x++)
+                {
+                    if(path[x, y])
+                    {
+                        ref var pixel = ref row[x];
+                        pixel = Color.Lime;
+                    }
+                }
+            }
+        });
 
         w.Stop();
         Debug.WriteLine($"Solution image creation time: {w.Elapsed}");
@@ -65,7 +74,7 @@ public static class ImageCreator
         return image;
     }
 
-    //public static Image<Argb32> CreateImage(Maze maze, Solution solution)
+    //public static Image<Argb32> CreateImage(IMaze maze, Solution solution)
     //{
     //    var points = solution.Points;
 
@@ -130,9 +139,15 @@ public static class ImageCreator
     //    return image;
     //}
 
-    public static void SaveImage(Image<Argb32> image, Stream stream)
+    public static async Task WriteImage(Stream stream, Image image)
     {
-        image.Save(stream, new PngEncoder() { CompressionLevel = PngCompressionLevel.Level1 });
+        await image.SaveAsync(stream, new PngEncoder() { CompressionLevel = PngCompressionLevel.Level1 });
+    }
+
+    public static async Task SaveImage(string fileName, Image image)
+    {
+        using var fs = File.Open(fileName, FileMode.Create);
+        await WriteImage(fs, image);
     }
 }
 #endif
