@@ -1,4 +1,4 @@
-﻿namespace DeveMazeGeneratorCore.Extensions;
+namespace DeveMazeGeneratorCore.Extensions;
 
 public static class StreamExtensions
 {

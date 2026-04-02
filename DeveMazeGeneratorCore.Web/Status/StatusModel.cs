@@ -1,4 +1,4 @@
-﻿namespace DeveMazeGeneratorCore.Web.Status;
+namespace DeveMazeGeneratorCore.Web.Status;
 
 public class StatusModel
 {

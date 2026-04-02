@@ -1,4 +1,4 @@
-﻿//using DeveMazeGeneratorCore.InnerMaps.InnerStuff;
+//using DeveMazeGeneratorCore.InnerMaps.InnerStuff;
 //using System.Runtime.CompilerServices;
 
 //namespace DeveMazeGeneratorCore.InnerMaps;

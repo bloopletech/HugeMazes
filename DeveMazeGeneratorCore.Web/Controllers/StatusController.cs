@@ -1,4 +1,4 @@
-﻿using DeveMazeGeneratorCore.Web.Status;
+using DeveMazeGeneratorCore.Web.Status;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeveMazeGeneratorCore.Web.Controllers;

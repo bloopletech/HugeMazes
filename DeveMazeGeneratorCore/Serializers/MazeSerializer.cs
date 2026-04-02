@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.Mazes;
 
@@ -9,7 +9,7 @@ public class MazeSerializer
     public static readonly char[] MagicHeader = ['D', 'E', 'V', 'E', 'M', 'A', 'Z', 'E'];
     public const short Version = 1;
 
-    public static async Task Write(Stream stream, IMaze maze)
+    public static async Task Serialize(Stream stream, IMaze maze)
     {
         using var writer = new BinaryWriter(stream);
         writer.Write(MagicHeader);
@@ -20,10 +20,10 @@ public class MazeSerializer
     public static async Task Save(string fileName, IMaze maze)
     {
         using var fs = File.Open(fileName, FileMode.Create);
-        await Write(fs, maze);
+        await Serialize(fs, maze);
     }
 
-    public static async Task<IMaze> Read(Stream stream)
+    public static async Task<IMaze> Deserialize(Stream stream)
     {
         using var reader = new BinaryReader(stream);
         var magic = reader.ReadChars(8);
@@ -48,28 +48,6 @@ public class MazeSerializer
     public static async Task<IMaze> Load(string fileName)
     {
         using var fs = File.Open(fileName, FileMode.Open);
-        return await Read(fs);
-    }
-
-    public static string GenerateMapAsString(IMaze maze)
-    {
-        var stringBuilder = new StringBuilder();
-        for (int y = 0; y < maze.Height; y++)
-        {
-            for (int x = 0; x < maze.Width; x++)
-            {
-                bool b = maze[x, y];
-                if (b)
-                {
-                    stringBuilder.Append(' ');
-                }
-                else
-                {
-                    stringBuilder.Append('0');
-                }
-            }
-            stringBuilder.AppendLine();
-        }
-        return stringBuilder.ToString();
+        return await Deserialize(fs);
     }
 }

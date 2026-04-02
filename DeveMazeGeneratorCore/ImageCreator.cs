@@ -1,4 +1,4 @@
-﻿#if !BLAZOR
+#if !BLAZOR
 using System.Diagnostics;
 using DeveMazeGeneratorCore.Mazes;
 using SixLabors.ImageSharp;
@@ -139,15 +139,15 @@ public static class ImageCreator
     //    return image;
     //}
 
-    public static async Task WriteImage(Stream stream, Image image)
+    public static async Task Serialize(Stream stream, Image image)
     {
         await image.SaveAsync(stream, new PngEncoder() { CompressionLevel = PngCompressionLevel.Level1 });
     }
 
-    public static async Task SaveImage(string fileName, Image image)
+    public static async Task Save(string fileName, Image image)
     {
         using var fs = File.Open(fileName, FileMode.Create);
-        await WriteImage(fs, image);
+        await Serialize(fs, image);
     }
 }
 #endif

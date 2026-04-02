@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using SixLabors.Fonts;
 using System.Diagnostics;
 using System.Reflection;

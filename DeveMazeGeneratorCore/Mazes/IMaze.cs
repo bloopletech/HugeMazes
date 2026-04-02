@@ -1,4 +1,4 @@
-﻿namespace DeveMazeGeneratorCore.Mazes;
+namespace DeveMazeGeneratorCore.Mazes;
 
 /// <summary>
 /// Info about mazes:

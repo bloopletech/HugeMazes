@@ -1,4 +1,5 @@
-﻿using DeveMazeGeneratorCore.Mazes;
+using System.Text;
+using DeveMazeGeneratorCore.Mazes;
 
 namespace DeveMazeGeneratorCore.Extensions;
 
@@ -14,5 +15,27 @@ public static class IMazeExtensions
     {
         if(int.IsEvenInteger(maze.Width)) throw new ArgumentException("Value must be an odd number", "maze.Width");
         if(int.IsEvenInteger(maze.Height)) throw new ArgumentException("Value must be an odd number", "maze.Height");
+    }
+
+    public static string GenerateMapAsString(this IMaze maze)
+    {
+        var stringBuilder = new StringBuilder();
+        for(int y = 0; y < maze.Height; y++)
+        {
+            for(int x = 0; x < maze.Width; x++)
+            {
+                bool b = maze[x, y];
+                if(b)
+                {
+                    stringBuilder.Append(' ');
+                }
+                else
+                {
+                    stringBuilder.Append('0');
+                }
+            }
+            stringBuilder.AppendLine();
+        }
+        return stringBuilder.ToString();
     }
 }

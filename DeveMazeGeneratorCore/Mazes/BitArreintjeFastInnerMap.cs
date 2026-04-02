@@ -1,4 +1,4 @@
-﻿using DeveMazeGeneratorCore.Mazes.InnerStuff;
+using DeveMazeGeneratorCore.Mazes.InnerStuff;
 using System.Runtime.CompilerServices;
 
 namespace DeveMazeGeneratorCore.Mazes;

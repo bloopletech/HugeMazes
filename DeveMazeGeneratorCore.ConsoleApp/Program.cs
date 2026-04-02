@@ -1,4 +1,4 @@
-﻿using DeveMazeGeneratorCore;
+using DeveMazeGeneratorCore;
 using DeveMazeGeneratorCore.ConsoleApp;
 using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.Mazes;
@@ -104,7 +104,7 @@ async Task MazeImage()
     var imageFileName = options.NextFilename(Path.ChangeExtension(mazeFileName, ".png")!);
    
     using var image = ImageCreator.CreateImage(maze);
-    await ImageCreator.SaveImage(imageFileName, image);
+    await ImageCreator.Save(imageFileName, image);
 
     Console.WriteLine($"Saved maze image to {imageFileName}");
 }
@@ -117,7 +117,7 @@ async Task PathImage()
     var imageFileName = options.NextFilename(Path.ChangeExtension(pathFileName, ".path.png")!);
 
     using var image = ImageCreator.CreateImage(maze, path);
-    await ImageCreator.SaveImage(imageFileName, image);
+    await ImageCreator.Save(imageFileName, image);
 
     Console.WriteLine($"Saved maze with solution image to {imageFileName}");
 }

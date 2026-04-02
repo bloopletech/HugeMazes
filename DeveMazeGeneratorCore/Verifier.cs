@@ -1,4 +1,4 @@
-﻿using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore;

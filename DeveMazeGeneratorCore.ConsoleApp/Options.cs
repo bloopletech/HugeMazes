@@ -1,4 +1,4 @@
-﻿namespace DeveMazeGeneratorCore.ConsoleApp;
+namespace DeveMazeGeneratorCore.ConsoleApp;
 
 public class Options(string[] args)
 {
