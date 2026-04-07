@@ -54,6 +54,6 @@ public class BitGrid
 
     public static async Task<BitGrid> Read(BinaryReader reader)
     {
-        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), await BitArrayExtensions.Read(reader));
+        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), await BitArray.Read(reader));
     }
 }

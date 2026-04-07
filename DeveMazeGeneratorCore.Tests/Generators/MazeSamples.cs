@@ -2,6 +2,7 @@ using DeveMazeGeneratorCore.Generators;
 using DeveMazeGeneratorCore.Mazes;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace DeveMazeGeneratorCore.Tests.Generators;
@@ -9,7 +10,7 @@ namespace DeveMazeGeneratorCore.Tests.Generators;
 public class MazeSamples
 {
     [Fact]
-    public void GeneratingAMazeWithABlockInTheMiddleWorks()
+    public async Task GeneratingAMazeWithABlockInTheMiddleWorks()
     {
         var maze = new BitArreintjeFastInnerMap(128, 128);
 
@@ -31,6 +32,6 @@ public class MazeSamples
         var image = ImageCreator.CreateImage(maze, path);
 
         using var fs = new FileStream("GeneratingAMazeWithABlockInTheMiddleWorks.png", FileMode.Create);
-        ImageCreator.SaveImage(image, fs);
+        await ImageCreator.Serialize(fs, image);
     }
 }

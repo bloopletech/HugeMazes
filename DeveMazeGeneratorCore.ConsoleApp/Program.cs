@@ -68,8 +68,8 @@ async Task LoadPath()
 
 async Task Generate()
 {
-    var width = MathExtensions.MakeUneven(options.NextInt());
-    var height = MathExtensions.MakeUneven(options.NextInt());
+    var width = options.NextInt().MakeUneven();
+    var height = options.NextInt().MakeUneven();
     int? seed = options.HasNextInt() ? options.NextInt() : null;
     mazeFileName = options.NextFilename($"{Environment.TickCount}.maze");
 
