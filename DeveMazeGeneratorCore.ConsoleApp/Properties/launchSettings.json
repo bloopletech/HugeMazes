@@ -2,7 +2,7 @@
   "profiles": {
     "DeveMazeGeneratorCore.ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "generate 16384 16384 verify solve image path-image"
+      "commandLineArgs": "generate 16384 16384 verify solve render render-path"
     },
     "Docker": {
       "commandName": "Docker"

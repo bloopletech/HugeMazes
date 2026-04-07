@@ -1,130 +1,22 @@
-using DeveMazeGeneratorCore;
 using DeveMazeGeneratorCore.ConsoleApp;
-using DeveMazeGeneratorCore.Extensions;
-using DeveMazeGeneratorCore.Mazes;
-using DeveMazeGeneratorCore.Serializers;
 
-var slowMode = true;
 var options = new Options(args);
-IMaze? maze = null;
-string? mazeFileName = null;
-MazePath? path = null;
-string? pathFileName = null;
+var context = new JobContext();
 
-while(options.HasNext())
+IJob ParseJob(string job)
 {
-    var task = options.Next();
-    if(task == "generate")
+    switch(job)
     {
-        await Generate();
-    }
-    else if(task == "verify")
-    {
-        await Verify();
-    }
-    else if(task == "solve")
-    {
-        await Solve();
-    }
-    else if(task == "image")
-    {
-        await MazeImage();
-    }
-    else if(task == "path-image")
-    {
-        await PathImage();
-    }
-    else if(task == "benchmark")
-    {
-        Benchmark();
+        case "generate": return GenerateJob.Parse(options, context);
+        case "verify": return VerifyJob.Parse(options, context);
+        case "solve": return SolveJob.Parse(options, context);
+        case "render": return RenderJob.Parse(options, context);
+        case "render-path": return RenderPathJob.Parse(options, context);
+        case "benchmark": return BenchmarkJob.Parse(options, context);
+        default: throw new InvalidOperationException($"Unknown task: {job}");
     }
 }
 
-async Task LoadMaze()
-{
-    if (maze == null)
-    {
-        mazeFileName = options.Next();
-        maze = await MazeSerializer.Load(mazeFileName);
-    }
-    else if (slowMode)
-    {
-        maze = await MazeSerializer.Load(mazeFileName);
-    }
-}
-
-async Task LoadPath()
-{
-    if (path == null)
-    {
-        pathFileName = options.Next();
-        path = await MazePathSerializer.Load(pathFileName);
-    }
-    else if (slowMode)
-    {
-        path = await MazePathSerializer.Load(pathFileName);
-    }
-}
-
-async Task Generate()
-{
-    var width = options.NextInt().MakeUneven();
-    var height = options.NextInt().MakeUneven();
-    int? seed = options.HasNextInt() ? options.NextInt() : null;
-    mazeFileName = options.NextFilename($"{Environment.TickCount}.maze");
-
-    maze = DeveMazeGeneratorCore.DeveMazeGeneratorCore.Generate(width, height, seed);
-    await MazeSerializer.Save(mazeFileName, maze);
-    Console.WriteLine($"Saved maze to {mazeFileName}");
-}
-
-async Task Verify()
-{
-    await LoadMaze();
-    var result = Verifier.IsPerfectMaze(maze);
-    Console.WriteLine($"Is our maze perfect?: {result}");
-}
-
-async Task Solve()
-{
-    await LoadMaze();
-
-    pathFileName = options.NextFilename(Path.ChangeExtension(mazeFileName, ".path")!);
-
-    path = PathFinder.Find(maze);
-    await MazePathSerializer.Save(pathFileName, path);
-
-    Console.WriteLine($"Saved solution to {pathFileName}");
-}
-
-async Task MazeImage()
-{
-    await LoadMaze();
-
-    var imageFileName = options.NextFilename(Path.ChangeExtension(mazeFileName, ".png")!);
-   
-    using var image = ImageCreator.CreateImage(maze);
-    await ImageCreator.Save(imageFileName, image);
-
-    Console.WriteLine($"Saved maze image to {imageFileName}");
-}
-
-async Task PathImage()
-{
-    await LoadMaze();
-    await LoadPath();
-
-    var imageFileName = options.NextFilename(Path.ChangeExtension(pathFileName, ".path.png")!);
-
-    using var image = ImageCreator.CreateImage(maze, path);
-    await ImageCreator.Save(imageFileName, image);
-
-    Console.WriteLine($"Saved maze with solution image to {imageFileName}");
-}
-
-void Benchmark()
-{
-    var maze = DeveMazeGeneratorCore.DeveMazeGeneratorCore.BenchmarkBaseline();
-    var result = Verifier.IsPerfectMaze(maze);
-    if(!result) throw new InvalidOperationException("Maze is not perfect");
-}
+var jobs = new List<IJob>();
+while(options.HasNext()) jobs.Add(ParseJob(options.Next()));
+foreach(var job in jobs) await job.Run(context);
