@@ -1,3 +1,4 @@
+using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.Generators;
 using DeveMazeGeneratorCore.Mazes;
 
@@ -8,7 +9,8 @@ public static class DeveMazeGeneratorCore
     public static IMaze Generate(int width, int height, int? seed = null)
     {
         var maze = new ContiguousArrayMaze(width, height);
-        var random = seed != null ? new Random(seed.Value) : new Random();
+        var random = seed.HasValue ? new Random(seed.Value) : new Random();
+        var realSeed = random.GetSeed();
 
         var algorithm = new AlgorithmBacktrack(maze, random);
         algorithm.Generate();
@@ -20,6 +22,7 @@ public static class DeveMazeGeneratorCore
     {
         var maze = new ContiguousArrayMaze(BenchmarkSize, BenchmarkSize);
         var random = new Random(BenchmarkSeed);
+        var realSeed = random.GetSeed();
 
         var algorithm = new AlgorithmBacktrack(maze, random);
         algorithm.Generate();
@@ -31,6 +34,7 @@ public static class DeveMazeGeneratorCore
     {
         var maze = new ContiguousArrayMaze(BenchmarkSize, BenchmarkSize);
         var random = new Random(BenchmarkSeed);
+        var realSeed = random.GetSeed();
 
         var algorithm = new AlgorithmBacktrack2Deluxe2_AsByte(maze, random);
         algorithm.Generate();
