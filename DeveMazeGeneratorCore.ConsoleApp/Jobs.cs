@@ -120,7 +120,7 @@ public readonly record struct RenderPathJob(string ImageFileName) : IJob
 
 public readonly record struct BenchmarkJob() : IJob
 {
-    public static BenchmarkJob Parse(Options options, JobContext context) => new();
+    public static BenchmarkJob Parse(Options _, JobContext __) => new();
 
     public async Task Run(JobContext context)
     {
