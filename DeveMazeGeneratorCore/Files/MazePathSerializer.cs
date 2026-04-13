@@ -1,6 +1,6 @@
 using DeveMazeGeneratorCore.Extensions;
 
-namespace DeveMazeGeneratorCore.IO;
+namespace DeveMazeGeneratorCore.Files;
 
 public static class MazePathSerializer
 {

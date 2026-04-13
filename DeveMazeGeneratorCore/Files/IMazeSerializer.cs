@@ -1,7 +1,7 @@
 using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.Mazes;
 
-namespace DeveMazeGeneratorCore.IO;
+namespace DeveMazeGeneratorCore.Files;
 
 public static class IMazeSerializer
 {

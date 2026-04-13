@@ -1,4 +1,4 @@
-namespace DeveMazeGeneratorCore.IO;
+namespace DeveMazeGeneratorCore.Files;
 
 public static class MazePathFile
 {

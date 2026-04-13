@@ -1,6 +1,6 @@
 using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.Mazes;
-using DeveMazeGeneratorCore.IO;
+using DeveMazeGeneratorCore.Files;
 
 namespace DeveMazeGeneratorCore.ConsoleApp;
 
