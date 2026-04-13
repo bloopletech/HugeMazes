@@ -8,7 +8,7 @@ public static class DeveMazeGeneratorCore
 {
     public static IMaze Generate(int width, int height, int? seed = null)
     {
-        var maze = new ContiguousArrayMaze(width, height);
+        var maze = new BitGridMaze(width, height);
         var random = seed.HasValue ? new Random(seed.Value) : new Random();
         var realSeed = random.GetSeed();
 
@@ -20,7 +20,7 @@ public static class DeveMazeGeneratorCore
 
     public static IMaze BenchmarkBaseline()
     {
-        var maze = new ContiguousArrayMaze(BenchmarkSize, BenchmarkSize);
+        var maze = new BitGridMaze(BenchmarkSize, BenchmarkSize);
         var random = new Random(BenchmarkSeed);
         var realSeed = random.GetSeed();
 
@@ -32,7 +32,7 @@ public static class DeveMazeGeneratorCore
 
     public static IMaze BenchmarkFast()
     {
-        var maze = new ContiguousArrayMaze(BenchmarkSize, BenchmarkSize);
+        var maze = new BitGridMaze(BenchmarkSize, BenchmarkSize);
         var random = new Random(BenchmarkSeed);
         var realSeed = random.GetSeed();
 
