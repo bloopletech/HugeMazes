@@ -20,13 +20,10 @@ namespace DeveMazeGeneratorCore.Benchmark;
 //[ThreadingDiagnoser]
 [JsonExporterAttribute.Full]
 [JsonExporterAttribute.FullCompressed]
-//[
-//    //DeveJob(RuntimeMoniker.Net60, launchCount: 1, warmupCount: 4, targetCount: 50, invocationCount: 1),
-//    //DeveJob(RuntimeMoniker.Net70, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
-//    //DeveJob(RuntimeMoniker.Net80, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
-//    //DeveJob(RuntimeMoniker.Net90, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
-//    DeveJob(RuntimeMoniker.Net10_0, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
-//]
+[
+    DeveJob(RuntimeMoniker.Net10_0, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
+    DeveJob(RuntimeMoniker.NativeAot10_0, launchCount: 1, warmupCount: 4, targetCount: 10, invocationCount: 1),
+]
 //[AsciiDocExporter]
 //[HtmlExporter]
 //[MarkdownExporterAttribute.GitHub]
@@ -34,13 +31,13 @@ namespace DeveMazeGeneratorCore.Benchmark;
 [Config(typeof(Config))]
 public class MazeBenchmarkJob
 {
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public void GenerateBaseline()
     {
         DeveMazeGeneratorCore.BenchmarkBaseline();
     }
 
-    //[Benchmark]
+    [Benchmark]
     public void GenerateFast()
     {
         DeveMazeGeneratorCore.BenchmarkFast();
