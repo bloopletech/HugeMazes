@@ -4,8 +4,6 @@ namespace DeveMazeGeneratorCore.Mazes;
 
 public class BitGridMaze : IMaze
 {
-    public const short TypeId = 1;
-
     private readonly int width;
     private readonly int height;
     private readonly BitGrid grid;
@@ -44,18 +42,21 @@ public class BitGridMaze : IMaze
 
     public void Write(BinaryWriter writer)
     {
-        writer.Write(TypeId);
-        writer.Write(Width);
-        writer.Write(Height);
+        WriteHeader(writer);
         grid.Write(writer);
     }
 
     public async Task WriteAsync(BinaryWriter writer)
     {
-        writer.Write(TypeId);
+        WriteHeader(writer);
+        await grid.WriteAsync(writer);
+    }
+
+    private void WriteHeader(BinaryWriter writer)
+    {
+        writer.Write((ushort)MazeType.BitGridMaze);
         writer.Write(Width);
         writer.Write(Height);
-        await grid.WriteAsync(writer);
     }
 
     public static BitGridMaze Read(BinaryReader reader)

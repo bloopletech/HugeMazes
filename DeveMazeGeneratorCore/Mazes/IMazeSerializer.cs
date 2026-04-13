@@ -31,7 +31,7 @@ public static class IMazeSerializer
     {
         using var reader = new BinaryReader(stream);
         var type = DeserializeHeader(reader);
-        var maze = IMaze.Read(reader, type);
+        var maze = IMaze.Read(type, reader);
         reader.BaseStream.EnsureCompleted();
         return maze;
     }
@@ -40,12 +40,12 @@ public static class IMazeSerializer
     {
         using var reader = new BinaryReader(stream);
         var type = DeserializeHeader(reader);
-        var maze = await IMaze.ReadAsync(reader, type);
+        var maze = await IMaze.ReadAsync(type, reader);
         reader.BaseStream.EnsureCompleted();
         return maze;
     }
 
-    private static short DeserializeHeader(BinaryReader reader)
+    private static MazeType DeserializeHeader(BinaryReader reader)
     {
         var magic = reader.ReadChars(8);
         if(!magic.SequenceEqual(MagicHeader)) throw new InvalidDataException("Magic header not present");
@@ -53,6 +53,6 @@ public static class IMazeSerializer
         var version = reader.ReadInt16();
         if(version != Version) throw new InvalidDataException($"Maze version is {version} but we only understand version {Version}");
 
-        return reader.ReadInt16();
+        return (MazeType)reader.ReadUInt16();
     }
 }

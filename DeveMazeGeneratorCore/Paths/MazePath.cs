@@ -5,8 +5,6 @@ namespace DeveMazeGeneratorCore.Paths;
 
 public class MazePath : IMazePath
 {
-    public const short TypeId = 1;
-
     private readonly BitGrid grid;
 
     public MazePath(int width, int height) : this(new BitGrid(width, height))
@@ -46,13 +44,13 @@ public class MazePath : IMazePath
 
     public void Write(BinaryWriter writer)
     {
-        writer.Write(TypeId);
+        writer.Write((ushort)MazePathType.MazePath);
         grid.Write(writer);
     }
 
     public async Task WriteAsync(BinaryWriter writer)
     {
-        writer.Write(TypeId);
+        writer.Write((ushort)MazePathType.MazePath);
         await grid.WriteAsync(writer);
     }
 

@@ -25,7 +25,7 @@ public static class IMazePathSerializer
     {
         using var reader = new BinaryReader(stream);
         var type = DeserializeHeader(reader);
-        var path = IMazePath.Read(reader, type);
+        var path = IMazePath.Read(type, reader);
         reader.BaseStream.EnsureCompleted();
         return path;
     }
@@ -34,7 +34,7 @@ public static class IMazePathSerializer
     {
         using var reader = new BinaryReader(stream);
         var type = DeserializeHeader(reader);
-        var path = await IMazePath.ReadAsync(reader, type);
+        var path = await IMazePath.ReadAsync(type, reader);
         reader.BaseStream.EnsureCompleted();
         return path;
     }
@@ -45,7 +45,7 @@ public static class IMazePathSerializer
         writer.Write(Version);
     }
 
-    private static short DeserializeHeader(BinaryReader reader)
+    private static MazePathType DeserializeHeader(BinaryReader reader)
     {
         var magic = reader.ReadChars(8);
         if(!magic.SequenceEqual(MagicHeader)) throw new InvalidDataException("Magic header not present");
@@ -53,6 +53,6 @@ public static class IMazePathSerializer
         var version = reader.ReadInt16();
         if(version != Version) throw new InvalidDataException($"Path version is {version} but we only understand version {Version}");
 
-        return reader.ReadInt16();
+        return (MazePathType)reader.ReadUInt16();
     }
 }
