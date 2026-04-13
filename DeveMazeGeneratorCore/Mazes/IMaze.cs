@@ -15,4 +15,16 @@ public interface IMaze
     IMaze Clone();
     void Write(BinaryWriter writer);
     Task WriteAsync(BinaryWriter writer);
+
+    public static IMaze Read(BinaryReader reader, short type) => type switch
+    {
+        BitGridMaze.TypeId => BitGridMaze.Read(reader),
+        _ => throw new InvalidDataException($"Unknown maze type {type}")
+    };
+
+    public static async Task<IMaze> ReadAsync(BinaryReader reader, short type) => type switch
+    {
+        BitGridMaze.TypeId => await BitGridMaze.ReadAsync(reader),
+        _ => throw new InvalidDataException($"Unknown maze type {type}")
+    };
 }

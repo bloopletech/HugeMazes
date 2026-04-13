@@ -1,6 +1,4 @@
-using DeveMazeGeneratorCore.Mazes;
-
-namespace DeveMazeGeneratorCore.Files;
+namespace DeveMazeGeneratorCore.Mazes;
 
 public static class IMazeFile
 {

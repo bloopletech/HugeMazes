@@ -1,15 +1,19 @@
 using System.Runtime.CompilerServices;
 using DeveMazeGeneratorCore.Mazes;
 
-namespace DeveMazeGeneratorCore;
+namespace DeveMazeGeneratorCore.Paths;
 
-public class MazePath
+public class MazePath : IMazePath
 {
     public const short TypeId = 1;
 
     private readonly BitGrid grid;
 
-    public MazePath(int width, int height) : this(new(width, height))
+    public MazePath(int width, int height) : this(new BitGrid(width, height))
+    {
+    }
+
+    public MazePath(MazePath source) : this(new BitGrid(source.grid))
     {
     }
 
@@ -17,6 +21,8 @@ public class MazePath
     {
         this.grid = grid;
     }
+
+    public IMazePath Clone() => new MazePath(this);
 
     public bool this[int x, int y]
     {
@@ -50,12 +56,12 @@ public class MazePath
         await grid.WriteAsync(writer);
     }
 
-    public static MazePath Read(BinaryReader reader)
+    public static IMazePath Read(BinaryReader reader)
     {
         return new MazePath(BitGrid.Read(reader));
     }
 
-    public static async Task<MazePath> ReadAsync(BinaryReader reader)
+    public static async Task<IMazePath> ReadAsync(BinaryReader reader)
     {
         return new MazePath(await BitGrid.ReadAsync(reader));
     }

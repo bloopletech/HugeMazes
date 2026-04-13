@@ -1,5 +1,6 @@
 using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Paths;
 using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore;
@@ -14,7 +15,7 @@ public static class PathFinder
     /// </summary>
     /// <param name="maze">The maze.InnerMap</param>
     /// <returns>The shortest path in a list of points</returns>
-    public static MazePath Find(IMaze maze)
+    public static IMazePath Find(IMaze maze)
     {
         maze.EnsureMinimumSize();
 

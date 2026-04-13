@@ -1,6 +1,6 @@
 using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.Mazes;
-using DeveMazeGeneratorCore.Files;
+using DeveMazeGeneratorCore.Paths;
 
 namespace DeveMazeGeneratorCore.ConsoleApp;
 
@@ -9,7 +9,7 @@ public class CLI(Options options)
     private string? mazeFileName;
     private IMaze? maze;
     private string? pathFileName;
-    private MazePath? path;
+    private IMazePath? path;
 
     public async Task Run()
     {
@@ -63,7 +63,7 @@ public class CLI(Options options)
         {
             maze ??= await IMazeFile.LoadAsync(mazeFileName);
             path = PathFinder.Find(maze);
-            await MazePathFile.SaveAsync(pathFileName, path);
+            await IMazePathFile.SaveAsync(pathFileName, path);
             Console.WriteLine($"Saved solution to {pathFileName}");
         };
     }
@@ -90,7 +90,7 @@ public class CLI(Options options)
         return async () =>
         {
             maze ??= await IMazeFile.LoadAsync(mazeFileName);
-            path ??= await MazePathFile.LoadAsync(pathFileName);
+            path ??= await IMazePathFile.LoadAsync(pathFileName);
             using var image = ImageCreator.CreateImage(maze, path);
             await ImageCreator.Save(imageFileName, image);
 

@@ -1,6 +1,7 @@
 #if !BLAZOR
 using System.Diagnostics;
 using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Paths;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -37,7 +38,7 @@ public static class ImageCreator
         return image;
     }
 
-    public static Image<Argb32> CreateImage(IMaze maze, MazePath path)
+    public static Image<Argb32> CreateImage(IMaze maze, IMazePath path)
     {
         var image = CreateImage(maze);
 

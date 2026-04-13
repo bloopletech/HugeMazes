@@ -1,7 +1,6 @@
 using DeveMazeGeneratorCore.Extensions;
-using DeveMazeGeneratorCore.Mazes;
 
-namespace DeveMazeGeneratorCore.Files;
+namespace DeveMazeGeneratorCore.Mazes;
 
 public static class IMazeSerializer
 {
@@ -22,44 +21,28 @@ public static class IMazeSerializer
         await maze.WriteAsync(writer);
     }
 
+    private static void SerializeHeader(BinaryWriter writer)
+    {
+        writer.Write(MagicHeader);
+        writer.Write(Version);
+    }
+
     public static IMaze Deserialize(Stream stream)
     {
         using var reader = new BinaryReader(stream);
         var type = DeserializeHeader(reader);
-
-        if(type == BitGridMaze.TypeId)
-        {
-            var maze = BitGridMaze.Read(reader);
-            reader.BaseStream.EnsureCompleted();
-            return maze;
-        }
-        else
-        {
-            throw new InvalidDataException($"Unknown maze type {type}");
-        }
+        var maze = IMaze.Read(reader, type);
+        reader.BaseStream.EnsureCompleted();
+        return maze;
     }
 
     public static async Task<IMaze> DeserializeAsync(Stream stream)
     {
         using var reader = new BinaryReader(stream);
         var type = DeserializeHeader(reader);
-
-        if(type == BitGridMaze.TypeId)
-        {
-            var maze = await BitGridMaze.ReadAsync(reader);
-            reader.BaseStream.EnsureCompleted();
-            return maze;
-        }
-        else
-        {
-            throw new InvalidDataException($"Unknown maze type {type}");
-        }
-    }
-
-    private static void SerializeHeader(BinaryWriter writer)
-    {
-        writer.Write(MagicHeader);
-        writer.Write(Version);
+        var maze = await IMaze.ReadAsync(reader, type);
+        reader.BaseStream.EnsureCompleted();
+        return maze;
     }
 
     private static short DeserializeHeader(BinaryReader reader)
