@@ -9,8 +9,10 @@ public class BitArreintjeFastInnerMapArray(int height)
 
     public BitArreintjeFastInnerMapArray Clone()
     {
-        var cloned = new BitArreintjeFastInnerMapArray(0);
-        cloned._innerData = new long[_innerData.Length];
+        var cloned = new BitArreintjeFastInnerMapArray(0)
+        {
+            _innerData = new long[_innerData.Length]
+        };
         Array.Copy(_innerData, cloned._innerData, _innerData.Length);
         return cloned;
     }

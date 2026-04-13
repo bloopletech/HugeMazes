@@ -32,42 +32,35 @@ public class DeveJobAttribute : JobConfigBaseAttribute
 
     private static Job CreateJob(string? id, int launchCount, int warmupCount, int targetCount, int invocationCount, RunStrategy? runStrategy, bool baseline, Jit? jit, Platform? platform, bool disableTieredCompilation, RuntimeMoniker runtimeMoniker = RuntimeMoniker.HostProcess)
     {
-        Job job = new Job(id);
-        int num = 0;
+        Job job = new(id);
         if(launchCount != -1)
         {
             job.Run.LaunchCount = launchCount;
-            num++;
         }
 
         if(warmupCount != -1)
         {
             job.Run.WarmupCount = warmupCount;
-            num++;
         }
 
         if(targetCount != -1)
         {
             job.Run.IterationCount = targetCount;
-            num++;
         }
 
         if(invocationCount != -1)
         {
             job.Run.InvocationCount = invocationCount;
-            num++;
             int num2 = job.Run.ResolveValue(RunMode.UnrollFactorCharacteristic, EnvironmentResolver.Instance);
             if(invocationCount % num2 != 0)
             {
                 job.Run.UnrollFactor = 1;
-                num++;
             }
         }
 
         if(runStrategy.HasValue)
         {
             job.Run.RunStrategy = runStrategy.Value;
-            num++;
         }
 
         if(baseline)

@@ -7,7 +7,7 @@ public class BitArreintjeFastInnerMap : IMaze
 {
     private readonly int width;
     private readonly int height;
-    private BitArreintjeFastInnerMapArray[] _innerData;
+    private readonly BitArreintjeFastInnerMapArray[] _innerData;
 
     public BitArreintjeFastInnerMap(int width, int height)
     {

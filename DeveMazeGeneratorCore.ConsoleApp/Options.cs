@@ -2,7 +2,7 @@ namespace DeveMazeGeneratorCore.ConsoleApp;
 
 public class Options(string[] args)
 {
-    private Queue<string> queue = new(args);
+    private readonly Queue<string> queue = new(args);
 
     public string Peek() => queue.Peek();
     public bool HasNext() => queue.Count > 0;

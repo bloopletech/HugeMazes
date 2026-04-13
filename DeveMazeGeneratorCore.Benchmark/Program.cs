@@ -4,11 +4,11 @@ namespace DeveMazeGeneratorCore.Benchmark;
 
 public static class Program
 {
-    public static void Main(string[] args)
+    public static void Main()
     {
         Console.WriteLine("Running the Benchmark job");
 
         //var config = DefaultConfig.Instance.WithSummaryStyle(SummaryStyle.Default.WithMaxParameterColumnWidth(200));
-        var summary = BenchmarkRunner.Run<MazeBenchmarkJob>();
+        BenchmarkRunner.Run<MazeBenchmarkJob>();
     }
 }

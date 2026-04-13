@@ -9,7 +9,7 @@ namespace DeveMazeGeneratorCore.Web.Controllers;
 [Route("[controller]")]
 public class MazesController : ControllerBase
 {
-    private FontCollection _fontCollection;
+    private readonly FontCollection _fontCollection;
 
     //private static ConcurrentDictionary<int, byte[]> _zoomImageCache = new();
 
@@ -26,7 +26,7 @@ public class MazesController : ControllerBase
     [HttpGet]
     public IEnumerable<string> Get()
     {
-        return new string[] { "Test1", "value2" };
+        return ["Test1", "value2"];
     }
 
     [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
@@ -56,16 +56,14 @@ public class MazesController : ControllerBase
 
         w.Restart();
         var image = ImageCreator.CreateImage(maze, path);
-        using (var memoryStream = new MemoryStream())
-        {
-            ImageCreator.Serialize(memoryStream, image).Wait();
-            var toImageTime = w.Elapsed;
+        using var memoryStream = new MemoryStream();
+        ImageCreator.Serialize(memoryStream, image).Wait();
+        var toImageTime = w.Elapsed;
 
-            Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");
+        Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");
 
-            var data = memoryStream.ToArray();
-            return File(data, "image/png");
-        }
+        var data = memoryStream.ToArray();
+        return File(data, "image/png");
     }
 
     [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
@@ -82,15 +80,13 @@ public class MazesController : ControllerBase
 
         w.Restart();
         var image = ImageCreator.CreateImage(maze, path);
-        using (var memoryStream = new MemoryStream())
-        {
-            ImageCreator.Serialize(memoryStream, image).Wait();
-            var toImageTime = w.Elapsed;
+        using var memoryStream = new MemoryStream();
+        ImageCreator.Serialize(memoryStream, image).Wait();
+        var toImageTime = w.Elapsed;
 
-            Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");
+        Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");
 
-            var data = memoryStream.ToArray();
-            return File(data, "image/png");
-        }
+        var data = memoryStream.ToArray();
+        return File(data, "image/png");
     }
 }
