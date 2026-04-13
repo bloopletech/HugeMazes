@@ -45,15 +45,27 @@ public class BitGrid
         set => array[x + (y * height)] = value;
     }
 
-    public async Task Write(BinaryWriter writer)
+    public void Write(BinaryWriter writer)
     {
         writer.Write(width);
         writer.Write(height);
-        await array.Write(writer);
+        array.Write(writer);
     }
 
-    public static async Task<BitGrid> Read(BinaryReader reader)
+    public async Task WriteAsync(BinaryWriter writer)
     {
-        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), await BitArray.Read(reader));
+        writer.Write(width);
+        writer.Write(height);
+        await array.WriteAsync(writer);
+    }
+
+    public static BitGrid Read(BinaryReader reader)
+    {
+        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), BitArray.Read(reader));
+    }
+
+    public static async Task<BitGrid> ReadAsync(BinaryReader reader)
+    {
+        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), await BitArray.ReadAsync(reader));
     }
 }

@@ -13,5 +13,6 @@ public interface IMaze
     bool this[int x, int y] { get; set; }
 
     IMaze Clone();
-    Task Write(BinaryWriter writer);
+    void Write(BinaryWriter writer);
+    Task WriteAsync(BinaryWriter writer);
 }

@@ -1,6 +1,6 @@
 using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.Mazes;
-using DeveMazeGeneratorCore.Serializers;
+using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.ConsoleApp;
 
@@ -39,7 +39,7 @@ public class CLI(Options options)
         return async () =>
         {
             maze = DeveMazeGeneratorCore.Generate(width, height, seed);
-            await MazeSerializer.Save(mazeFileName, maze);
+            await IMazeFile.SaveAsync(mazeFileName, maze);
             Console.WriteLine($"Saved maze to {mazeFileName}");
         };
     }
@@ -49,7 +49,7 @@ public class CLI(Options options)
         mazeFileName ??= options.Next();
         return async () =>
         {
-            maze ??= await MazeSerializer.Load(mazeFileName);
+            maze ??= await IMazeFile.LoadAsync(mazeFileName);
             var result = Verifier.IsPerfectMaze(maze);
             Console.WriteLine($"Is our maze perfect?: {result}");
         };
@@ -61,9 +61,9 @@ public class CLI(Options options)
         pathFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".path"));
         return async () =>
         {
-            maze ??= await MazeSerializer.Load(mazeFileName);
+            maze ??= await IMazeFile.LoadAsync(mazeFileName);
             path = PathFinder.Find(maze);
-            await MazePathSerializer.Save(pathFileName, path);
+            await MazePathFile.SaveAsync(pathFileName, path);
             Console.WriteLine($"Saved solution to {pathFileName}");
         };
     }
@@ -74,7 +74,7 @@ public class CLI(Options options)
         var imageFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".png"));
         return async () =>
         {
-            maze ??= await MazeSerializer.Load(mazeFileName);
+            maze ??= await IMazeFile.LoadAsync(mazeFileName);
             using var image = ImageCreator.CreateImage(maze);
             await ImageCreator.Save(imageFileName, image);
 
@@ -89,8 +89,8 @@ public class CLI(Options options)
         var imageFileName = options.NextFileName(Path.ChangeExtension(pathFileName, ".path.png"));
         return async () =>
         {
-            maze ??= await MazeSerializer.Load(mazeFileName);
-            path ??= await MazePathSerializer.Load(pathFileName);
+            maze ??= await IMazeFile.LoadAsync(mazeFileName);
+            path ??= await MazePathFile.LoadAsync(pathFileName);
             using var image = ImageCreator.CreateImage(maze, path);
             await ImageCreator.Save(imageFileName, image);
 

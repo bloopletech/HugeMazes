@@ -49,7 +49,12 @@ public class BitArreintjeFastInnerMap : IMaze
         }
     }
 
-    public Task Write(BinaryWriter writer)
+    public void Write(BinaryWriter writer)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task WriteAsync(BinaryWriter writer)
     {
         throw new NotImplementedException();
     }

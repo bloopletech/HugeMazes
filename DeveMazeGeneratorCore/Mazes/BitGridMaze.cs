@@ -42,19 +42,35 @@ public class BitGridMaze : IMaze
         set => grid[x, y] = value;
     }
 
-    public async Task Write(BinaryWriter writer)
+    public void Write(BinaryWriter writer)
     {
         writer.Write(TypeId);
         writer.Write(Width);
         writer.Write(Height);
-        await grid.Write(writer);
+        grid.Write(writer);
     }
 
-    public static async Task<BitGridMaze> Read(BinaryReader reader)
+    public async Task WriteAsync(BinaryWriter writer)
+    {
+        writer.Write(TypeId);
+        writer.Write(Width);
+        writer.Write(Height);
+        await grid.WriteAsync(writer);
+    }
+
+    public static BitGridMaze Read(BinaryReader reader)
     {
         var width = reader.ReadInt32();
         var height = reader.ReadInt32();
-        var grid = await BitGrid.Read(reader);
+        var grid = BitGrid.Read(reader);
+        return new BitGridMaze(width, height, grid);
+    }
+
+    public static async Task<BitGridMaze> ReadAsync(BinaryReader reader)
+    {
+        var width = reader.ReadInt32();
+        var height = reader.ReadInt32();
+        var grid = await BitGrid.ReadAsync(reader);
         return new BitGridMaze(width, height, grid);
     }
 }

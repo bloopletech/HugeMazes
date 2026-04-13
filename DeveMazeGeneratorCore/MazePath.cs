@@ -38,14 +38,25 @@ public class MazePath
         //}
     }
 
-    public async Task Write(BinaryWriter writer)
+    public void Write(BinaryWriter writer)
     {
         writer.Write(TypeId);
-        await grid.Write(writer);
+        grid.Write(writer);
     }
 
-    public static async Task<MazePath> Read(BinaryReader reader)
+    public async Task WriteAsync(BinaryWriter writer)
     {
-        return new MazePath(await BitGrid.Read(reader));
+        writer.Write(TypeId);
+        await grid.WriteAsync(writer);
+    }
+
+    public static MazePath Read(BinaryReader reader)
+    {
+        return new MazePath(BitGrid.Read(reader));
+    }
+
+    public static async Task<MazePath> ReadAsync(BinaryReader reader)
+    {
+        return new MazePath(await BitGrid.ReadAsync(reader));
     }
 }
