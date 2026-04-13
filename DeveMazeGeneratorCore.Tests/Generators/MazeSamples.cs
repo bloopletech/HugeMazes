@@ -12,7 +12,7 @@ public class MazeSamples
     [Fact]
     public async Task GeneratingAMazeWithABlockInTheMiddleWorks()
     {
-        var maze = new BitArreintjeFastInnerMap(128, 128);
+        var maze = new BitArreintjeFastInnerMap(129, 129);
 
         for(int y = 33; y < 96; y++)
         {

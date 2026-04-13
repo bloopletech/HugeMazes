@@ -12,7 +12,7 @@ namespace DeveMazeGeneratorCore.Tests.Generators
                 //Arrange
 
                 //Act
-                var maze = DeveMazeGeneratorCore.Generate(128, 128);
+                var maze = DeveMazeGeneratorCore.Generate(129, 129);
 
                 //Assert
                 Assert.False(maze[0, 0]);
@@ -24,7 +24,7 @@ namespace DeveMazeGeneratorCore.Tests.Generators
             {
                 //Arrange
                 //Act
-                var maze = DeveMazeGeneratorCore.Generate(128, 128);
+                var maze = DeveMazeGeneratorCore.Generate(129, 129);
 
                 Assert.True(Verifier.IsPerfectMaze(maze));
             }
