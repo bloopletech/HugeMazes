@@ -7,13 +7,10 @@ public static class StatusObtainer
 {
     public static StatusModel GetStatus()
     {
-        var statusModel = new StatusModel
-        {
-            ApplicationName = Assembly.GetEntryAssembly().GetName().Name,
-            Version = Assembly.GetEntryAssembly().GetName().Version.ToString(),
-            UpTime = (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString()
-        };
-
-        return statusModel;
+        var assemblyName = Assembly.GetExecutingAssembly().GetName();
+        return new(
+            assemblyName.Name!,
+            assemblyName.Version!.ToString(),
+            (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString());
     }
 }

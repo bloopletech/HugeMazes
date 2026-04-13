@@ -18,7 +18,7 @@ public class MazesController : ControllerBase
         var assembly = Assembly.GetExecutingAssembly();
 
         _fontCollection = new();
-        using Stream stream = assembly.GetManifestResourceStream("DeveMazeGeneratorCore.Web.SecularOne-Regular.ttf");
+        using Stream stream = assembly.GetManifestResourceStream("DeveMazeGeneratorCore.Web.SecularOne-Regular.ttf")!;
         _fontCollection.Add(stream);
     }
 
