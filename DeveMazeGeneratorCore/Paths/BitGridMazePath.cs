@@ -1,15 +1,16 @@
 using System.Runtime.CompilerServices;
 using DeveMazeGeneratorCore.IO;
+using DeveMazeGeneratorCore.Mazes;
 
-namespace DeveMazeGeneratorCore.Mazes;
+namespace DeveMazeGeneratorCore.Paths;
 
-public sealed class BitGridMaze(BitGrid grid) : IMaze
+public sealed class BitGridMazePath(BitGrid grid) : IGridMazePath
 {
-    public BitGridMaze(IStore store, bool leaveOpen = false) : this(store, 0, 0, leaveOpen)
+    public BitGridMazePath(IStore store, bool leaveOpen = false) : this(store, 0, 0, leaveOpen)
     {
     }
 
-    public BitGridMaze(
+    public BitGridMazePath(
         IStore store,
         int width,
         int height,
@@ -42,10 +43,10 @@ public sealed class BitGridMaze(BitGrid grid) : IMaze
 
     public void Dispose() => grid.Dispose();
 
-    public IMaze Clone() => Clone(IStore.Create(IsBig));
+    public IGridMazePath Clone() => Clone(IStore.Create(IsBig));
 
-    public IMaze Clone(IStore destination, bool leaveOpen = false)
+    public IGridMazePath Clone(IStore destination, bool leaveOpen = false)
     {
-        return new BitGridMaze((BitGrid)grid.Clone(destination, leaveOpen));
+        return new BitGridMazePath((BitGrid)grid.Clone(destination, leaveOpen));
     }
 }

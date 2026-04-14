@@ -3,17 +3,17 @@ using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
-public sealed class BitGridMaze(BitGrid grid) : IMaze
+public sealed class BigBitGridMaze(BigBitGrid grid) : IMaze
 {
-    public BitGridMaze(IStore store, bool leaveOpen = false) : this(store, 0, 0, leaveOpen)
+    public BigBitGridMaze(IStore store, bool leaveOpen = false) : this(store, 0, 0, leaveOpen)
     {
     }
 
-    public BitGridMaze(
+    public BigBitGridMaze(
         IStore store,
         int width,
         int height,
-        bool leaveOpen = false) : this(new BitGrid(store, width, height, leaveOpen))
+        bool leaveOpen = false) : this(new BigBitGrid(store, width, height, leaveOpen))
     {
     }
 
@@ -34,11 +34,11 @@ public sealed class BitGridMaze(BitGrid grid) : IMaze
 
     public void Read() => grid.Read();
 
-    public async Task ReadAsync() => Read();
+    public async Task ReadAsync() => await grid.ReadAsync();
 
     public void Write() => grid.Write();
 
-    public async Task WriteAsync() => Write();
+    public async Task WriteAsync() => await grid.WriteAsync();
 
     public void Dispose() => grid.Dispose();
 
@@ -46,6 +46,6 @@ public sealed class BitGridMaze(BitGrid grid) : IMaze
 
     public IMaze Clone(IStore destination, bool leaveOpen = false)
     {
-        return new BitGridMaze((BitGrid)grid.Clone(destination, leaveOpen));
+        return new BigBitGridMaze((BigBitGrid)grid.Clone(destination, leaveOpen));
     }
 }

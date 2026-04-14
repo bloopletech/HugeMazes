@@ -1,32 +1,35 @@
-using System.Collections;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using DeveMazeGeneratorCore.Collections;
 using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
-public class BitGrid(IStore store, int width, int height, bool leaveOpen = false) : IBitGrid, IStorable
+public class BigBitGrid(
+    IStore store,
+    int width,
+    int height,
+    bool leaveOpen = false) : IBitGrid, IStorable, IAsyncDisposable
 {
-    private BitArray array = new(width * height);
+    private BigBitArray array = new(new StoreOffset(store, sizeof(int) * 2, true), (long)width * height);
     private bool disposed;
 
-    public BitGrid(IStore store, bool leaveOpen = false) : this(store, 0, 0, leaveOpen)
+    public BigBitGrid(IStore store, bool leaveOpen = false) : this(store, 0, 0, leaveOpen)
     {
     }
 
     public IStore Store => store;
     public bool IsBig => Extent > int.MaxValue;
-    public long Extent => CollectionsMarshal.AsBytes(array).Length + (sizeof(int) * 2);
+    public long Extent => array.Extent + (sizeof(int) * 2);
     public int Width => width;
     public int Height => height;
 
     public bool this[int x, int y]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => array[x + (y * height)];
+        get => array[x + ((long)y * height)];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => array[x + (y * height)] = value;
+        set => array[x + ((long)y * height)] = value;
     }
 
     public void Read()
@@ -36,20 +39,13 @@ public class BitGrid(IStore store, int width, int height, bool leaveOpen = false
         width = store.ReadInt32();
         height = store.ReadInt32();
 
-        array = new BitArray(width * height);
-        store.ReadExactly(CollectionsMarshal.AsBytes(array));
+        array = new(new StoreOffset(store, sizeof(int) * 2, true), (long)width * height);
+        array.Read();
     }
 
     public async Task ReadAsync()
     {
         Read();
-        //store.Position = 0;
-
-        //width = store.ReadInt32();
-        //height = store.ReadInt32();
-
-        //array = new BitArray(width * height);
-        //await store.ReadExactlyAsync(array.GetArray());
     }
 
     public void Write()
@@ -59,20 +55,17 @@ public class BitGrid(IStore store, int width, int height, bool leaveOpen = false
         store.Write(width);
         store.Write(height);
 
-        store.Write(CollectionsMarshal.AsBytes(array));
-        //store.WriteArray(array.GetArray());
+        array.Write();
     }
 
     public async Task WriteAsync()
     {
-        Write();
-        //store.Position = 0;
+        store.Position = 0;
 
-        //store.Write(width);
-        //store.Write(height);
+        store.Write(width);
+        store.Write(height);
 
-        //await store.WriteAsync(array.GetArray());
-        ////await store.WriteArrayAsync(array.GetArray());
+        await array.WriteAsync();
     }
 
     protected virtual void Dispose(bool disposing)
@@ -84,7 +77,6 @@ public class BitGrid(IStore store, int width, int height, bool leaveOpen = false
                 Write();
                 if(!leaveOpen) store.Dispose();
             }
-
             disposed = true;
         }
     }
@@ -95,24 +87,36 @@ public class BitGrid(IStore store, int width, int height, bool leaveOpen = false
         GC.SuppressFinalize(this);
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        if(!disposed)
+        {
+            await WriteAsync();
+            if(!leaveOpen) store.Dispose();
+            disposed = true;
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
     public IBitGrid Clone() => Clone(IStore.Create(IsBig));
 
     public IBitGrid Clone(IStore destination, bool leaveOpen = false)
     {
         Write();
         store.CopyTo(destination);
-        var result = new BitGrid(destination, leaveOpen);
+        var result = new BigBitGrid(destination, leaveOpen);
         result.Read();
         return result;
     }
 
-    public async Task<IBitGrid> CloneAsync() => Clone(IStore.Create(IsBig));
+    public async Task<IBitGrid> CloneAsync() => await CloneAsync(IStore.Create(IsBig));
 
     public async Task<IBitGrid> CloneAsync(IStore destination, bool leaveOpen = false)
     {
         await WriteAsync();
         await store.CopyToAsync(destination);
-        var result = new BitGrid(destination, leaveOpen);
+        var result = new BigBitGrid(destination, leaveOpen);
         await result.ReadAsync();
         return result;
     }

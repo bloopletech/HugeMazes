@@ -1,4 +1,5 @@
-using DeveMazeGeneratorCore.Extensions;
+using DeveMazeGeneratorCore.Collections;
+using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Structures;
 
@@ -14,9 +15,10 @@ public class AlgorithmBacktrack(IMaze maze, Random random) : IAlgorithm
         var width = maze.Width - 1;
         var height = maze.Height - 1;
 
-        var capacityEstimate = Convert.ToInt32(Math.Ceiling(width * height * 0.05));
+        //var capacityEstimate = Convert.ToInt32(Math.Ceiling(width * height * 0.05));
 
-        var stack = new Stack<MazePoint>(capacityEstimate);
+        using var stack = new BigList<MazePoint>(IStore.Create(maze.IsBig));
+        stack.Clear();
         stack.Push(new(1, 1));
         maze[1, 1] = true;
 
@@ -26,8 +28,7 @@ public class AlgorithmBacktrack(IMaze maze, Random random) : IAlgorithm
         while(stack.Count != 0)
         {
             var cur = stack.Peek();
-            var x = cur.X;
-            var y = cur.Y;
+            var (x, y) = cur;
 
             var targetCount = 0;
             if(x - 2 > 0 && !maze[x - 2, y])
@@ -57,22 +58,10 @@ public class AlgorithmBacktrack(IMaze maze, Random random) : IAlgorithm
                 stack.Push(target);
                 maze[target.X, target.Y] = true;
 
-                if(target.X < x)
-                {
-                    maze[x - 1, y] = true;
-                }
-                else if(target.X > x)
-                {
-                    maze[x + 1, y] = true;
-                }
-                else if(target.Y < y)
-                {
-                    maze[x, y - 1] = true;
-                }
-                else if(target.Y > y)
-                {
-                    maze[x, y + 1] = true;
-                }
+                if(target.X < x) maze[x - 1, y] = true;
+                else if(target.X > x) maze[x + 1, y] = true;
+                else if(target.Y < y) maze[x, y - 1] = true;
+                else if(target.Y > y) maze[x, y + 1] = true;
             }
             else
             {
