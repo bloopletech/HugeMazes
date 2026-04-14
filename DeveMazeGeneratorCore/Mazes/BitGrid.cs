@@ -45,27 +45,38 @@ public class BitGrid
         set => array[x + (y * height)] = value;
     }
 
-    public void Write(BinaryWriter writer)
+    public void Write(Stream stream)
     {
+        using var compressor = stream.Compressor();
+        WriteHeader(compressor);
+        array.Write(compressor);
+    }
+
+    public async Task WriteAsync(Stream stream)
+    {
+        using var compressor = stream.Compressor();
+        WriteHeader(compressor);
+        await array.WriteAsync(compressor);
+    }
+
+    private void WriteHeader(Stream stream)
+    {
+        using var writer = stream.Writer();
         writer.Write(width);
         writer.Write(height);
-        array.Write(writer);
     }
 
-    public async Task WriteAsync(BinaryWriter writer)
+    public static BitGrid Read(Stream stream)
     {
-        writer.Write(width);
-        writer.Write(height);
-        await array.WriteAsync(writer);
+        using var decompressor = stream.Decompressor();
+        using var reader = decompressor.Reader();
+        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), BitArray.Read(decompressor));
     }
 
-    public static BitGrid Read(BinaryReader reader)
+    public static async Task<BitGrid> ReadAsync(Stream stream)
     {
-        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), BitArray.Read(reader));
-    }
-
-    public static async Task<BitGrid> ReadAsync(BinaryReader reader)
-    {
-        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), await BitArray.ReadAsync(reader));
+        using var decompressor = stream.Decompressor();
+        using var reader = decompressor.Reader();
+        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), await BitArray.ReadAsync(decompressor));
     }
 }

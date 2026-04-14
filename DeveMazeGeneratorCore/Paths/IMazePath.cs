@@ -6,18 +6,18 @@ public interface IMazePath
 
     IMazePath Clone();
     void Highlight();
-    void Write(BinaryWriter writer);
-    Task WriteAsync(BinaryWriter writer);
+    void Write(Stream stream);
+    Task WriteAsync(Stream stream);
 
-    public static IMazePath Read(MazePathType type, BinaryReader reader) => type switch
+    public static IMazePath Read(MazePathType type, Stream stream) => type switch
     {
-        MazePathType.MazePath => MazePath.Read(reader),
+        MazePathType.MazePath => MazePath.Read(stream),
         _ => throw new InvalidDataException($"Unknown path type {type}")
     };
 
-    public static async Task<IMazePath> ReadAsync(MazePathType type, BinaryReader reader) => type switch
+    public static async Task<IMazePath> ReadAsync(MazePathType type, Stream stream) => type switch
     {
-        MazePathType.MazePath => await MazePath.ReadAsync(reader),
+        MazePathType.MazePath => await MazePath.ReadAsync(stream),
         _ => throw new InvalidDataException($"Unknown path type {type}")
     };
 

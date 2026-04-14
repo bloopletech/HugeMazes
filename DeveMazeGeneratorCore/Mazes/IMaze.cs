@@ -13,18 +13,18 @@ public interface IMaze
     bool this[int x, int y] { get; set; }
 
     IMaze Clone();
-    void Write(BinaryWriter writer);
-    Task WriteAsync(BinaryWriter writer);
+    void Write(Stream stream);
+    Task WriteAsync(Stream stream);
 
-    public static IMaze Read(MazeType type, BinaryReader reader) => type switch
+    public static IMaze Read(MazeType type, Stream stream) => type switch
     {
-        MazeType.BitGridMaze => BitGridMaze.Read(reader),
+        MazeType.BitGridMaze => BitGridMaze.Read(stream),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
-    public static async Task<IMaze> ReadAsync(MazeType type, BinaryReader reader) => type switch
+    public static async Task<IMaze> ReadAsync(MazeType type, Stream stream) => type switch
     {
-        MazeType.BitGridMaze => await BitGridMaze.ReadAsync(reader),
+        MazeType.BitGridMaze => await BitGridMaze.ReadAsync(stream),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 

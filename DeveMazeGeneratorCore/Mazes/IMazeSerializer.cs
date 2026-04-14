@@ -9,44 +9,42 @@ public static class IMazeSerializer
 
     public static void Serialize(Stream stream, IMaze maze)
     {
-        using var writer = new BinaryWriter(stream);
-        SerializeHeader(writer);
-        maze.Write(writer);
+        SerializeHeader(stream);
+        maze.Write(stream);
     }
 
     public static async Task SerializeAsync(Stream stream, IMaze maze)
     {
-        using var writer = new BinaryWriter(stream);
-        SerializeHeader(writer);
-        await maze.WriteAsync(writer);
+        SerializeHeader(stream);
+        await maze.WriteAsync(stream);
     }
 
-    private static void SerializeHeader(BinaryWriter writer)
+    private static void SerializeHeader(Stream stream)
     {
+        using var writer = stream.Writer();
         writer.Write(MagicHeader);
         writer.Write(Version);
     }
 
     public static IMaze Deserialize(Stream stream)
     {
-        using var reader = new BinaryReader(stream);
-        var type = DeserializeHeader(reader);
-        var maze = IMaze.Read(type, reader);
-        reader.BaseStream.EnsureCompleted();
+        var type = DeserializeHeader(stream);
+        var maze = IMaze.Read(type, stream);
+        stream.EnsureCompleted();
         return maze;
     }
 
     public static async Task<IMaze> DeserializeAsync(Stream stream)
     {
-        using var reader = new BinaryReader(stream);
-        var type = DeserializeHeader(reader);
-        var maze = await IMaze.ReadAsync(type, reader);
-        reader.BaseStream.EnsureCompleted();
+        var type = DeserializeHeader(stream);
+        var maze = await IMaze.ReadAsync(type, stream);
+        stream.EnsureCompleted();
         return maze;
     }
 
-    private static MazeType DeserializeHeader(BinaryReader reader)
+    private static MazeType DeserializeHeader(Stream stream)
     {
+        using var reader = stream.Reader();
         var magic = reader.ReadChars(8);
         if(!magic.SequenceEqual(MagicHeader)) throw new InvalidDataException("Magic header not present");
 

@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using DeveMazeGeneratorCore.Extensions;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
@@ -40,38 +41,41 @@ public class BitGridMaze : IMaze
         set => grid[x, y] = value;
     }
 
-    public void Write(BinaryWriter writer)
+    public void Write(Stream stream)
     {
-        WriteHeader(writer);
-        grid.Write(writer);
+        WriteHeader(stream);
+        grid.Write(stream);
     }
 
-    public async Task WriteAsync(BinaryWriter writer)
+    public async Task WriteAsync(Stream stream)
     {
-        WriteHeader(writer);
-        await grid.WriteAsync(writer);
+        WriteHeader(stream);
+        await grid.WriteAsync(stream);
     }
 
-    private void WriteHeader(BinaryWriter writer)
+    private void WriteHeader(Stream stream)
     {
+        using var writer = stream.Writer();
         writer.Write((ushort)MazeType.BitGridMaze);
         writer.Write(Width);
         writer.Write(Height);
     }
 
-    public static BitGridMaze Read(BinaryReader reader)
+    public static BitGridMaze Read(Stream stream)
     {
+        using var reader = stream.Reader();
         var width = reader.ReadInt32();
         var height = reader.ReadInt32();
-        var grid = BitGrid.Read(reader);
+        var grid = BitGrid.Read(stream);
         return new BitGridMaze(width, height, grid);
     }
 
-    public static async Task<BitGridMaze> ReadAsync(BinaryReader reader)
+    public static async Task<BitGridMaze> ReadAsync(Stream stream)
     {
+        using var reader = stream.Reader();
         var width = reader.ReadInt32();
         var height = reader.ReadInt32();
-        var grid = await BitGrid.ReadAsync(reader);
+        var grid = await BitGrid.ReadAsync(stream);
         return new BitGridMaze(width, height, grid);
     }
 }

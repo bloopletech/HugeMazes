@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.Mazes;
 
 namespace DeveMazeGeneratorCore.Paths;
@@ -42,25 +43,27 @@ public class MazePath : IMazePath
         //}
     }
 
-    public void Write(BinaryWriter writer)
+    public void Write(Stream stream)
     {
+        using var writer = stream.Writer();
         writer.Write((ushort)MazePathType.MazePath);
-        grid.Write(writer);
+        grid.Write(stream);
     }
 
-    public async Task WriteAsync(BinaryWriter writer)
+    public async Task WriteAsync(Stream stream)
     {
+        using var writer = stream.Writer();
         writer.Write((ushort)MazePathType.MazePath);
-        await grid.WriteAsync(writer);
+        await grid.WriteAsync(stream);
     }
 
-    public static IMazePath Read(BinaryReader reader)
+    public static IMazePath Read(Stream stream)
     {
-        return new MazePath(BitGrid.Read(reader));
+        return new MazePath(BitGrid.Read(stream));
     }
 
-    public static async Task<IMazePath> ReadAsync(BinaryReader reader)
+    public static async Task<IMazePath> ReadAsync(Stream stream)
     {
-        return new MazePath(await BitGrid.ReadAsync(reader));
+        return new MazePath(await BitGrid.ReadAsync(stream));
     }
 }

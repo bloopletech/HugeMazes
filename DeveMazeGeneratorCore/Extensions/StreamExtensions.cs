@@ -1,3 +1,6 @@
+using System.IO.Compression;
+using System.Text;
+
 namespace DeveMazeGeneratorCore.Extensions;
 
 public static class StreamExtensions
@@ -12,5 +15,10 @@ public static class StreamExtensions
         {
             if(stream.HasMore()) throw new InvalidDataException("Stream contains more data than expected");
         }
+
+        public BinaryReader Reader() => new(stream, Encoding.UTF8, true);
+        public BinaryWriter Writer() => new(stream, Encoding.UTF8, true);
+        public ZstandardStream Compressor(CompressionLevel level = CompressionLevel.Optimal) => new(stream, level, true);
+        public ZstandardStream Decompressor() => new(stream, CompressionMode.Decompress, true);
     }
 }

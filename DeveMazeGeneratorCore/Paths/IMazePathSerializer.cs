@@ -9,44 +9,42 @@ public static class IMazePathSerializer
 
     public static void Serialize(Stream stream, IMazePath path)
     {
-        using var writer = new BinaryWriter(stream);
-        SerializeHeader(writer);
-        path.Write(writer);
+        SerializeHeader(stream);
+        path.Write(stream);
     }
 
     public static async Task SerializeAsync(Stream stream, IMazePath path)
     {
-        using var writer = new BinaryWriter(stream);
-        SerializeHeader(writer);
-        await path.WriteAsync(writer);
+        SerializeHeader(stream);
+        await path.WriteAsync(stream);
+    }
+
+    private static void SerializeHeader(Stream stream)
+    {
+        using var writer = stream.Writer();
+        writer.Write(MagicHeader);
+        writer.Write(Version);
     }
 
     public static IMazePath Deserialize(Stream stream)
     {
-        using var reader = new BinaryReader(stream);
-        var type = DeserializeHeader(reader);
-        var path = IMazePath.Read(type, reader);
-        reader.BaseStream.EnsureCompleted();
+        var type = DeserializeHeader(stream);
+        var path = IMazePath.Read(type, stream);
+        stream.EnsureCompleted();
         return path;
     }
 
     public static async Task<IMazePath> DeserializeAsync(Stream stream)
     {
-        using var reader = new BinaryReader(stream);
-        var type = DeserializeHeader(reader);
-        var path = await IMazePath.ReadAsync(type, reader);
-        reader.BaseStream.EnsureCompleted();
+        var type = DeserializeHeader(stream);
+        var path = await IMazePath.ReadAsync(type, stream);
+        stream.EnsureCompleted();
         return path;
     }
 
-    private static void SerializeHeader(BinaryWriter writer)
+    private static MazePathType DeserializeHeader(Stream stream)
     {
-        writer.Write(MagicHeader);
-        writer.Write(Version);
-    }
-
-    private static MazePathType DeserializeHeader(BinaryReader reader)
-    {
+        using var reader = stream.Reader();
         var magic = reader.ReadChars(8);
         if(!magic.SequenceEqual(MagicHeader)) throw new InvalidDataException("Magic header not present");
 
