@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.OpenApi;
 
 namespace DeveMazeGeneratorCore.Web;
 
@@ -16,10 +15,10 @@ public class Startup(IConfiguration configuration)
 
         services.AddDirectoryBrowser();
 
-        services.AddSwaggerGen(c =>
-        {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "DeveMazeGeneratorWeb.API", Version = "v1" });
-        });
+        //services.AddSwaggerGen(c =>
+        //{
+        //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "DeveMazeGeneratorWeb.API", Version = "v1" });
+        //});
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,15 +34,15 @@ public class Startup(IConfiguration configuration)
         option.AddRedirect("^$", "swagger");
         app.UseRewriter(option);
 
-        // Enable middleware to serve generated Swagger as a JSON endpoint.
-        app.UseSwagger();
+        //// Enable middleware to serve generated Swagger as a JSON endpoint.
+        //app.UseSwagger();
 
-        // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-        // specifying the Swagger JSON endpoint.
-        app.UseSwaggerUI(c =>
-        {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "DeveMazeGeneratorWeb.API.V1");
-        });
+        //// Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+        //// specifying the Swagger JSON endpoint.
+        //app.UseSwaggerUI(c =>
+        //{
+        //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "DeveMazeGeneratorWeb.API.V1");
+        //});
 
         app.UseHttpsRedirection();
 

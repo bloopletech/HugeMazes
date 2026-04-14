@@ -1,33 +1,30 @@
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace DeveMazeGeneratorCore.Tests.Generators
+namespace DeveMazeGeneratorCore.Tests.Generators;
+
+[TestClass]
+public class TheGenerateMethod
 {
-    namespace AlgorithmBacktrackFacts
+    [TestMethod]
+    public void GeneratesAMaze()
     {
-        public class TheGenerateMethod
-        {
-            [Fact]
-            public void GeneratesAMaze()
-            {
-                //Arrange
+        //Arrange
 
-                //Act
-                var maze = DeveMazeGeneratorCore.Generate(129, 129);
+        //Act
+        var maze = DeveMazeGeneratorCore.Generate(129, 129);
 
-                //Assert
-                Assert.False(maze[0, 0]);
-                Assert.True(maze[1, 1]);
-            }
+        //Assert
+        Assert.IsFalse(maze[0, 0]);
+        Assert.IsTrue(maze[1, 1]);
+    }
 
-            [Fact]
-            public void GeneratesAPerfectMaze()
-            {
-                //Arrange
-                //Act
-                var maze = DeveMazeGeneratorCore.Generate(129, 129);
+    [TestMethod]
+    public void GeneratesAPerfectMaze()
+    {
+        //Arrange
+        //Act
+        var maze = DeveMazeGeneratorCore.Generate(129, 129);
 
-                Assert.True(Verifier.IsPerfectMaze(maze));
-            }
-        }
+        Assert.IsTrue(Verifier.IsPerfectMaze(maze));
     }
 }

@@ -1,15 +1,16 @@
-using DeveMazeGeneratorCore.Generators;
-using DeveMazeGeneratorCore.Mazes;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Xunit;
+using DeveMazeGeneratorCore.Generators;
+using DeveMazeGeneratorCore.Mazes;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DeveMazeGeneratorCore.Tests.Generators;
 
+[TestClass]
 public class MazeSamples
 {
-    [Fact]
+    [TestMethod]
     public async Task GeneratingAMazeWithABlockInTheMiddleWorks()
     {
         var maze = new BitArreintjeFastInnerMap(129, 129);

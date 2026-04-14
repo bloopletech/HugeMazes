@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <AssemblyName>DeveMazeGenerator.ConsoleApp</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>DeveMazeGeneratorConsole</PackageId>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -15,22 +14,21 @@
     <OptimizationPreference>Speed</OptimizationPreference>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'" >
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TieredCompilation>false</TieredCompilation>
     <TieredCompilationQuickJit>false</TieredCompilationQuickJit>
     <TieredCompilationQuickJitForLoops>false</TieredCompilationQuickJitForLoops>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Icon.ico" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+    <Content Include="Icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DeveMazeGeneratorCore\DeveMazeGeneratorCore.csproj" />
   </ItemGroup>
-
 </Project>
