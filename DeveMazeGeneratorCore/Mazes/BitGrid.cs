@@ -1,40 +1,58 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
 using DeveMazeGeneratorCore.Extensions;
+using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
-public class BitGrid
+public class BitGrid : IBitGrid, IBinarySerializable
 {
-    public readonly int width;
-    public readonly int height;
-    private readonly BitArray array;
+    private readonly IBinarySerializer serializer;
+    private readonly long offset;
+    private int width;
+    private int height;
+    private BitArray array;
 
-    public BitGrid(int width, int height) : this(width, height, new(width * height))
+    public BitGrid(IBinarySerializer serializer, long offset)
     {
+        this.serializer = serializer;
+        this.offset = offset;
+        array = new BitArray(0);
     }
 
-    public BitGrid(BitGrid source) : this(source.width, source.height, new(source.array))
+    public BitGrid(IBinarySerializer serializer, long offset, int width, int height)
     {
+        this.serializer = serializer;
+        this.offset = offset;
+
+        this.width = width;
+        this.height = height;
+        array = new BitArray(width * height);
     }
 
-    private BitGrid(int width, int height, BitArray array)
+    private BitGrid(IBinarySerializer serializer, long offset, int width, int height, BitArray array)
     {
-        var length = width * height;
-        if (length != array.Length)
-        {
-            throw new ArgumentException($"(width {width} * height {height}) {length} != array length {array.Length}");
-        }
+        this.serializer = serializer;
+        this.offset = offset;
 
         this.width = width;
         this.height = height;
         this.array = array;
     }
 
+    public IBinarySerializer Serializer => serializer;
+    public long Offset => offset;
     public int Width => width;
     public int Height => height;
 
-    public BitGrid Clone() => new(this);
+    public IBitGrid Clone() => Clone(serializer.Create(), 0);
+
+    public IBitGrid Clone(IBinarySerializer serializer, long offset) =>
+        new BitGrid(serializer, offset, width, height, new(array));
+
+    public async Task<IBitGrid> CloneAsync() => Clone();
+
+    public async Task<IBitGrid> CloneAsync(IBinarySerializer serializer, long offset) => Clone(serializer, offset);
 
     public bool this[int x, int y]
     {
@@ -45,38 +63,49 @@ public class BitGrid
         set => array[x + (y * height)] = value;
     }
 
-    public void Write(Stream stream)
+    public void Read()
     {
-        using var compressor = stream.Compressor();
-        WriteHeader(compressor);
-        array.Write(compressor);
+        serializer.Position = offset;
+
+        width = serializer.ReadInt32();
+        height = serializer.ReadInt32();
+
+        array = new BitArray(serializer.ReadInt32());
+        serializer.ReadExactly(array.GetArray());
     }
 
-    public async Task WriteAsync(Stream stream)
+    public async Task ReadAsync()
     {
-        using var compressor = stream.Compressor();
-        WriteHeader(compressor);
-        await array.WriteAsync(compressor);
+        serializer.Position = offset;
+
+        width = serializer.ReadInt32();
+        height = serializer.ReadInt32();
+
+        array = new BitArray(serializer.ReadInt32());
+        await serializer.ReadExactlyAsync(array.GetArray());
     }
 
-    private void WriteHeader(Stream stream)
+    public void Write()
     {
-        using var writer = stream.Writer();
-        writer.Write(width);
-        writer.Write(height);
+        serializer.Position = offset;
+
+        serializer.Write(width);
+        serializer.Write(height);
+
+        serializer.Write(array.Length);
+        serializer.Write(array.GetArray());
+        //serializer.WriteArray(array.GetArray());
     }
 
-    public static BitGrid Read(Stream stream)
+    public async Task WriteAsync()
     {
-        using var decompressor = stream.Decompressor();
-        using var reader = decompressor.Reader();
-        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), BitArray.Read(decompressor));
-    }
+        serializer.Position = offset;
 
-    public static async Task<BitGrid> ReadAsync(Stream stream)
-    {
-        using var decompressor = stream.Decompressor();
-        using var reader = decompressor.Reader();
-        return new BitGrid(reader.ReadInt32(), reader.ReadInt32(), await BitArray.ReadAsync(decompressor));
+        serializer.Write(width);
+        serializer.Write(height);
+
+        serializer.Write(array.Length);
+        await serializer.WriteAsync(array.GetArray());
+        //await serializer.WriteArrayAsync(array.GetArray());
     }
 }

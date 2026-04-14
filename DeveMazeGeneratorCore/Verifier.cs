@@ -1,3 +1,5 @@
+using DeveMazeGeneratorCore.Collections;
+using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Structures;
 
@@ -7,9 +9,16 @@ public class Verifier
 {
     public static bool IsPerfectMaze(IMaze maze)
     {
+        using var bs = BinarySerializer.CreateFile();
+        var stack = new BigList<MazePoint>(bs);
+        return IsPerfectMaze(maze, stack);
+    }
+
+    public static bool IsPerfectMaze(IMaze maze, IBigList<MazePoint> stack)
+    {
         var copiedMaze = maze.Clone();
 
-        FloodFill(copiedMaze);
+        FloodFill(copiedMaze, stack);
 
         for(int y = 0; y < copiedMaze.Height; y++)
         {
@@ -22,9 +31,9 @@ public class Verifier
         return true;
     }
 
-    public static void FloodFill(IMaze maze)
+    public static void FloodFill(IMaze maze, IBigList<MazePoint> stack)
     {
-        var stack = new Stack<MazePoint>();
+        stack.Clear();
         stack.Push(new(0, 0));
 
         int width = maze.Width - 1;

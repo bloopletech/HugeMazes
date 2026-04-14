@@ -1,20 +1,25 @@
-using DeveMazeGeneratorCore.Mazes.InnerStuff;
 using System.Runtime.CompilerServices;
+using DeveMazeGeneratorCore.Collections;
+using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
 public class BitArreintjeFastInnerMap : IMaze
 {
+    private readonly IBinarySerializer serializer;
+    private readonly long offset;
     private readonly int width;
     private readonly int height;
     private readonly BitArreintjeFastInnerMapArray[] _innerData;
 
-    public BitArreintjeFastInnerMap(int width, int height)
+    public BitArreintjeFastInnerMap(IBinarySerializer serializer, long offset)
     {
-        if(width < 3) throw new ArgumentOutOfRangeException(nameof(width), width, "Width must >= 3");
-        if(height < 3) throw new ArgumentOutOfRangeException(nameof(height), height, "Height must >= 3");
-        this.width = width;
-        this.height = height;
+        this.serializer = serializer;
+        this.offset = offset;
+
+        width = serializer.ReadInt32();
+        height = serializer.ReadInt32();
+
         _innerData = new BitArreintjeFastInnerMapArray[width];
         for(int i = 0; i < width; i++)
         {
@@ -22,12 +27,33 @@ public class BitArreintjeFastInnerMap : IMaze
         }
     }
 
+    public BitArreintjeFastInnerMap(IBinarySerializer serializer, long offset, int width, int height)
+    {
+        if(width < 3) throw new ArgumentOutOfRangeException(nameof(width), width, "Width must >= 3");
+        if(height < 3) throw new ArgumentOutOfRangeException(nameof(height), height, "Height must >= 3");
+
+        this.serializer = serializer;
+        this.offset = offset;
+        this.width = width;
+        this.height = height;
+
+        _innerData = new BitArreintjeFastInnerMapArray[width];
+        for(int i = 0; i < width; i++)
+        {
+            _innerData[i] = new BitArreintjeFastInnerMapArray(height);
+        }
+    }
+
+    public MazeType Type => MazeType.BitArreintjeFastInnerMap;
+    public IBinarySerializer Serializer => serializer;
+    public long Offset => offset;
     public int Width => width;
     public int Height => height;
 
     public IMaze Clone()
     {
-        var innerMapTarget = new BitArreintjeFastInnerMap(width, height);
+        var bs = BinarySerializer.CreateMemory();
+        var innerMapTarget = new BitArreintjeFastInnerMap(bs, 0, width, height);
         for(int i = 0; i < _innerData.Length; i++)
         {
             innerMapTarget._innerData[i] = _innerData[i].Clone();
@@ -49,13 +75,32 @@ public class BitArreintjeFastInnerMap : IMaze
         }
     }
 
-    public void Write(Stream stream)
+    public void Read()
     {
-        throw new NotImplementedException();
+        // TODO: Actually read _innerData from the stream
     }
 
-    public Task WriteAsync(Stream stream)
+    public async Task ReadAsync()
     {
-        throw new NotImplementedException();
+        // TODO: Actually read _innerData from the stream
+    }
+
+    public void Write()
+    {
+        WriteHeader();
+        // TODO: Actually write _innerData to the stream
+    }
+
+    public async Task WriteAsync()
+    {
+        WriteHeader();
+        // TODO: Actually write _innerData to the stream
+    }
+
+    private void WriteHeader()
+    {
+        //serializer.Write((ushort)MazeType.BitArreintjeFastInnerMap);
+        serializer.Write(Width);
+        serializer.Write(Height);
     }
 }

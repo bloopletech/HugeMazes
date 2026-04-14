@@ -1,28 +1,30 @@
 using System.Runtime.CompilerServices;
 using DeveMazeGeneratorCore.IO;
+using DeveMazeGeneratorCore.Mazes;
 
-namespace DeveMazeGeneratorCore.Mazes;
+namespace DeveMazeGeneratorCore.Paths;
 
-public class BitGridMaze(BitGrid grid) : IMaze
+public class BigBitGridMazePath(BigBitGrid grid) : IGridMazePath
 {
-    public BitGridMaze(IBinarySerializer serializer, long offset) : this(new BitGrid(serializer, offset))
+    public BigBitGridMazePath(IBinarySerializer serializer, long offset) : this(new BigBitGrid(serializer, offset))
     {
     }
 
-    public BitGridMaze(
+    public BigBitGridMazePath(
         IBinarySerializer serializer,
         long offset,
         int width,
-        int height) : this(new BitGrid(serializer, offset, width, height))
+        int height) : this(new BigBitGrid(serializer, offset, width, height))
     {
     }
 
+    public MazePathType Type => MazePathType.BigBitGridMazePath;
     public IBinarySerializer Serializer => grid.Serializer;
     public long Offset => grid.Offset;
     public int Width => grid.Width;
     public int Height => grid.Height;
 
-    public IMaze Clone() => new BitGridMaze((BitGrid)grid.Clone());
+    public IGridMazePath Clone() => new BigBitGridMazePath((BigBitGrid)grid.Clone());
 
     public bool this[int x, int y]
     {
@@ -36,21 +38,21 @@ public class BitGridMaze(BitGrid grid) : IMaze
     public void Read()
     {
         grid.Read();
-        Serializer.EnsureCompleted();
     }
 
     public async Task ReadAsync()
     {
-        Read();
+        await grid.ReadAsync();
     }
 
     public void Write()
     {
+        //RandomAccess.Write(handle, ref offset, (ushort)MazePathType.BitGridMazePath);
         grid.Write();
     }
 
     public async Task WriteAsync()
     {
-        Write();
+        await grid.WriteAsync();
     }
 }

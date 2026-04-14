@@ -3,7 +3,6 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Reports;
 using Microsoft.VSDiagnostics;
 
 namespace DeveMazeGeneratorCore.Benchmark;
@@ -45,7 +44,7 @@ public class MazeBenchmarkJob
     {
         public Config()
         {
-            SummaryStyle = SummaryStyle.Default.WithMaxParameterColumnWidth(200);
+            SummaryStyle = BenchmarkDotNet.Reports.SummaryStyle.Default.WithMaxParameterColumnWidth(200);
         }
     }
 }

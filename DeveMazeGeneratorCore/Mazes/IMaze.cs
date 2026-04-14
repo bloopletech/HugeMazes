@@ -1,3 +1,6 @@
+using System.Text;
+using DeveMazeGeneratorCore.IO;
+
 namespace DeveMazeGeneratorCore.Mazes;
 
 /// <summary>
@@ -5,7 +8,7 @@ namespace DeveMazeGeneratorCore.Mazes;
 /// 0 = False = Wall = Black
 /// 1 = True = Empty = White
 /// </summary>
-public interface IMaze
+public interface IMaze : IBinarySerializable
 {
     int Height { get; }
     int Width { get; }
@@ -13,24 +16,38 @@ public interface IMaze
     bool this[int x, int y] { get; set; }
 
     IMaze Clone();
-    void Write(Stream stream);
-    Task WriteAsync(Stream stream);
 
-    public static IMaze Read(MazeType type, Stream stream) => type switch
+    public void EnsureMinimumSize()
     {
-        MazeType.BitGridMaze => BitGridMaze.Read(stream),
-        _ => throw new InvalidDataException($"Unknown maze type {type}")
-    };
+        if(Width < 3) throw new ArgumentOutOfRangeException("maze.Width", Width, "Value must >= 3");
+        if(Height < 3) throw new ArgumentOutOfRangeException("maze.Height", Height, "Value must >= 3");
+    }
 
-    public static async Task<IMaze> ReadAsync(MazeType type, Stream stream) => type switch
+    public void EnsureOddSize()
     {
-        MazeType.BitGridMaze => await BitGridMaze.ReadAsync(stream),
-        _ => throw new InvalidDataException($"Unknown maze type {type}")
-    };
+        if(int.IsEvenInteger(Width)) throw new ArgumentException("Value must be an odd number", "maze.Width");
+        if(int.IsEvenInteger(Height)) throw new ArgumentException("Value must be an odd number", "maze.Height");
+    }
 
-    public static IMaze Create(MazeType type, int width, int height) => type switch
+    public string GenerateMapAsString()
     {
-        MazeType.BitGridMaze => new BitGridMaze(width, height),
-        _ => throw new InvalidDataException($"Unknown maze type {type}")
-    };
+        var stringBuilder = new StringBuilder();
+        for(int y = 0; y < Height; y++)
+        {
+            for(int x = 0; x < Width; x++)
+            {
+                bool b = this[x, y];
+                if(b)
+                {
+                    stringBuilder.Append(' ');
+                }
+                else
+                {
+                    stringBuilder.Append('0');
+                }
+            }
+            stringBuilder.AppendLine();
+        }
+        return stringBuilder.ToString();
+    }
 }

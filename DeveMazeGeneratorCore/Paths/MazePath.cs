@@ -1,69 +1,38 @@
-using System.Runtime.CompilerServices;
-using DeveMazeGeneratorCore.Extensions;
-using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Collections;
+using DeveMazeGeneratorCore.IO;
+using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Paths;
 
-public class MazePath : IMazePath
+public class MazePath(BigList<MazePoint> points) : IPointsMazePath
 {
-    private readonly BitGrid grid;
-
-    public MazePath(int width, int height) : this(new BitGrid(width, height))
+    public MazePath(IBinarySerializer serializer, long offset) : this(new(serializer, offset))
     {
     }
 
-    public MazePath(MazePath source) : this(new BitGrid(source.grid))
+    public IBinarySerializer Serializer => points.Serializer;
+    public long Offset => points.Offset;
+    public IBigList<MazePoint> Points => points;
+
+    public IPointsMazePath Clone() => new MazePath((BigList<MazePoint>)points.Clone());
+
+    public void Read()
     {
+        points.Read();
     }
 
-    private MazePath(BitGrid grid)
+    public async Task ReadAsync()
     {
-        this.grid = grid;
+        await points.ReadAsync();
     }
 
-    public IMazePath Clone() => new MazePath(this);
-
-    public bool this[int x, int y]
+    public void Write()
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => grid[x, y];
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => grid[x, y] = value;
+        points.Write();
     }
 
-    public void Highlight()
+    public async Task WriteAsync()
     {
-        //var points = new MazePointPos[stack.Count];
-
-        //foreach(var item in stack)
-        //{
-        //    byte formulathing = (byte)(points.Count / (double)stack.Count * 255.0);
-        //    points.Add(new MazePointPos(item.X, item.Y, formulathing));
-        //}
-    }
-
-    public void Write(Stream stream)
-    {
-        using var writer = stream.Writer();
-        writer.Write((ushort)MazePathType.MazePath);
-        grid.Write(stream);
-    }
-
-    public async Task WriteAsync(Stream stream)
-    {
-        using var writer = stream.Writer();
-        writer.Write((ushort)MazePathType.MazePath);
-        await grid.WriteAsync(stream);
-    }
-
-    public static IMazePath Read(Stream stream)
-    {
-        return new MazePath(BitGrid.Read(stream));
-    }
-
-    public static async Task<IMazePath> ReadAsync(Stream stream)
-    {
-        return new MazePath(await BitGrid.ReadAsync(stream));
+        await points.WriteAsync();
     }
 }

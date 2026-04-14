@@ -2,7 +2,10 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using DeveMazeGeneratorCore.Generators;
+using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Paths;
+using DeveMazeGeneratorCore.Structures;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace DeveMazeGeneratorCore.Tests.Generators;
@@ -13,7 +16,8 @@ public class MazeSamples
     [TestMethod]
     public async Task GeneratingAMazeWithABlockInTheMiddleWorks()
     {
-        var maze = new BitArreintjeFastInnerMap(129, 129);
+        using var serializer = new BinarySerializer(new MemoryStream());
+        var maze = new BitArreintjeFastInnerMap(serializer, 0, 129, 129);
 
         for(int y = 33; y < 96; y++)
         {
@@ -28,11 +32,12 @@ public class MazeSamples
         var algorithm = new AlgorithmBacktrack(maze, random);
         algorithm.Generate();
 
-        var path = PathFinder.Find(maze);
+        var path = new MazePath(BinarySerializer.CreateMemory(), 0);
+        PathFinder.Find(maze, path);
 
-        var image = ImageCreator.CreateImage(maze, path);
+        var image = Renderer.CreateImage(maze, path, RenderColors.Default);
 
         using var fs = new FileStream("GeneratingAMazeWithABlockInTheMiddleWorks.png", FileMode.Create);
-        await ImageCreator.Serialize(fs, image);
+        await Renderer.Serialize(fs, image);
     }
 }

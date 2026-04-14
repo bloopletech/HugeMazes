@@ -1,15 +1,16 @@
 using System.Runtime.CompilerServices;
 using DeveMazeGeneratorCore.IO;
+using DeveMazeGeneratorCore.Mazes;
 
-namespace DeveMazeGeneratorCore.Mazes;
+namespace DeveMazeGeneratorCore.Paths;
 
-public class BitGridMaze(BitGrid grid) : IMaze
+public class BitGridMazePath(BitGrid grid) : IGridMazePath
 {
-    public BitGridMaze(IBinarySerializer serializer, long offset) : this(new BitGrid(serializer, offset))
+    public BitGridMazePath(IBinarySerializer serializer, long offset) : this(new BitGrid(serializer, offset))
     {
     }
 
-    public BitGridMaze(
+    public BitGridMazePath(
         IBinarySerializer serializer,
         long offset,
         int width,
@@ -22,7 +23,7 @@ public class BitGridMaze(BitGrid grid) : IMaze
     public int Width => grid.Width;
     public int Height => grid.Height;
 
-    public IMaze Clone() => new BitGridMaze((BitGrid)grid.Clone());
+    public IGridMazePath Clone() => new BitGridMazePath((BitGrid)grid.Clone());
 
     public bool this[int x, int y]
     {
