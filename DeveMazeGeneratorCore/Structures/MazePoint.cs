@@ -10,6 +10,8 @@ namespace DeveMazeGeneratorCore.Structures;
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public record struct MazePoint(int X, int Y)
 {
+    public static readonly MazePoint Empty = new(-1, -1);
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set(int x, int y)
     {

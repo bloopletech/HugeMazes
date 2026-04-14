@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using SixLabors.Fonts;
 using System.Diagnostics;
 using System.Reflection;
+using DeveMazeGeneratorCore.Structures;
+using Microsoft.AspNetCore.Mvc;
+using SixLabors.Fonts;
 
 namespace DeveMazeGeneratorCore.Web.Controllers;
 
@@ -34,10 +35,10 @@ public class MazesController : ControllerBase
     public ActionResult GenerateMaze(int width, int height)
     {
         var maze = DeveMazeGeneratorCore.Generate(width, height);
-        var image = ImageCreator.CreateImage(maze);
+        var image = Renderer.Render(maze, RenderColors.Default);
 
         using var memoryStream = new MemoryStream();
-        ImageCreator.Serialize(memoryStream, image).Wait();
+        Renderer.Serialize(memoryStream, image).Wait();
         var data = memoryStream.ToArray();
         return File(data, "image/png");
     }
@@ -51,13 +52,13 @@ public class MazesController : ControllerBase
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        var path = PathFinder.Find(maze);
+        var path = DeveMazeGeneratorCore.Solve(maze);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();
-        var image = ImageCreator.CreateImage(maze, path);
+        var image = Renderer.CreateImage(maze, path, RenderColors.Default);
         using var memoryStream = new MemoryStream();
-        ImageCreator.Serialize(memoryStream, image).Wait();
+        Renderer.Serialize(memoryStream, image).Wait();
         var toImageTime = w.Elapsed;
 
         Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");
@@ -75,13 +76,13 @@ public class MazesController : ControllerBase
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        var path = PathFinder.Find(maze);
+        var path = DeveMazeGeneratorCore.Solve(maze);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();
-        var image = ImageCreator.CreateImage(maze, path);
+        var image = Renderer.CreateImage(maze, path, RenderColors.Default);
         using var memoryStream = new MemoryStream();
-        ImageCreator.Serialize(memoryStream, image).Wait();
+        Renderer.Serialize(memoryStream, image).Wait();
         var toImageTime = w.Elapsed;
 
         Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");

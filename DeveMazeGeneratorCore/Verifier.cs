@@ -1,3 +1,5 @@
+using DeveMazeGeneratorCore.Collections;
+using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Structures;
 
@@ -24,7 +26,8 @@ public class Verifier
 
     public static void FloodFill(IMaze maze)
     {
-        var stack = new Stack<MazePoint>();
+        using var stack = new BigList<MazePoint>(IStore.Create(maze.IsBig));
+        stack.Clear();
         stack.Push(new(0, 0));
 
         int width = maze.Width - 1;
