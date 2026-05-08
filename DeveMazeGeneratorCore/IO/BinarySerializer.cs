@@ -1,7 +1,5 @@
-using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using DeveMazeGeneratorCore.Extensions;
 using Microsoft.Win32.SafeHandles;
 
 namespace DeveMazeGeneratorCore.IO;
@@ -11,6 +9,7 @@ public class BinarySerializer(Stream stream) : IBinarySerializer, IDisposable, I
     private readonly BinaryReader reader = new BinaryReader(stream);
     private readonly BinaryWriter writer = new BinaryWriter(stream);
     private readonly SafeFileHandle? handle = stream is FileStream fileStream ? fileStream.SafeFileHandle : null;
+    private long previousPosition;
     private bool disposed;
 
     public Stream Stream => stream;
@@ -42,39 +41,36 @@ public class BinarySerializer(Stream stream) : IBinarySerializer, IDisposable, I
     public uint ReadUInt32() => reader.ReadUInt32();
     public ulong ReadUInt64() => reader.ReadUInt64();
 
-    public int PeekChar(long position) => reader.PeekChar();
-    public int Read(long position) => reader.Read();
-    public byte ReadByte(long position) => reader.ReadByte();
-    public int Read(long position, char[] buffer, int index, int count) => reader.Read(buffer, index, count);
-    public int Read(long position, Span<char> buffer) => reader.Read(buffer);
-    public int Read7BitEncodedInt(long position) => reader.Read7BitEncodedInt();
-    public long Read7BitEncodedInt64(long position) => reader.Read7BitEncodedInt64();
-    public bool ReadBoolean(long position) => reader.ReadBoolean();
-    public byte[] ReadBytes(long position, int count) => reader.ReadBytes(count);
-    public char ReadChar(long position) => reader.ReadChar();
-    public char[] ReadChars(long position, int count) => reader.ReadChars(count);
-    public decimal ReadDecimal(long position) => reader.ReadDecimal();
-    public double ReadDouble(long position) => reader.ReadDouble();
-    public Half ReadHalf(long position) => reader.ReadHalf();
-    public short ReadInt16(long position) => reader.ReadInt16();
-    public int ReadInt32(long position)
+    public int PeekChar(long position) => WithPosition(position, PeekChar);
+    public int Read(long position) => WithPosition(position, Read);
+    public byte ReadByte(long position) => WithPosition(position, ReadByte);
+    public int Read(long position, char[] buffer, int index, int count) =>
+        WithPosition(position, () => Read(buffer, index, count));
+    public int Read(long position, Span<char> buffer)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(int)];
-        RandomAccess.ReadExactly(handle!, buffer, offset);
-        return BinaryPrimitives.ReadInt32LittleEndian(buffer);
+        Position = position;
+        var result = Read(buffer);
+        Position = previousPosition;
+        return result;
     }
-    public long ReadInt64(long position)
-    {
-        Span<byte> buffer = stackalloc byte[sizeof(long)];
-        RandomAccess.ReadExactly(handle!, buffer, offset);
-        return BinaryPrimitives.ReadInt64LittleEndian(buffer);
-    }
-    public sbyte ReadSByte(long position) => reader.ReadSByte();
-    public float ReadSingle(long position) => reader.ReadSingle();
-    public string ReadString(long position) => reader.ReadString();
-    public ushort ReadUInt16(long position) => reader.ReadUInt16();
-    public uint ReadUInt32(long position) => reader.ReadUInt32();
-    public ulong ReadUInt64(long position) => reader.ReadUInt64();
+    public int Read7BitEncodedInt(long position) => WithPosition(position, Read7BitEncodedInt);
+    public long Read7BitEncodedInt64(long position) => WithPosition(position, Read7BitEncodedInt64);
+    public bool ReadBoolean(long position) => WithPosition(position, ReadBoolean);
+    public byte[] ReadBytes(long position, int count) => WithPosition(position, () => ReadBytes(count));
+    public char ReadChar(long position) => WithPosition(position, ReadChar);
+    public char[] ReadChars(long position, int count) => WithPosition(position, () => ReadChars(count));
+    public decimal ReadDecimal(long position) => WithPosition(position, ReadDecimal);
+    public double ReadDouble(long position) => WithPosition(position, ReadDouble);
+    public Half ReadHalf(long position) => WithPosition(position, ReadHalf);
+    public short ReadInt16(long position) => WithPosition(position, ReadInt16);
+    public int ReadInt32(long position) => WithPosition(position, ReadInt32);
+    public long ReadInt64(long position) => WithPosition(position, ReadInt64);
+    public sbyte ReadSByte(long position) => WithPosition(position, ReadSByte);
+    public float ReadSingle(long position) => WithPosition(position, ReadSingle);
+    public string ReadString(long position) => WithPosition(position, ReadString);
+    public ushort ReadUInt16(long position) => WithPosition(position, ReadUInt16);
+    public uint ReadUInt32(long position) => WithPosition(position, ReadUInt32);
+    public ulong ReadUInt64(long position) => WithPosition(position, ReadUInt64);
 
     public long Seek(int offset, SeekOrigin origin) => writer.Seek(offset, origin);
     public void Write(bool value) => writer.Write(value);
@@ -99,39 +95,33 @@ public class BinarySerializer(Stream stream) : IBinarySerializer, IDisposable, I
     public void Write7BitEncodedInt(int value) => writer.Write(value);
     public void Write7BitEncodedInt64(long value) => writer.Write(value);
 
-    public void Write(long position, bool value) => writer.Write(value);
-    public void Write(long position, byte value) => writer.Write(value);
-    public void Write(long position, byte[] buffer) => writer.Write(buffer);
-    public void Write(long position, char ch) => writer.Write(ch);
-    public void Write(long position, char[] chars) => writer.Write(chars);
-    public void Write(long position, char[] chars, int index, int count) => writer.Write(chars, index, count);
-    public void Write(long position, decimal value) => writer.Write(value);
-    public void Write(long position, double value) => writer.Write(value);
-    public void Write(long position, float value) => writer.Write(value);
-    public void Write(long position, Half value) => writer.Write(value);
-    public void Write(long position, int value)
+    public void Write(long position, bool value) => WithPosition(position, () => Write(value));
+    public void Write(long position, byte value) => WithPosition(position, () => Write(value));
+    public void Write(long position, byte[] buffer) => WithPosition(position, () => Write(buffer));
+    public void Write(long position, char ch) => WithPosition(position, () => Write(ch));
+    public void Write(long position, char[] chars) => WithPosition(position, () => Write(chars));
+    public void Write(long position, char[] chars, int index, int count) =>
+        WithPosition(position, () => Write(chars, index, count));
+    public void Write(long position, decimal value) => WithPosition(position, () => Write(value));
+    public void Write(long position, double value) => WithPosition(position, () => Write(value));
+    public void Write(long position, float value) => WithPosition(position, () => Write(value));
+    public void Write(long position, Half value) => WithPosition(position, () => Write(value));
+    public void Write(long position, int value) => WithPosition(position, () => Write(value));
+    public void Write(long position, long value) => WithPosition(position, () => Write(value));
+    public void Write(long position, ReadOnlySpan<char> chars)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(int)];
-        BinaryPrimitives.WriteInt32LittleEndian(buffer, value);
-        EnsureLength(position, buffer.Length);
-        RandomAccess.Write(handle!, buffer, position);
+        Position = position;
+        Write(chars);
+        Position = previousPosition;
     }
-    public void Write(long position, long value)
-    {
-        Span<byte> buffer = stackalloc byte[sizeof(long)];
-        BinaryPrimitives.WriteInt64LittleEndian(buffer, value);
-        EnsureLength(position, buffer.Length);
-        RandomAccess.Write(handle!, buffer, position);
-    }
-    public void Write(long position, ReadOnlySpan<char> chars) => writer.Write(chars);
-    public void Write(long position, sbyte value) => writer.Write(value);
-    public void Write(long position, short value) => writer.Write(value);
-    public void Write(long position, string value) => writer.Write(value);
-    public void Write(long position, uint value) => writer.Write(value);
-    public void Write(long position, ulong value) => writer.Write(value);
-    public void Write(long position, ushort value) => writer.Write(value);
-    public void Write7BitEncodedInt(long position, int value) => writer.Write(value);
-    public void Write7BitEncodedInt64(long position, long value) => writer.Write(value);
+    public void Write(long position, sbyte value) => WithPosition(position, () => Write(value));
+    public void Write(long position, short value) => WithPosition(position, () => Write(value));
+    public void Write(long position, string value) => WithPosition(position, () => Write(value));
+    public void Write(long position, uint value) => WithPosition(position, () => Write(value));
+    public void Write(long position, ulong value) => WithPosition(position, () => Write(value));
+    public void Write(long position, ushort value) => WithPosition(position, () => Write(value));
+    public void Write7BitEncodedInt(long position, int value) => WithPosition(position, () => Write7BitEncodedInt(value));
+    public void Write7BitEncodedInt64(long position, long value) => WithPosition(position, () => Write7BitEncodedInt64(value));
 
     public bool CanRead => stream.CanRead;
     public bool CanSeek => stream.CanSeek;
@@ -141,7 +131,11 @@ public class BinarySerializer(Stream stream) : IBinarySerializer, IDisposable, I
     public long Position
     {
         get => stream.Position;
-        set => stream.Position = value;
+        set
+        {
+            previousPosition = Position;
+            stream.Position = value;
+        }
     }
     public int ReadTimeout
     {
@@ -204,14 +198,8 @@ public class BinarySerializer(Stream stream) : IBinarySerializer, IDisposable, I
 
     public T Read<T>() where T : struct
     {
-        //var size = Unsafe.SizeOf<T>();
-        //Span<byte> buffer = stackalloc byte[size];
-        //ReadExactly(buffer);
-        //return MemoryMarshal.AsRef<T>(buffer);
         Span<T> buffer = new T[1];
-        //Span<T> buffer = stackalloc T[1];
         Read(buffer);
-        //ReadExactly(MemoryMarshal.AsBytes(buffer));
         return buffer[0];
     }
 
@@ -283,5 +271,189 @@ public class BinarySerializer(Stream stream) : IBinarySerializer, IDisposable, I
     {
         Write(buffer.Length);
         Write(buffer);
+    }
+
+    public async Task<int> ReadAsync(long position, byte[] buffer, int offset, int count) =>
+        await WithPosition(position, async () => await ReadAsync(buffer, offset, count));
+
+    public async Task<int> ReadAsync(long position, byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+        await WithPosition(position, async () => await ReadAsync(buffer, offset, count, cancellationToken));
+
+    public async ValueTask<int> ReadAsync(long position, Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+        await WithPosition(position, async () => await ReadAsync(buffer, cancellationToken));
+
+    public int ReadAtLeast(long position, Span<byte> buffer, int minimumBytes, bool throwOnEndOfStream = true)
+    {
+        Position = position;
+        var result = ReadAtLeast(buffer, minimumBytes, throwOnEndOfStream);
+        Position = previousPosition;
+        return result;
+    }
+
+    public async ValueTask<int> ReadAtLeastAsync(
+        long position,
+        Memory<byte> buffer,
+        int minimumBytes,
+        bool throwOnEndOfStream = true,
+        CancellationToken cancellationToken = default)
+    {
+        return await WithPosition(
+            position,
+            async () => await ReadAtLeastAsync(buffer, minimumBytes, throwOnEndOfStream, cancellationToken));
+    }
+        
+    public void ReadExactly(long position, byte[] buffer, int offset, int count) =>
+        WithPosition(position, () => ReadExactly(buffer, offset, count));
+
+    public async ValueTask ReadExactlyAsync(
+        long position,
+        byte[] buffer,
+        int offset,
+        int count,
+        CancellationToken cancellationToken = default)
+    {
+        await WithPosition(position, async () => await ReadExactlyAsync(buffer, offset, count, cancellationToken));
+    }
+
+    public async ValueTask ReadExactlyAsync(
+        long position,
+        Memory<byte> buffer,
+        CancellationToken cancellationToken = default)
+    {
+        await WithPosition(position, async () => await ReadExactlyAsync(buffer, cancellationToken));
+    }
+
+    public int Read(long position, byte[] buffer, int offset, int count) => 
+        WithPosition(position, () => Read(buffer, offset, count)); // Also BinaryReader
+
+    public int Read(long position, Span<byte> buffer) // Also BinaryReader
+    {
+        Position = position;
+        var result = Read(buffer);
+        Position = previousPosition;
+        return result;
+    }
+
+    public int ReadByteInt(long position) => WithPosition(position, ReadByteInt); // Also BinaryReader
+
+    public void ReadExactly(long position, Span<byte> buffer) // Also BinaryReader
+    {
+        Position = position;
+        ReadExactly(buffer);
+        Position = previousPosition;
+    }
+
+    public async Task WriteAsync(long position, byte[] buffer, int offset, int count) =>
+        await WithPosition(position, async () => await WriteAsync(buffer, offset, count));
+
+    public async Task WriteAsync(
+        long position,
+        byte[] buffer,
+        int offset,
+        int count,
+        CancellationToken cancellationToken)
+    {
+        await WithPosition(position, async () => await WriteAsync(buffer, offset, count, cancellationToken));
+    }
+
+    public async ValueTask WriteAsync(
+        long position,
+        ReadOnlyMemory<byte> buffer,
+        CancellationToken cancellationToken = default)
+    {
+        await WithPosition(position, async () => await WriteAsync(buffer, cancellationToken));
+    }
+
+    public void Write(long position, byte[] buffer, int offset, int count) =>
+        WithPosition(position, () => Write(buffer, offset, count)); // Also BinaryWriter
+
+    public void Write(long position, ReadOnlySpan<byte> buffer) // Also BinaryWriter
+    {
+        Position = position;
+        Write(buffer);
+        Position = previousPosition;
+    }
+
+    public void WriteByte(long position, byte value) => WithPosition(position, () => WriteByte(value));
+
+
+    public T Read<T>(long position) where T : struct => WithPosition(position, Read<T>);
+
+    //public void Read<T>(long position, T[] array) where T : struct => WithPosition(position, () => Read<T>(array, 0, array.Length));
+
+    public void Read<T>(long position, T[] array, int index, int count) where T : struct =>
+        WithPosition(position, () => Read(array, index, count));
+
+    public void Read<T>(long position, Span<T> buffer) where T : struct
+    {
+        Position = position;
+        Read(buffer);
+        Position = previousPosition;
+    }
+
+    public async Task ReadAsync<T>(long position, Memory<T> buffer) where T : struct =>
+        await WithPosition(position, async () => await ReadAsync(buffer));
+
+    public T[] ReadArray<T>(long position) where T : struct => WithPosition(position, ReadArray<T>);
+
+    public async Task<T[]> ReadArrayAsync<T>(long position) where T : struct =>
+        await WithPosition(position, ReadArrayAsync<T>);
+
+
+    public void Write<T>(long position, T value) where T : struct => WithPosition(position, () => Write(value));
+
+    //public void Write<T>(long position, T[] array) where T : struct => WithPosition(position, () => Write(array, 0, array.Length));
+
+    public void Write<T>(long position, T[] array, int index, int count) where T : struct =>
+        WithPosition(position, () => Write(array, index, count));
+
+    public void Write<T>(long position, ReadOnlySpan<T> buffer) where T : struct
+    {
+        Position = position;
+        Write(buffer);
+        Position = previousPosition;
+    }
+
+    public async Task WriteAsync<T>(long position, ReadOnlyMemory<T> buffer) where T : struct =>
+        await WithPosition(position, async () => await WriteAsync(buffer));
+
+    public void WriteArray<T>(long position, ReadOnlySpan<T> buffer) where T : struct
+    {
+        Position = position;
+        WriteArray(buffer);
+        Position = previousPosition;
+    }
+
+    public async Task WriteArrayAsync<T>(long position, ReadOnlyMemory<T> buffer) where T : struct =>
+        await WithPosition(position, async () => await WriteArrayAsync(buffer));
+
+    private void WithPosition(long position, Action action)
+    {
+        Position = position;
+        action();
+        Position = previousPosition;
+    }
+
+    private T WithPosition<T>(long position, Func<T> action)
+    {
+        Position = position;
+        var result = action();
+        Position = previousPosition;
+        return result;
+    }
+
+    private async Task WithPosition(long position, Func<Task> action)
+    {
+        Position = position;
+        await action();
+        Position = previousPosition;
+    }
+
+    private async Task<T> WithPosition<T>(long position, Func<Task<T>> action)
+    {
+        Position = position;
+        var result = await action();
+        Position = previousPosition;
+        return result;
     }
 }

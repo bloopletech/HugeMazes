@@ -3,7 +3,7 @@
     <AssemblyName>DeveMazeGenerator.ConsoleApp</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>DeveMazeGeneratorConsole</PackageId>
-    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <ImplicitUsings>enable</ImplicitUsings>

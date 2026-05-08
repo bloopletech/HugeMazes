@@ -9,8 +9,8 @@ public static class StreamExtensions
     {
         //public BinaryReader Reader() => new(stream, Encoding.UTF8, true);
         //public BinaryWriter Writer() => new(stream, Encoding.UTF8, true);
-        public ZstandardStream Compressor(CompressionLevel level = CompressionLevel.Optimal) => new(stream, level, true);
-        public ZstandardStream Decompressor() => new(stream, CompressionMode.Decompress, true);
+        //public ZstandardStream Compressor(CompressionLevel level = CompressionLevel.Optimal) => new(stream, level, true);
+        //public ZstandardStream Decompressor() => new(stream, CompressionMode.Decompress, true);
 
         public void PreservePosition(Action action)
         {

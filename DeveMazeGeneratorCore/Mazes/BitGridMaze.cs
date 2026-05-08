@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Mazes;
@@ -33,8 +32,8 @@ public class BitGridMaze : IMaze
     //}
 
     public IBinarySerializer Serializer => serializer;
-    public int Width => width;
-    public int Height => height;
+    public int Width => grid.Width;
+    public int Height => grid.Height;
 
     //public IMaze Clone() => new BitGridMaze(this);
     public IMaze Clone() => throw new NotImplementedException();
