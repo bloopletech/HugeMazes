@@ -81,35 +81,28 @@ public static class PathFinder
                     break;
                 }
 
-                var newcur = points[^1];
+                var next = points[^1];
 
                 //Set the direction we backtracked from
-                if(cur.X > newcur.X)
+                if(x > next.X)
                 {
                     lastBackTrackDir = 0;
                 }
-                else if(cur.Y > newcur.Y)
+                else if(y > next.Y)
                 {
                     lastBackTrackDir = 1;
                 }
-                else if(cur.X < newcur.X)
+                else if(x < next.X)
                 {
                     lastBackTrackDir = 2;
                 }
-                else if(cur.Y < newcur.Y)
+                else if(y < next.Y)
                 {
                     lastBackTrackDir = 3;
                 }
 
                 //Set the new previous point
-                if(points.Count == 1)
-                {
-                    prev = new MazePoint(-1, -1);
-                }
-                else
-                {
-                    prev = points.ElementAt(points.Count - 2);
-                }
+                prev = points.Count == 1 ? MazePoint.Empty : points[^2];
             }
         }
 
