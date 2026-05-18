@@ -26,8 +26,7 @@ public class AlgorithmBacktrack(IMaze maze, Random random) : IAlgorithm
         while(stack.Count != 0)
         {
             var cur = stack.Peek();
-            var x = cur.X;
-            var y = cur.Y;
+            var (x, y) = cur;
 
             var targetCount = 0;
             if(x - 2 > 0 && !maze[x - 2, y])

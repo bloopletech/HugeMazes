@@ -30,23 +30,19 @@ public static class PathFinder
             start
         };
 
-        MazePoint cur;
-        MazePoint prev = new(-1, -1);
-
+        var prev = MazePoint.Empty;
         var lastBackTrackDir = -1;
 
         while(points.Count != 0)
         {
-            cur = points[^1];
+            var cur = points[^1];
+            if(cur == end) break; //Path found
+
             var (x, y) = cur;
 
-            if(x == end.X && y == end.Y)
-            {
-                //Path found
-                break;
-            }
-
-            //Make sure the point was not the previous point, also make sure that if we backtracked we don't go to a direction we already went to, also make sure that the point is white
+            //Make sure the point was not the previous point,
+            //also make sure that if we backtracked we don't go to a direction we already went to,
+            //also make sure that the point is white
             if((prev.X != x + 1 || prev.Y != y) && lastBackTrackDir < 0 && x + 1 < width - 1 && maze[x + 1, y])
             {
                 points.Add(new(x + 1, y));
@@ -75,11 +71,7 @@ public static class PathFinder
             {
                 points.RemoveAt(points.Count - 1);
 
-                if(points.Count == 0)
-                {
-                    //No path found
-                    break;
-                }
+                if(points.Count == 0) break; //No path found
 
                 var next = points[^1];
 
