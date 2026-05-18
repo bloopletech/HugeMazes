@@ -123,23 +123,31 @@ public static class PathFinder
                     break;
                 }
 
+
                 path[x, y] = false;
 
 
-
+                var corner = corners[^1];
+                // if no corners left, abandon
 
                 //Set the direction we backtracked from
                 if(cur.X > prev.X)
                 {
                     lastBackTrackDir = 0;
+                    for(var i = x; i >= corner.X; i--) path[i, y] = false;
+                    cur = corner;
                 }
                 else if(cur.Y > prev.Y)
                 {
                     lastBackTrackDir = 1;
+                    for(var i = y; i >= corner.Y; i--) path[x, i] = false;
+                    cur = corner;
                 }
                 else if(cur.X < prev.X)
                 {
                     lastBackTrackDir = 2;
+                    for(var i = x; i <= corner.Y; i--) path[x, i] = false;
+                    cur = corner;
                 }
                 else if(cur.Y < prev.Y)
                 {
