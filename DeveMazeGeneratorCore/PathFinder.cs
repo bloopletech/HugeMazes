@@ -25,140 +25,96 @@ public static class PathFinder
         var width = maze.Width;
         var height = maze.Height;
 
-        var path = new MazePath(width, height);
-        path[start.X, start.Y] = true;
+        var points = new List<MazePoint>()
+        {
+            start
+        };
 
-        var corners = new List<MazePoint>();
-
-        Span<MazePoint> entrances = stackalloc MazePoint[4];
-        entrances.Clear();
-
-        MazePoint cur = start;
+        MazePoint cur;
         MazePoint prev = new(-1, -1);
-        MazePoint prevPrev = new(-1, -1);
-        MazePoint next = new(-1, -1);
 
         var lastBackTrackDir = -1;
 
-        while(true)
+        while(points.Count != 0)
         {
-            Console.WriteLine($"cur: {cur}, prev: {prev}, prevPrev: {prevPrev}, next: {next}, lastBackTrackDir: {lastBackTrackDir}");
+            cur = points[^1];
             var (x, y) = cur;
 
             if(x == end.X && y == end.Y)
             {
-                Console.WriteLine("Path traced");
                 //Path found
                 break;
             }
 
-            var entranceCount = 0;
-            if(x - 1 > 0 && maze[x - 1, y])
-            {
-                entrances[entranceCount].Set(x - 1, y);
-                entranceCount++;
-            }
-            if(x + 1 < width - 1 && maze[x + 1, y])
-            {
-                entrances[entranceCount].Set(x + 1, y);
-                entranceCount++;
-            }
-            if(y - 1 > 0 && maze[x, y - 1])
-            {
-                entrances[entranceCount].Set(x, y - 1);
-                entranceCount++;
-            }
-            if(y + 1 < height - 1 && maze[x, y + 1])
-            {
-                entrances[entranceCount].Set(x, y + 1);
-                entranceCount++;
-            }
-
-            if(entranceCount > 2 && corners[^1] != cur) corners.Add(cur);
-
-
             //Make sure the point was not the previous point, also make sure that if we backtracked we don't go to a direction we already went to, also make sure that the point is white
             if((prev.X != x + 1 || prev.Y != y) && lastBackTrackDir < 0 && x + 1 < width - 1 && maze[x + 1, y])
             {
-                next = new(x + 1, y);
-                path[next.X, next.Y] = true;
+                points.Add(new(x + 1, y));
                 lastBackTrackDir = -1;
-                prevPrev = prev;
                 prev = cur;
-                cur = next;
             }
             else if((prev.X != x || prev.Y != y + 1) && lastBackTrackDir < 1 && y + 1 < height - 1 && maze[x, y + 1])
             {
-                next = new(x, y + 1);
-                path[next.X, next.Y] = true;
+                points.Add(new(x, y + 1));
                 lastBackTrackDir = -1;
-                prevPrev = prev;
                 prev = cur;
-                cur = next;
             }
             else if((prev.X != x - 1 || prev.Y != y) && lastBackTrackDir < 2 && x - 1 > 0 && maze[x - 1, y])
             {
-                next = new(x - 1, y);
-                path[next.X, next.Y] = true;
+                points.Add(new(x - 1, y));
                 lastBackTrackDir = -1;
-                prevPrev = prev;
                 prev = cur;
-                cur = next;
             }
             else if((prev.X != x || prev.Y != y - 1) && lastBackTrackDir < 3 && y - 1 > 0 && maze[x, y - 1])
             {
-                next = new(x, y - 1);
-                path[next.X, next.Y] = true;
+                points.Add(new(x, y - 1));
                 lastBackTrackDir = -1;
-                prevPrev = prev;
                 prev = cur;
-                cur = next;
             }
             else
             {
-                if(x == -1 && y == -1)
+                points.RemoveAt(points.Count - 1);
+
+                if(points.Count == 0)
                 {
-                    Console.WriteLine("No path can be traced");
                     //No path found
                     break;
                 }
 
-
-                path[x, y] = false;
-
-
-                var corner = corners[^1];
-                // if no corners left, abandon
+                var newcur = points[^1];
 
                 //Set the direction we backtracked from
-                if(cur.X > prev.X)
+                if(cur.X > newcur.X)
                 {
                     lastBackTrackDir = 0;
-                    for(var i = x; i >= corner.X; i--) path[i, y] = false;
-                    cur = corner;
                 }
-                else if(cur.Y > prev.Y)
+                else if(cur.Y > newcur.Y)
                 {
                     lastBackTrackDir = 1;
-                    for(var i = y; i >= corner.Y; i--) path[x, i] = false;
-                    cur = corner;
                 }
-                else if(cur.X < prev.X)
+                else if(cur.X < newcur.X)
                 {
                     lastBackTrackDir = 2;
-                    for(var i = x; i <= corner.Y; i--) path[x, i] = false;
-                    cur = corner;
                 }
-                else if(cur.Y < prev.Y)
+                else if(cur.Y < newcur.Y)
                 {
                     lastBackTrackDir = 3;
                 }
 
                 //Set the new previous point
-                prev = prevPrev;
+                if(points.Count == 1)
+                {
+                    prev = new MazePoint(-1, -1);
+                }
+                else
+                {
+                    prev = points.ElementAt(points.Count - 2);
+                }
             }
         }
 
+        var path = new MazePath(width, height);
+        foreach(var point in points) path[point.X, point.Y] = true;
         return path;
     }
 }
