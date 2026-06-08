@@ -6,7 +6,7 @@ namespace DeveMazeGeneratorCore.Paths;
 
 public sealed class BitGridMazePath(BitGrid grid) : IGridMazePath
 {
-    public BitGridMazePath(IStore store, bool leaveOpen = false) : this(store, 0, 0, leaveOpen)
+    public BitGridMazePath(IStore store, bool leaveOpen = false) : this(new BitGrid(store, leaveOpen))
     {
     }
 

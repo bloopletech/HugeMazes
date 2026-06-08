@@ -36,8 +36,10 @@ public class CLI(Options options)
     private Func<Task> CreateTask(string task) => task switch
     {
         "generate" => GenerateTask(),
+        "load" => LoadTask(),
         "verify" => VerifyTask(),
         "solve" => SolveTask(),
+        "load-path" => LoadPathTask(),
         "render" => RenderTask(),
         "render-path" => RenderPathTask(),
         "benchmark" => BenchmarkTask(),
@@ -57,6 +59,17 @@ public class CLI(Options options)
             maze = DeveMazeGeneratorCore.Generate(store, width, height, seed);
             maze.Write();
             Console.WriteLine($"Saved maze to {mazeFileName}");
+        };
+    }
+
+    private Func<Task> LoadTask()
+    {
+        mazeFileName = options.Next();
+
+        return async () =>
+        {
+            maze = await LoadAsync(mazeFileName);
+            Console.WriteLine($"Loaded maze from {mazeFileName}");
         };
     }
 
@@ -81,6 +94,17 @@ public class CLI(Options options)
             path = DeveMazeGeneratorCore.Solve(maze, MazePathType.MazePath, new StreamStore(pathFileName));
             path.Write();
             Console.WriteLine($"Saved solution to {pathFileName}");
+        };
+    }
+
+    private Func<Task> LoadPathTask()
+    {
+        pathFileName = options.Next();
+
+        return async () =>
+        {
+            path = await LoadPathAsync(pathFileName);
+            Console.WriteLine($"Loaded solution from {pathFileName}");
         };
     }
 

@@ -28,7 +28,7 @@ public static class MazePathSerializer
     public static IMazePath Read(IStore store)
     {
         var type = ReadHeader(store);
-        var path = Init(type, store, 0, 0);
+        var path = InitForRead(type, store);
         path.Read();
         return path;
     }
@@ -36,7 +36,7 @@ public static class MazePathSerializer
     public static async Task<IMazePath> ReadAsync(IStore store)
     {
         var type = ReadHeader(store);
-        var path = Init(type, store, 0, 0);
+        var path = InitForRead(type, store);
         await path.ReadAsync();
         return path;
     }
@@ -44,10 +44,18 @@ public static class MazePathSerializer
     public static IMazePath Create(MazePathType type, IStore store, int width, int height)
     {
         WriteHeader(store, type);
-        return Init(type, store, width, height);
+        return InitForWrite(type, store, width, height);
     }
 
-    private static IMazePath Init(
+    private static IMazePath InitForRead(MazePathType type, IStore store) => type switch
+    {
+        MazePathType.MazePath => new MazePath(store.WithPosition()),
+        MazePathType.BitGridMazePath => new BitGridMazePath(store.WithPosition()),
+        MazePathType.BigBitGridMazePath => new BigBitGridMazePath(store.WithPosition()),
+        _ => throw new InvalidDataException($"Unknown maze type {type}")
+    };
+
+    private static IMazePath InitForWrite(
         MazePathType type,
         IStore store,
         int width,

@@ -110,17 +110,17 @@ public class DeveJobAttribute : JobConfigBaseAttribute
     {
     }
 
-    private static Job CreateJob(
-        string? id,
-        int launchCount,
-        int warmupCount,
-        int targetCount,
-        int invocationCount,
-        RunStrategy? runStrategy,
-        bool baseline,
-        Jit? jit,
-        Platform? platform,
-        bool disableTieredCompilation,
+    public static Job CreateJob(
+        string? id = null,
+        int launchCount = -1,
+        int warmupCount = -1,
+        int targetCount = -1,
+        int invocationCount = -1,
+        RunStrategy? runStrategy = null,
+        bool baseline = false,
+        Jit jit = Jit.Default,
+        Platform platform = Platform.AnyCpu,
+        bool disableTieredCompilation = true,
         RuntimeMoniker runtimeMoniker = RuntimeMoniker.HostProcess)
     {
         Job job = new(id);

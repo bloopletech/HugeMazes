@@ -5,13 +5,29 @@ using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
-public class BitGrid(IStore store, int width, int height, bool leaveOpen = false) : IBitGrid, IStorable
+public class BitGrid : IBitGrid, IStorable
 {
-    private BitArray array = new(width * height);
+    private readonly IStore store;
+    private readonly bool leaveOpen;
+    private BitArray array;
+    private int width;
+    private int height;
     private bool disposed;
 
-    public BitGrid(IStore store, bool leaveOpen = false) : this(store, 0, 0, leaveOpen)
+    public BitGrid(IStore store, bool leaveOpen = false)
     {
+        this.store = store;
+        this.leaveOpen = leaveOpen;
+        array = null!;
+    }
+
+    public BitGrid(IStore store, int width, int height, bool leaveOpen = false)
+    {
+        this.store = store;
+        this.leaveOpen = leaveOpen;
+        this.width = width;
+        this.height = height;
+        array = new(width * height);
     }
 
     public IStore Store => store;

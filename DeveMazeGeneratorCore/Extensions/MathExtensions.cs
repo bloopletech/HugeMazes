@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace DeveMazeGeneratorCore.Extensions;
 
 public static class MathExtensions
@@ -11,6 +13,11 @@ public static class MathExtensions
         /// <param name="number">The input number</param>
         /// <returns>The first uneven number lower then this</returns>
         public int MakeUneven() => int.IsEvenInteger(number) ? number - 1 : number;
+
+        public int RoundDownToPowerOf2()
+        {
+            return (int)(BitOperations.RoundUpToPowerOf2((uint)number) >> 1);
+        }
     }
 
     extension(long number)

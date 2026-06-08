@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
+using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Collections;
@@ -9,8 +10,9 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
 {
     public static bool SmallChunks = false;
 
+    public static readonly int ItemSize = IStore.SizeOf<T>();
     //private const int ChunkItemSize = 256 * 1024 * 1024;
-    private static int ChunkItemSize = SmallChunks ? (1024 * 1024) : (256 * 1024 * 1024);
+    public static readonly int ChunkItemSize = SmallChunks ? (1024 * 1024) : (int.MaxValue / ItemSize).RoundDownToPowerOf2();
 
     private readonly IStore store;
     private readonly bool leaveOpen;
@@ -18,8 +20,11 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
     private long length;
     private bool disposed;
 
-    public BigArray(IStore store, bool leaveOpen = false) : this(store, 0, leaveOpen)
+    public BigArray(IStore store, bool leaveOpen = false)
     {
+        this.store = store;
+        this.leaveOpen = leaveOpen;
+        chunks = null!;
     }
 
     public BigArray(IStore store, long length, bool leaveOpen = false)
@@ -27,7 +32,7 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
         this.store = store;
         this.leaveOpen = leaveOpen;
         this.length = length;
-        chunks = InitChunks(length > 0);
+        chunks = InitChunks(true);
     }
 
     public IStore Store => store;
@@ -130,18 +135,26 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
 
     private Chunk[] InitChunks(bool skipFirstLoad)
     {
-        var (chunkCount, lastChunkSize) = ChunkOffset(length);
+        var remaining = length;
 
-        var chunks = new Chunk[chunkCount + (lastChunkSize > 0 ? 1 : 0)];
-
-        for(var i = 0; i < chunkCount; i++)
+        var chunks = new List<Chunk>();
+        while(remaining > 0)
         {
-            if(i == 0) chunks[i] = new Chunk(this, sizeof(long), 0, ChunkItemSize, skipFirstLoad);
-            else chunks[i] = chunks[i - 1].Next();
-        }
-        if(lastChunkSize > 0) chunks[^1] = new Chunk(this, sizeof(long), 0, lastChunkSize, skipFirstLoad);
+            var chunkSize = (int)Math.Min(remaining, ChunkItemSize);
 
-        return chunks;
+            if(chunks.Count == 0)
+            {
+                chunks.Add(new(this, sizeof(long), 0, chunkSize, skipFirstLoad));
+            }
+            else
+            {
+                chunks.Add(chunks[^1].Next(chunkSize));
+            }
+
+            remaining -= chunkSize;
+        }
+
+        return [..chunks];
     }
 
     public void EvictOldest()
@@ -266,6 +279,7 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
             LastUsedAt = long.MinValue;
         }
 
-        public Chunk Next() => new(owner, EndOffset, End, length, skipFirstLoad);
+        public Chunk Next() => Next(length);
+        public Chunk Next(int length) => new(owner, EndOffset, End, length, skipFirstLoad);
     }
 }

@@ -156,6 +156,9 @@ public class StoreOffset(IStore store, long offset, bool leaveOpen = false) : IS
     {
         int bufferSize = 81920;
 
+        Position = 0;
+        destination.Position = 0;
+
         long position = 0;
         byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
         try
@@ -171,6 +174,9 @@ public class StoreOffset(IStore store, long offset, bool leaveOpen = false) : IS
         {
             ArrayPool<byte>.Shared.Return(buffer);
         }
+
+        Position = 0;
+        destination.Position = 0;
     }
 
     public Task CopyToAsync(IStore destination) => CopyToAsync(destination, CancellationToken.None);
@@ -179,6 +185,9 @@ public class StoreOffset(IStore store, long offset, bool leaveOpen = false) : IS
     public async Task CopyToAsync(IStore destination, CancellationToken cancellationToken)
     {
         int bufferSize = 81920;
+
+        Position = 0;
+        destination.Position = 0;
 
         long position = 0;
         byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
@@ -198,6 +207,9 @@ public class StoreOffset(IStore store, long offset, bool leaveOpen = false) : IS
         {
             ArrayPool<byte>.Shared.Return(buffer);
         }
+
+        Position = 0;
+        destination.Position = 0;
     }
 
     public void Flush() => store.Flush(); // Also BinaryWriter
