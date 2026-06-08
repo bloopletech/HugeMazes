@@ -28,7 +28,7 @@ public class MazeSerializer
     public static IMaze Read(IStore store)
     {
         var type = ReadHeader(store);
-        var maze = Init(type, store, 0, 0);
+        var maze = InitForRead(type, store);
         maze.Read();
         return maze;
     }
@@ -36,7 +36,7 @@ public class MazeSerializer
     public static async Task<IMaze> ReadAsync(IStore store)
     {
         var type = ReadHeader(store);
-        var maze = Init(type, store, 0, 0);
+        var maze = InitForRead(type, store);
         await maze.ReadAsync();
         return maze;
     }
@@ -44,10 +44,17 @@ public class MazeSerializer
     public static IMaze Create(MazeType type, IStore store, int width, int height)
     {
         WriteHeader(store, type);
-        return Init(type, store, width, height);
+        return InitForWrite(type, store, width, height);
     }
 
-    private static IMaze Init(MazeType type, IStore store, int width, int height) => type switch
+    private static IMaze InitForRead(MazeType type, IStore store) => type switch
+    {
+        MazeType.BitGridMaze => new BitGridMaze(store.WithPosition()),
+        MazeType.BigBitGridMaze => new BigBitGridMaze(store.WithPosition()),
+        _ => throw new InvalidDataException($"Unknown maze type {type}")
+    };
+
+    private static IMaze InitForWrite(MazeType type, IStore store, int width, int height) => type switch
     {
         MazeType.BitGridMaze => new BitGridMaze(store.WithPosition(), width, height),
         MazeType.BigBitGridMaze => new BigBitGridMaze(store.WithPosition(), width, height),

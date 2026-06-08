@@ -5,7 +5,7 @@ namespace DeveMazeGeneratorCore.Mazes;
 
 public sealed class BitGridMaze(BitGrid grid) : IMaze
 {
-    public BitGridMaze(IStore store, bool leaveOpen = false) : this(store, 0, 0, leaveOpen)
+    public BitGridMaze(IStore store, bool leaveOpen = false) : this(new BitGrid(store, leaveOpen))
     {
     }
 

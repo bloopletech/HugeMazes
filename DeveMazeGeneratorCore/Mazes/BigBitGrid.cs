@@ -4,17 +4,33 @@ using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
-public class BigBitGrid(
-    IStore store,
-    int width,
-    int height,
-    bool leaveOpen = false) : IBitGrid, IStorable, IAsyncDisposable
+public class BigBitGrid : IBitGrid, IStorable, IAsyncDisposable
 {
-    private BigBitArray array = new(new StoreOffset(store, sizeof(int) * 2, true), (long)width * height);
+    private readonly IStore store;
+    private readonly bool leaveOpen;
+    private BigBitArray array;
+    private int width;
+    private int height;
     private bool disposed;
 
-    public BigBitGrid(IStore store, bool leaveOpen = false) : this(store, 0, 0, leaveOpen)
+    public BigBitGrid(IStore store, bool leaveOpen = false)
     {
+        this.store = store;
+        this.leaveOpen = leaveOpen;
+        array = null!;
+    }
+
+    public BigBitGrid(
+        IStore store,
+        int width,
+        int height,
+        bool leaveOpen = false)
+    {
+        this.store = store;
+        this.leaveOpen = leaveOpen;
+        this.width = width;
+        this.height = height;
+        array = new(new StoreOffset(store, sizeof(int) * 2, true), (long)width * height);
     }
 
     public IStore Store => store;
@@ -39,7 +55,7 @@ public class BigBitGrid(
         width = store.ReadInt32();
         height = store.ReadInt32();
 
-        array = new(new StoreOffset(store, sizeof(int) * 2, true), (long)width * height);
+        array = new(new StoreOffset(store, sizeof(int) * 2, true));
         array.Read();
     }
 

@@ -24,8 +24,11 @@ public class BigBitArray : IBigBitArray, IStorable
     private long byteLength;
     private bool disposed;
 
-    public BigBitArray(IStore store, bool leaveOpen = false) : this(store, 0, leaveOpen)
+    public BigBitArray(IStore store, bool leaveOpen = false)
     {
+        this.store = store;
+        this.leaveOpen = leaveOpen;
+        chunks = null!;
     }
 
     public BigBitArray(IStore store, long bitLength, bool leaveOpen = false)
@@ -34,7 +37,7 @@ public class BigBitArray : IBigBitArray, IStorable
         this.leaveOpen = leaveOpen;
         this.bitLength = bitLength;
         byteLength = GetByteArrayLengthFromBitLength(bitLength);
-        chunks = InitChunks(bitLength > 0);
+        chunks = InitChunks(true);
     }
 
     public IStore Store => store;
@@ -127,18 +130,26 @@ public class BigBitArray : IBigBitArray, IStorable
 
     private Chunk[] InitChunks(bool skipFirstLoad)
     {
-        var (chunkCount, lastChunkSize) = ChunkOffset(byteLength, ChunkByteSize);
+        var remaining = byteLength;
 
-        var chunks = new Chunk[chunkCount + (lastChunkSize > 0 ? 1 : 0)];
-
-        for(var i = 0; i < chunkCount; i++)
+        var chunks = new List<Chunk>();
+        while(remaining > 0)
         {
-            if(i == 0) chunks[i] = new Chunk(this, sizeof(long), 0, ChunkByteSize, skipFirstLoad);
-            else chunks[i] = chunks[i - 1].Next();
-        }
-        if(lastChunkSize > 0) chunks[^1] = new Chunk(this, sizeof(long), 0, lastChunkSize, skipFirstLoad);
+            var chunkSize = (int)Math.Min(remaining, ChunkByteSize);
 
-        return chunks;
+            if(chunks.Count == 0)
+            {
+                chunks.Add(new(this, sizeof(long), 0, chunkSize, skipFirstLoad));
+            }
+            else
+            {
+                chunks.Add(chunks[^1].Next(chunkSize));
+            }
+
+            remaining -= chunkSize;
+        }
+
+        return [..chunks];
     }
 
     public void EvictOldest()
@@ -268,6 +279,7 @@ public class BigBitArray : IBigBitArray, IStorable
             LastUsedAt = long.MinValue;
         }
 
-        public Chunk Next() => new(owner, EndOffset, End, byteLength, skipFirstLoad);
+        public Chunk Next() => Next(byteLength);
+        public Chunk Next(int byteLength) => new(owner, EndOffset, End, byteLength, skipFirstLoad);
     }
 }

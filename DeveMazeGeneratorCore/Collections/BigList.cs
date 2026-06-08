@@ -11,14 +11,14 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
 {
     public static bool SmallChunks = false;
 
+    public static readonly int ItemSize = IStore.SizeOf<T>();
     //private const int ChunkItemSize = 1024;
-    private static int ChunkItemSize = SmallChunks ? (1024 * 1024) : (256 * 1024 * 1024);
+    public static readonly int ChunkItemSize = SmallChunks ? (1024 * 1024) : (int.MaxValue / ItemSize).RoundDownToPowerOf2();
 
     private readonly IStore store;
     private readonly bool leaveOpen;
     private List<Chunk> chunks;
     private bool disposed;
-
 
     public BigList(IStore store, bool leaveOpen = false)
     {
@@ -296,8 +296,6 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
 
     private class Chunk(BigList<T> owner, long offset, long start = 0, int count = 0)
     {
-        public static readonly int ItemSize = IStore.SizeOf<T>();
-
         private List<T>? list;
 
         public List<T> List
