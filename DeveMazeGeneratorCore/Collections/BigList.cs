@@ -9,11 +9,9 @@ namespace DeveMazeGeneratorCore.Collections;
 // Based on https://github.com/dotnet/runtime/blob/b82454cad0aaaae3db2cf18fbf2cccc36e201ccc/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/List.cs
 public class BigList<T> : IBigList<T>, IStorable where T : struct
 {
-    public static bool SmallChunks = false;
-
-    public static readonly int ItemSize = IStore.SizeOf<T>();
-    //private const int ChunkItemSize = 1024;
-    public static readonly int ChunkItemSize = SmallChunks ? (1024 * 1024) : (int.MaxValue / ItemSize).RoundDownToPowerOf2();
+    private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
+    private static readonly int ItemSize = IStore.SizeOf<T>();
+    private static readonly int ChunkSize = CalculateChunkSize();
 
     private readonly IStore store;
     private readonly bool leaveOpen;
@@ -57,16 +55,16 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
     private (int, int) Index(long index)
     {
         if((ulong)index >= (ulong)Count) ThrowArgumentOutOfRangeException(index);
-        var (chunkIndex, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkItemSize);
+        var (chunkIndex, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
         return ((int)chunkIndex, (int)chunkOffset);
     }
 
     //private ListChunk Last => chunks[^1];
-    private Chunk CreateChunk(int chunkSize = 0) => new(this, sizeof(long), 0, chunkSize);
+    private Chunk CreateChunk(int count = 0) => new(this, sizeof(long), 0, count);
 
     private void GrowIfNeeded()
     {
-        if(chunks[^1].Count == ChunkItemSize) chunks.Add(chunks[^1].Next());
+        if(chunks[^1].Count == ChunkSize) chunks.Add(chunks[^1].Next());
     }
 
     private void ShrinkIfNeeded()
@@ -212,19 +210,26 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
         chunks = [];
         while(remaining > 0)
         {
-            var chunkSize = (int)Math.Min(remaining, ChunkItemSize);
+            var chunkCount = (int)Math.Min(remaining, ChunkSize);
 
             if(chunks.Count == 0)
             {
-                chunks.Add(new(this, sizeof(long), 0, chunkSize));
+                chunks.Add(new(this, sizeof(long), 0, chunkCount));
             }
             else
             {
-                chunks.Add(chunks[^1].Next(chunkSize));
+                chunks.Add(chunks[^1].Next(chunkCount));
             }
 
-            remaining -= ChunkItemSize;
+            remaining -= chunkCount;
         }
+    }
+
+    private static int CalculateChunkSize()
+    {
+        var result = (int.MaxValue / ItemSize).RoundDownToPowerOf2();
+        while((result * ItemSize) > MaxChunkByteSize) result >>= 1;
+        return result;
     }
 
     public async Task ReadAsync()

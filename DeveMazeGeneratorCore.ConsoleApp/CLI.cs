@@ -17,19 +17,27 @@ public class CLI(Options options)
 
     public async Task Run()
     {
-        var tasks = new List<Func<Task>>();
-        while(options.HasNext()) tasks.Add(CreateTask(options.Next()));
-        foreach(var task in tasks)
+        try
         {
-            await task();
-
-            if(SkipReuse)
+            var tasks = new List<Func<Task>>();
+            while(options.HasNext()) tasks.Add(CreateTask(options.Next()));
+            foreach(var task in tasks)
             {
-                maze?.Dispose();
-                maze = null;
-                path?.Dispose();
-                path = null;
+                await task();
+
+                if(SkipReuse)
+                {
+                    maze?.Dispose();
+                    maze = null;
+                    path?.Dispose();
+                    path = null;
+                }
             }
+        }
+        finally
+        {
+            maze?.Dispose();
+            path?.Dispose();
         }
     }
 

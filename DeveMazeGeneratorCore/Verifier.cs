@@ -9,7 +9,7 @@ public class Verifier
 {
     public static bool IsPerfectMaze(IMaze maze)
     {
-        var copiedMaze = maze.Clone();
+        using var copiedMaze = maze.Clone();
 
         FloodFill(copiedMaze);
 

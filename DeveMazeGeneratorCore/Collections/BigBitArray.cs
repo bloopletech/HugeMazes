@@ -9,13 +9,9 @@ namespace DeveMazeGeneratorCore.Collections;
 // Based on https://github.com/dotnet/runtime/blob/081d220c0a773ffb7c6bea6b48727833576a65ef/src/libraries/System.Private.CoreLib/src/System/Collections/BitArray.cs
 public class BigBitArray : IBigBitArray, IStorable
 {
-    public static bool SmallChunks = false;
-
-    //private const int ChunkByteSize = 256 * 1024 * 1024;
-    private static int ChunkByteSize = SmallChunks ? (1024 * 1024) : (256 * 1024 * 1024) - 1;
-
-    public const int BitsPerByte = 8; // sizeof(byte) * 8
-    private static int ChunkBitSize = ChunkByteSize * BitsPerByte;
+    private const int ChunkByteSize = (256 * 1024 * 1024) - 1;
+    private const int BitsPerByte = 8; // sizeof(byte) * 8
+    private const int ChunkBitSize = ChunkByteSize * BitsPerByte;
 
     private readonly IStore store;
     private readonly bool leaveOpen;
@@ -135,18 +131,18 @@ public class BigBitArray : IBigBitArray, IStorable
         var chunks = new List<Chunk>();
         while(remaining > 0)
         {
-            var chunkSize = (int)Math.Min(remaining, ChunkByteSize);
+            var chunkByteLength = (int)Math.Min(remaining, ChunkByteSize);
 
             if(chunks.Count == 0)
             {
-                chunks.Add(new(this, sizeof(long), 0, chunkSize, skipFirstLoad));
+                chunks.Add(new(this, sizeof(long), 0, chunkByteLength, skipFirstLoad));
             }
             else
             {
-                chunks.Add(chunks[^1].Next(chunkSize));
+                chunks.Add(chunks[^1].Next(chunkByteLength));
             }
 
-            remaining -= chunkSize;
+            remaining -= chunkByteLength;
         }
 
         return [..chunks];
@@ -279,7 +275,6 @@ public class BigBitArray : IBigBitArray, IStorable
             LastUsedAt = long.MinValue;
         }
 
-        public Chunk Next() => Next(byteLength);
         public Chunk Next(int byteLength) => new(owner, EndOffset, End, byteLength, skipFirstLoad);
     }
 }
