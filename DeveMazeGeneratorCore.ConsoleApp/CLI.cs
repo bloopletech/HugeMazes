@@ -63,8 +63,7 @@ public class CLI(Options options)
 
         return async () =>
         {
-            var store = new StreamStore(mazeFileName);
-            maze = DeveMazeGeneratorCore.Generate(store, width, height, seed);
+            maze = DeveMazeGeneratorCore.Generate(new StreamStore(mazeFileName), width, height, seed);
             maze.Write();
             Console.WriteLine($"Saved maze to {mazeFileName}");
         };
@@ -99,7 +98,7 @@ public class CLI(Options options)
         return async () =>
         {
             maze ??= await LoadAsync(mazeFileName);
-            path = DeveMazeGeneratorCore.Solve(maze, MazePathType.MazePath, new StreamStore(pathFileName));
+            path = DeveMazeGeneratorCore.Solve(maze, new StreamStore(pathFileName));
             path.Write();
             Console.WriteLine($"Saved solution to {pathFileName}");
         };
