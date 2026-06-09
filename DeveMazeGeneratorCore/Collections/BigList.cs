@@ -22,7 +22,7 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = [new(this, sizeof(long))];
+        chunks = InitChunks(0);
     }
 
     public IStore Store => store;
@@ -59,9 +59,6 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
         return ((int)chunkIndex, (int)chunkOffset);
     }
 
-    //private ListChunk Last => chunks[^1];
-    private Chunk CreateChunk(int count = 0) => new(this, sizeof(long), 0, count);
-
     private void GrowIfNeeded()
     {
         if(chunks[^1].Count == ChunkSize) chunks.Add(chunks[^1].Next());
@@ -82,7 +79,7 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        chunks = [CreateChunk()];
+        chunks = InitChunks(0);
     }
 
     public bool Contains(T item) => chunks.Any(c => c.List.Contains(item));
@@ -191,6 +188,13 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
         return list;
     }
 
+    private List<Chunk> InitChunks(long count)
+    {
+        if(count == 0) return [new(this, new())];
+        var chunkSpans = ChunkSpan.Chunk(count, ChunkSize, ChunkSize * ItemSize);
+        return [.. chunkSpans.Select(span => new Chunk(this, span))];
+    }
+
     public void EvictOldest()
     {
         var toEvict = chunks.OrderByDescending(c => c.LastUsedAt).Skip(3);
@@ -199,30 +203,8 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
 
     public void Read()
     {
-        var remaining = store.ReadInt64(0);
-
-        if(remaining == 0)
-        {
-            Clear();
-            return; 
-        }
-
-        chunks = [];
-        while(remaining > 0)
-        {
-            var chunkCount = (int)Math.Min(remaining, ChunkSize);
-
-            if(chunks.Count == 0)
-            {
-                chunks.Add(new(this, sizeof(long), 0, chunkCount));
-            }
-            else
-            {
-                chunks.Add(chunks[^1].Next(chunkCount));
-            }
-
-            remaining -= chunkCount;
-        }
+        var count = store.ReadInt64(0);
+        chunks = InitChunks(count);
     }
 
     private static int CalculateChunkSize()
@@ -240,7 +222,7 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
 
     public void Write()
     {
-        store.SetLength(chunks[^1].EndOffset);
+        store.SetLength(Extent);
         store.Write(0, Count);
 
         foreach(var chunk in chunks) chunk.Evict();
@@ -299,7 +281,7 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(BigList<T> owner, long offset, long start = 0, int count = 0)
+    private class Chunk(BigList<T> owner, ChunkSpan span)
     {
         private List<T>? list;
 
@@ -308,7 +290,6 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                LastUsedAt = Environment.TickCount64;
                 list ??= Load();
                 return list;
             }
@@ -316,18 +297,21 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
 
         public long LastUsedAt { get; set; } = long.MinValue;
 
-        public long EndOffset => offset + (Count * ItemSize);
+        public long Offset => span.Offset + sizeof(long);
+        public long EndOffset => Offset + (Count * ItemSize);
 
-        public long Start => start;
-        public int Count => list?.Count ?? count;
+        public long Start => span.Start;
+        public int Count => list?.Count ?? span.Count;
         public long End => Start + Count;
 
         private List<T> Load()
         {
+            LastUsedAt = Environment.TickCount64;
             owner.EvictOldest();
+
             var list = new List<T>();
-            CollectionsMarshal.SetCount(list, count);
-            owner.Store.Read(offset, CollectionsMarshal.AsSpan(list));
+            CollectionsMarshal.SetCount(list, span.Count);
+            owner.Store.Read(Offset, CollectionsMarshal.AsSpan(list));
             return list;
         }
 
@@ -335,12 +319,12 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
         {
             if(list == null) return;
 
-            owner.Store.Write(offset, CollectionsMarshal.AsSpan(list));
-            count = list.Count;
+            owner.Store.Write(Offset, CollectionsMarshal.AsSpan(list));
+            span = span with { Length = list.Count };
             list = null;
             LastUsedAt = long.MinValue;
         }
 
-        public Chunk Next(int count = 0) => new(owner, EndOffset, End, count);
+        public Chunk Next(int count = 0) => new(owner, new(EndOffset, End, count));
     }
 }
