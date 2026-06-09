@@ -7,27 +7,20 @@ using DeveMazeGeneratorCore.IO;
 namespace DeveMazeGeneratorCore.Collections;
 
 // Based on https://github.com/dotnet/runtime/blob/b82454cad0aaaae3db2cf18fbf2cccc36e201ccc/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/List.cs
-public class LongList<T> : ILongList<T>, IStorable where T : struct
+public class LongList<T> : Storable, ILongList<T> where T : struct
 {
     private static readonly int ItemSize = IStore.SizeOf<T>();
     private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
     private static readonly int ChunkSize = CalculateChunkSize(MaxChunkByteSize);
 
-    private readonly IStore store;
-    private readonly bool leaveOpen;
     private List<Chunk> chunks;
-    private bool disposed;
 
-    public LongList(IStore store, long count = 0, bool leaveOpen = false)
+    public LongList(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        this.store = store;
-        this.leaveOpen = leaveOpen;
-        chunks = InitChunks(count);
+        chunks = InitChunks(0);
     }
 
-    public IStore Store => store;
-    public bool IsLong => Extent > int.MaxValue;
-    public long Extent => chunks[^1].EndOffset;
+    public override long Extent => chunks[^1].EndOffset;
 
     public long Count => chunks[^1].End;
     public int IntCount => (int)Math.Min(Count, int.MaxValue);
@@ -160,34 +153,6 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
 
     public T Peek() => this[Count - 1];
 
-    public T[] ToArray()
-    {
-        var array = new T[IntCount];
-
-        foreach(var chunk in chunks)
-        {
-            var count = (int)(Math.Min(array.Length, chunk.End) - chunk.Start);
-            if(count <= 0) break;
-            chunk.List.CopyTo(0, array, (int)chunk.Start, count);
-        }
-
-        return array;
-    }
-
-    public IList<T> ToList()
-    {
-        var list = new List<T>();
-
-        foreach(var chunk in chunks)
-        {
-            var count = (int)(Math.Min(IntCount, chunk.End) - chunk.Start);
-            if(count <= 0) break;
-            list.AddRange(chunk.List[..count]);
-        }
-
-        return list;
-    }
-
     private List<Chunk> InitChunks(long count) => [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
 
     public void EvictOldest()
@@ -196,34 +161,17 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         foreach(var c in toEvict) c.Evict();
     }
 
-    public static LongList<T> Read(IStore store, bool leaveOpen = false) => new(store, store.ReadInt64(0), leaveOpen);
+    public override void Read()
+    {
+        chunks = InitChunks(store.ReadInt64(0));
+    }
 
-    public void Write()
+    public override void Write()
     {
         store.SetLength(Extent);
         store.Write(0, Count);
 
         foreach(var chunk in chunks) chunk.Evict();
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if(!disposed)
-        {
-            if(disposing)
-            {
-                Write();
-                if(!leaveOpen) store.Dispose();
-            }
-
-            disposed = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 
     public ILongList<T> Clone() => Clone(IStore.Create(IsLong));
@@ -232,7 +180,9 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
     {
         Write();
         store.CopyTo(destination);
-        return Read(destination, leaveOpen);
+        var result = new LongList<T>(destination, leaveOpen);
+        result.Read();
+        return result;
     }
 
     private static void ThrowArgumentOutOfRangeException(long index) => throw new ArgumentOutOfRangeException(

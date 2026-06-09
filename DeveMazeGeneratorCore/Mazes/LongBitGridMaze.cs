@@ -6,6 +6,10 @@ namespace DeveMazeGeneratorCore.Mazes;
 
 public sealed class LongBitGridMaze(LongBitGrid grid) : IMaze
 {
+    public LongBitGridMaze(IStore store, bool leaveOpen = false) : this(new LongBitGrid(store, leaveOpen))
+    {
+    }
+
     public LongBitGridMaze(IStore store, Size size, bool leaveOpen = false) : this(new LongBitGrid(store, size, leaveOpen))
     {
     }
@@ -26,7 +30,7 @@ public sealed class LongBitGridMaze(LongBitGrid grid) : IMaze
         set => grid[x, y] = value;
     }
 
-    public static LongBitGridMaze Read(IStore store, bool leaveOpen = false) => new(LongBitGrid.Read(store, leaveOpen));
+    public void Read() => grid.Read();
 
     public void Write() => grid.Write();
 
@@ -36,6 +40,6 @@ public sealed class LongBitGridMaze(LongBitGrid grid) : IMaze
 
     public IMaze Clone(IStore destination, bool leaveOpen = false)
     {
-        return new LongBitGridMaze((LongBitGrid)grid.Clone(destination, leaveOpen));
+        return new LongBitGridMaze(grid.Clone(destination, leaveOpen));
     }
 }

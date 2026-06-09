@@ -6,6 +6,10 @@ namespace DeveMazeGeneratorCore.Mazes;
 
 public sealed class BitGridMaze(BitGrid grid) : IMaze
 {
+    public BitGridMaze(IStore store, bool leaveOpen = false) : this(new BitGrid(store, leaveOpen))
+    {
+    }
+
     public BitGridMaze(IStore store, Size size, bool leaveOpen = false) : this(new BitGrid(store, size, leaveOpen))
     {
     }
@@ -26,7 +30,7 @@ public sealed class BitGridMaze(BitGrid grid) : IMaze
         set => grid[x, y] = value;
     }
 
-    public static BitGridMaze Read(IStore store, bool leaveOpen = false) => new(BitGrid.Read(store, leaveOpen));
+    public void Read() => grid.Read();
 
     public void Write() => grid.Write();
 
@@ -36,6 +40,6 @@ public sealed class BitGridMaze(BitGrid grid) : IMaze
 
     public IMaze Clone(IStore destination, bool leaveOpen = false)
     {
-        return new BitGridMaze((BitGrid)grid.Clone(destination, leaveOpen));
+        return new BitGridMaze(grid.Clone(destination, leaveOpen));
     }
 }

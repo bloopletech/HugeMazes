@@ -3,6 +3,7 @@ using DeveMazeGeneratorCore.Generators;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Paths;
+using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore;
 
@@ -22,7 +23,12 @@ public static class DeveMazeGeneratorCore
         height,
         seed);
 
-    public static IMaze Generate(MazeType mazeType, AlgorithmType algorithmType, int width, int height, int? seed = null) => Generate(
+    public static IMaze Generate(
+        MazeType mazeType,
+        AlgorithmType algorithmType,
+        int width,
+        int height,
+        int? seed = null) => Generate(
         mazeType,
         algorithmType,
         IStore.Create(IMaze.MaxExtent(width, height)),
@@ -55,10 +61,35 @@ public static class DeveMazeGeneratorCore
     public static IMazePath Solve(IMaze maze, MazePathType pathType, IStore store)
     {
         var path = MazePathSerializer.Create(pathType, store, maze.Size);
-        if(path is IGridMazePath gridPath) PathFinder.Find(maze, gridPath);
-        else if(path is IPointsMazePath pointsPath) PathFinder.Find(maze, pointsPath);
+        Solver.Solve(maze, path);
         return path;
     }
+
+    public static IImage Render(
+        IMaze maze,
+        RenderColours? colours = null) => Render(maze, IStore.Create(maze.IsLong), colours);
+
+    //public static IImage Render(IMaze maze, IStore store, RenderColors? colours = null) => Render(maze, ImageType.LongImage, store, colours);
+
+    //public static IImage Render(IMaze maze, ImageType imageType, IStore store, RenderColors? colours = null)
+    public static IImage Render(
+        IMaze maze,
+        IStore store,
+        RenderColours? colours = null) => Renderer.Render(maze, store, colours ?? RenderColours.Default);
+
+    public static IImage Render(
+        IMaze maze,
+        IMazePath path,
+        RenderColours? colours = null) => Render(maze, path, IStore.Create(maze.IsLong), colours);
+
+    //public static IImage Render(IMaze maze, IMazePath path, IStore store, RenderColors? colours = null) => Render(maze, path, ImageType.LongImage, store, colours);
+
+    //public static IImage Render(IMaze maze, IMazePath path, ImageType imageType, IStore store, RenderColors? colours = null)
+    public static IImage Render(
+        IMaze maze,
+        IMazePath path,
+        IStore store,
+        RenderColours? colours = null) => Renderer.Render(maze, path, store, colours ?? RenderColours.Default);
 
     public static IMaze BenchmarkBaseline()
     {
