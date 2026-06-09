@@ -18,7 +18,7 @@ public sealed class BitGridMaze(BitGrid grid) : IMaze
     }
 
     public IStore Store => grid.Store;
-    public bool IsBig => grid.IsBig;
+    public bool IsLong => grid.IsLong;
     public long Extent => grid.Extent;
     public int Width => grid.Width;
     public int Height => grid.Height;
@@ -42,7 +42,7 @@ public sealed class BitGridMaze(BitGrid grid) : IMaze
 
     public void Dispose() => grid.Dispose();
 
-    public IMaze Clone() => Clone(IStore.Create(IsBig));
+    public IMaze Clone() => Clone(IStore.Create(IsLong));
 
     public IMaze Clone(IStore destination, bool leaveOpen = false)
     {

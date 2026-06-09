@@ -5,7 +5,7 @@ namespace DeveMazeGeneratorCore.Paths;
 
 public interface IPointsMazePath : IMazePath
 {
-    IBigList<MazePoint> Points { get; }
+    ILongList<MazePoint> Points { get; }
 
     IPointsMazePath Clone();
 }

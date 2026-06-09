@@ -26,7 +26,7 @@ public class Verifier
 
     public static void FloodFill(IMaze maze)
     {
-        using var stack = new BigList<MazePoint>(IStore.Create(maze.IsBig));
+        using var stack = new LongList<MazePoint>(IStore.Create(maze.IsLong));
         stack.Clear();
         stack.Push(new(0, 0));
 

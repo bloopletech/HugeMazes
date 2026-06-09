@@ -4,7 +4,7 @@ using DeveMazeGeneratorCore.Extensions;
 
 namespace DeveMazeGeneratorCore.Collections;
 
-public class SmallList<T> : IBigList<T> where T : struct
+public class SmallList<T> : ILongList<T> where T : struct
 {
     private readonly List<T> list = [];
 
@@ -54,14 +54,14 @@ public class SmallList<T> : IBigList<T> where T : struct
 
     public IList<T> ToList() => [..list];
 
-    public IBigList<T> Clone()
+    public ILongList<T> Clone()
     {
         var result = new SmallList<T>();
         result.list.AddRange(list);
         return result;
     }
 
-    public async Task<IBigList<T>> CloneAsync()
+    public async Task<ILongList<T>> CloneAsync()
     {
         return Clone();
     }

@@ -7,7 +7,7 @@ using DeveMazeGeneratorCore.IO;
 namespace DeveMazeGeneratorCore.Collections;
 
 // Based on https://github.com/dotnet/runtime/blob/b82454cad0aaaae3db2cf18fbf2cccc36e201ccc/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/List.cs
-public class BigList<T> : IBigList<T>, IStorable where T : struct
+public class LongList<T> : ILongList<T>, IStorable where T : struct
 {
     private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
     private static readonly int ItemSize = IStore.SizeOf<T>();
@@ -18,7 +18,7 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
     private List<Chunk> chunks;
     private bool disposed;
 
-    public BigList(IStore store, bool leaveOpen = false)
+    public LongList(IStore store, bool leaveOpen = false)
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
@@ -26,7 +26,7 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
     }
 
     public IStore Store => store;
-    public bool IsBig => Extent > int.MaxValue;
+    public bool IsLong => Extent > int.MaxValue;
     public long Extent => chunks[^1].EndOffset;
 
     public long Count => chunks[^1].End;
@@ -254,24 +254,24 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
         GC.SuppressFinalize(this);
     }
 
-    public IBigList<T> Clone() => Clone(IStore.Create(IsBig));
+    public ILongList<T> Clone() => Clone(IStore.Create(IsLong));
 
-    public IBigList<T> Clone(IStore destination, bool leaveOpen = false)
+    public ILongList<T> Clone(IStore destination, bool leaveOpen = false)
     {
         Write();
         store.CopyTo(destination);
-        var result = new BigList<T>(destination, leaveOpen);
+        var result = new LongList<T>(destination, leaveOpen);
         result.Read();
         return result;
     }
 
-    public async Task<IBigList<T>> CloneAsync() => await CloneAsync(IStore.Create(IsBig));
+    public async Task<ILongList<T>> CloneAsync() => await CloneAsync(IStore.Create(IsLong));
 
-    public async Task<IBigList<T>> CloneAsync(IStore destination, bool leaveOpen = false)
+    public async Task<ILongList<T>> CloneAsync(IStore destination, bool leaveOpen = false)
     {
         await WriteAsync();
         await store.CopyToAsync(destination);
-        var result = new BigList<T>(destination, leaveOpen);
+        var result = new LongList<T>(destination, leaveOpen);
         await result.ReadAsync();
         return result;
     }
@@ -281,7 +281,7 @@ public class BigList<T> : IBigList<T>, IStorable where T : struct
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(BigList<T> owner, ChunkSpan span)
+    private class Chunk(LongList<T> owner, ChunkSpan span)
     {
         private List<T>? list;
 

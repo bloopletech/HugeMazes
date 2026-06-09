@@ -19,7 +19,7 @@ public sealed class BitGridMazePath(BitGrid grid) : IGridMazePath
     }
 
     public IStore Store => grid.Store;
-    public bool IsBig => grid.IsBig;
+    public bool IsLong => grid.IsLong;
     public long Extent => grid.Extent;
     public int Width => grid.Width;
     public int Height => grid.Height;
@@ -43,7 +43,7 @@ public sealed class BitGridMazePath(BitGrid grid) : IGridMazePath
 
     public void Dispose() => grid.Dispose();
 
-    public IGridMazePath Clone() => Clone(IStore.Create(IsBig));
+    public IGridMazePath Clone() => Clone(IStore.Create(IsLong));
 
     public IGridMazePath Clone(IStore destination, bool leaveOpen = false)
     {

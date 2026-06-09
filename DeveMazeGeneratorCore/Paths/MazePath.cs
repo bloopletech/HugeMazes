@@ -4,16 +4,16 @@ using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Paths;
 
-public sealed class MazePath(BigList<MazePoint> points) : IPointsMazePath
+public sealed class MazePath(LongList<MazePoint> points) : IPointsMazePath
 {
-    public MazePath(IStore store, bool leaveOpen = false) : this(new BigList<MazePoint>(store, leaveOpen))
+    public MazePath(IStore store, bool leaveOpen = false) : this(new LongList<MazePoint>(store, leaveOpen))
     {
     }
 
     public IStore Store => points.Store;
-    public bool IsBig => points.IsBig;
+    public bool IsLong => points.IsLong;
     public long Extent => points.Extent;
-    public IBigList<MazePoint> Points => points;
+    public ILongList<MazePoint> Points => points;
 
     public void Read() => points.Read();
 
@@ -25,10 +25,10 @@ public sealed class MazePath(BigList<MazePoint> points) : IPointsMazePath
 
     public void Dispose() => points.Dispose();
 
-    public IPointsMazePath Clone() => Clone(IStore.Create(IsBig));
+    public IPointsMazePath Clone() => Clone(IStore.Create(IsLong));
 
     public IPointsMazePath Clone(IStore destination, bool leaveOpen = false)
     {
-        return new MazePath((BigList<MazePoint>)points.Clone(destination, leaveOpen));
+        return new MazePath((LongList<MazePoint>)points.Clone(destination, leaveOpen));
     }
 }

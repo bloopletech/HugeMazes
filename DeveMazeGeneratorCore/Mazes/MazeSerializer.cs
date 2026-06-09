@@ -50,19 +50,19 @@ public class MazeSerializer
     private static IMaze InitForRead(MazeType type, IStore store) => type switch
     {
         MazeType.BitGridMaze => new BitGridMaze(store.WithPosition()),
-        MazeType.BigBitGridMaze => new BigBitGridMaze(store.WithPosition()),
+        MazeType.LongBitGridMaze => new LongBitGridMaze(store.WithPosition()),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
     private static IMaze InitForWrite(MazeType type, IStore store, int width, int height) => type switch
     {
         MazeType.BitGridMaze => new BitGridMaze(store.WithPosition(), width, height),
-        MazeType.BigBitGridMaze => new BigBitGridMaze(store.WithPosition(), width, height),
+        MazeType.LongBitGridMaze => new LongBitGridMaze(store.WithPosition(), width, height),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
     public static MazeType DetermineMazeType(int width, int height)
     {
-        return ((long)width * height) > int.MaxValue ? MazeType.BigBitGridMaze : MazeType.BitGridMaze;
+        return ((long)width * height) > int.MaxValue ? MazeType.LongBitGridMaze : MazeType.BitGridMaze;
     }
 }

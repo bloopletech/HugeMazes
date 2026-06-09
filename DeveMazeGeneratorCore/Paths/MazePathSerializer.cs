@@ -51,7 +51,7 @@ public static class MazePathSerializer
     {
         MazePathType.MazePath => new MazePath(store.WithPosition()),
         MazePathType.BitGridMazePath => new BitGridMazePath(store.WithPosition()),
-        MazePathType.BigBitGridMazePath => new BigBitGridMazePath(store.WithPosition()),
+        MazePathType.BigBitGridMazePath => new LongBitGridMazePath(store.WithPosition()),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
@@ -63,7 +63,7 @@ public static class MazePathSerializer
     {
         MazePathType.MazePath => new MazePath(store.WithPosition()),
         MazePathType.BitGridMazePath => new BitGridMazePath(store.WithPosition(), width, height),
-        MazePathType.BigBitGridMazePath => new BigBitGridMazePath(store.WithPosition(), width, height),
+        MazePathType.BigBitGridMazePath => new LongBitGridMazePath(store.WithPosition(), width, height),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 }

@@ -191,9 +191,9 @@ public interface IStore : IDisposable
 
     public static StreamStore CreateMemory() => new(new MemoryStream());
 
-    public static IStore Create(bool big) => (BigOverride ?? big) ? CreateFile() : CreateMemory();
+    public static IStore Create(bool isLong) => (LongOverride ?? isLong) ? CreateFile() : CreateMemory();
 
     public static IStore Create(long extent) => Create(extent > int.MaxValue);
 
-    public static bool? BigOverride;
+    public static bool? LongOverride;
 }

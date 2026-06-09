@@ -1,28 +1,27 @@
 using System.Runtime.CompilerServices;
 using DeveMazeGeneratorCore.IO;
-using DeveMazeGeneratorCore.Mazes;
 
-namespace DeveMazeGeneratorCore.Paths;
+namespace DeveMazeGeneratorCore.Mazes;
 
-public sealed class BigBitGridMazePath(BigBitGrid grid) : IGridMazePath
+public sealed class LongBitGridMaze(LongBitGrid grid) : IMaze
 {
-    public BigBitGridMazePath(IStore store, bool leaveOpen = false) : this(new BigBitGrid(store, leaveOpen))
+    public LongBitGridMaze(IStore store, bool leaveOpen = false) : this(new LongBitGrid(store, leaveOpen))
     {
     }
 
-    public BigBitGridMazePath(
+    public LongBitGridMaze(
         IStore store,
         int width,
         int height,
-        bool leaveOpen = false) : this(new BigBitGrid(store, width, height, leaveOpen))
+        bool leaveOpen = false) : this(new LongBitGrid(store, width, height, leaveOpen))
     {
     }
 
     public IStore Store => grid.Store;
-    public bool IsBig => grid.IsBig;
+    public bool IsLong => grid.IsLong;
     public long Extent => grid.Extent;
     public int Width => grid.Width;
-    public int Height => grid.Height; 
+    public int Height => grid.Height;
 
     public bool this[int x, int y]
     {
@@ -43,10 +42,10 @@ public sealed class BigBitGridMazePath(BigBitGrid grid) : IGridMazePath
 
     public void Dispose() => grid.Dispose();
 
-    public IGridMazePath Clone() => Clone(IStore.Create(IsBig));
+    public IMaze Clone() => Clone(IStore.Create(IsLong));
 
-    public IGridMazePath Clone(IStore destination, bool leaveOpen = false)
+    public IMaze Clone(IStore destination, bool leaveOpen = false)
     {
-        return new BigBitGridMazePath((BigBitGrid)grid.Clone(destination, leaveOpen));
+        return new LongBitGridMaze((LongBitGrid)grid.Clone(destination, leaveOpen));
     }
 }
