@@ -425,5 +425,9 @@ public class StoreOffset(IStore store, long offset, bool leaveOpen = false) : IS
         return destination;
     }
 
-    public IStore WithPosition(bool leaveOpen = false) => new StoreOffset(store, Position, leaveOpen);
+    public IStore WithPosition(bool leaveOpen = false)
+    {
+        if(store is StoreOffset storeOffset) return new StoreOffset(storeOffset, Position, leaveOpen);
+        return new StoreOffset(store, Position, leaveOpen);
+    }
 }

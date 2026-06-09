@@ -2,7 +2,7 @@
   "profiles": {
     "DeveMazeGeneratorCore.ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "load 352312984.maze verify solve render render-path"
+      "commandLineArgs": "generate 45000 45000 verify solve render render-path"
     },
     "Docker": {
       "commandName": "Docker"
