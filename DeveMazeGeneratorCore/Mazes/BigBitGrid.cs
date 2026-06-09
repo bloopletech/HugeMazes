@@ -55,7 +55,7 @@ public class BigBitGrid : IBitGrid, IStorable, IAsyncDisposable
         width = store.ReadInt32();
         height = store.ReadInt32();
 
-        array = new(new StoreOffset(store, sizeof(int) * 2, true));
+        array = new(store.WithPosition(true));
         array.Read();
     }
 

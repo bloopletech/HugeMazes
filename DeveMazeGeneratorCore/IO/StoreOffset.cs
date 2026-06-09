@@ -3,15 +3,26 @@ using System.Runtime.InteropServices;
 
 namespace DeveMazeGeneratorCore.IO;
 
-public class StoreOffset(IStore store, long offset, bool leaveOpen = false) : IStore
+public class StoreOffset : IStore
 {
+    private readonly IStore store;
+    private readonly bool leaveOpen;
+    private readonly long offset;
     private bool disposed;
 
-    public StoreOffset(
-        StoreOffset store,
-        long offset,
-        bool leaveOpen = false) : this(store.Store, store.Offset + offset, leaveOpen)
+    public StoreOffset(IStore store, long offset, bool leaveOpen = false)
     {
+        if(store is StoreOffset storeOffset)
+        {
+            this.store = storeOffset.store;
+            this.offset = storeOffset.Offset + offset;
+        }
+        else
+        {
+            this.store = store;
+            this.offset = offset;
+        }
+        this.leaveOpen = leaveOpen;
     }
 
     public IStore Store => store;
@@ -425,9 +436,5 @@ public class StoreOffset(IStore store, long offset, bool leaveOpen = false) : IS
         return destination;
     }
 
-    public IStore WithPosition(bool leaveOpen = false)
-    {
-        if(store is StoreOffset storeOffset) return new StoreOffset(storeOffset, Position, leaveOpen);
-        return new StoreOffset(store, Position, leaveOpen);
-    }
+    public IStore WithPosition(bool leaveOpen = false) => new StoreOffset(store, store.Position, leaveOpen);
 }

@@ -17,7 +17,6 @@ public class BigBitArray : IBigBitArray, IStorable
     private readonly bool leaveOpen;
     private Chunk[] chunks;
     private long bitLength;
-    private long byteLength;
     private bool disposed;
 
     public BigBitArray(IStore store, bool leaveOpen = false)
@@ -32,13 +31,12 @@ public class BigBitArray : IBigBitArray, IStorable
         this.store = store;
         this.leaveOpen = leaveOpen;
         this.bitLength = bitLength;
-        byteLength = GetByteArrayLengthFromBitLength(bitLength);
         chunks = InitChunks(true);
     }
 
     public IStore Store => store;
     public bool IsBig => Extent > int.MaxValue;
-    public long Extent => byteLength + sizeof(long);
+    public long Extent => GetByteArrayLengthFromBitLength(bitLength) + sizeof(long);
 
     public long Length => bitLength;
     public int IntLength => (int)Math.Min(bitLength, int.MaxValue);
@@ -86,9 +84,7 @@ public class BigBitArray : IBigBitArray, IStorable
     {
         foreach(var chunk in chunks)
         {
-            var count = (int)(Math.Min(IntLength, chunk.End) - chunk.Start);
-            if(count <= 0) break;
-            for(var i = 0; i < count; i++) yield return chunk.Array[i];
+            for(var i = 0; i < chunk.Length; i++) yield return chunk.Array[i];
         }
     }
 
@@ -126,26 +122,8 @@ public class BigBitArray : IBigBitArray, IStorable
 
     private Chunk[] InitChunks(bool skipFirstLoad)
     {
-        var remaining = byteLength;
-
-        var chunks = new List<Chunk>();
-        while(remaining > 0)
-        {
-            var chunkByteLength = (int)Math.Min(remaining, ChunkByteSize);
-
-            if(chunks.Count == 0)
-            {
-                chunks.Add(new(this, sizeof(long), 0, chunkByteLength, skipFirstLoad));
-            }
-            else
-            {
-                chunks.Add(chunks[^1].Next(chunkByteLength));
-            }
-
-            remaining -= chunkByteLength;
-        }
-
-        return [..chunks];
+        var chunkSpans = ChunkSpan.Chunk(bitLength, ChunkBitSize, ChunkByteSize);
+        return [..chunkSpans.Select((span, index) => new Chunk(this, span, skipFirstLoad))];
     }
 
     public void EvictOldest()
@@ -157,7 +135,6 @@ public class BigBitArray : IBigBitArray, IStorable
     public void Read()
     {
         bitLength = store.ReadInt64(0);
-        byteLength = GetByteArrayLengthFromBitLength(bitLength);
         chunks = InitChunks(false);
     }
 
@@ -169,7 +146,7 @@ public class BigBitArray : IBigBitArray, IStorable
 
     public void Write()
     {
-        store.SetLength(byteLength);
+        store.SetLength(Extent);
         store.Write(0, bitLength);
 
         foreach(var chunk in chunks) chunk.Evict();
@@ -234,7 +211,7 @@ public class BigBitArray : IBigBitArray, IStorable
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(BigBitArray owner, long offset, long start, int byteLength, bool skipFirstLoad)
+    private class Chunk(BigBitArray owner, ChunkSpan span, bool skipFirstLoad)
     {
         private BitArray? array;
 
@@ -243,7 +220,6 @@ public class BigBitArray : IBigBitArray, IStorable
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                LastUsedAt = Environment.TickCount64;
                 array ??= Load();
                 return array;
             }
@@ -251,18 +227,20 @@ public class BigBitArray : IBigBitArray, IStorable
 
         public long LastUsedAt { get; set; } = long.MinValue;
 
-        public long EndOffset => offset + byteLength;
+        public long Offset => span.Offset + sizeof(long);
 
-        public long Start => start;
-        public int Length => byteLength * BitsPerByte;
-        public long End => Start + Length;
+        public long Start => span.Start;
+        public int Length => span.Length;
+        public long End => span.End;
 
         public BitArray Load()
         {
+            LastUsedAt = Environment.TickCount64;
             owner.EvictOldest();
-            var array = new BitArray(byteLength * BitsPerByte);
+
+            var array = new BitArray(span.Length);
             if(skipFirstLoad) skipFirstLoad = false;
-            else owner.Store.ReadExactly(offset, CollectionsMarshal.AsBytes(array));
+            else owner.Store.ReadExactly(Offset, CollectionsMarshal.AsBytes(array));
             return array;
         }
 
@@ -270,11 +248,9 @@ public class BigBitArray : IBigBitArray, IStorable
         {
             if(array == null) return;
 
-            owner.Store.Write(offset, CollectionsMarshal.AsBytes(array));
+            owner.Store.Write(Offset, CollectionsMarshal.AsBytes(array));
             array = null;
             LastUsedAt = long.MinValue;
         }
-
-        public Chunk Next(int byteLength) => new(owner, EndOffset, End, byteLength, skipFirstLoad);
     }
 }

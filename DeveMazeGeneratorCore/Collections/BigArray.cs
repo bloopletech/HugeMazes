@@ -35,7 +35,7 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
 
     public IStore Store => store;
     public bool IsBig => Extent > int.MaxValue;
-    public long Extent => (length * Chunk.ItemSize) + sizeof(long);
+    public long Extent => (length * ItemSize) + sizeof(long);
 
     public long Length => length;
     public int IntLength => (int)Math.Min(length, int.MaxValue);
@@ -133,26 +133,8 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
 
     private Chunk[] InitChunks(bool skipFirstLoad)
     {
-        var remaining = length;
-
-        var chunks = new List<Chunk>();
-        while(remaining > 0)
-        {
-            var chunkLength = (int)Math.Min(remaining, ChunkSize);
-
-            if(chunks.Count == 0)
-            {
-                chunks.Add(new(this, sizeof(long), 0, chunkLength, skipFirstLoad));
-            }
-            else
-            {
-                chunks.Add(chunks[^1].Next(chunkLength));
-            }
-
-            remaining -= chunkLength;
-        }
-
-        return [..chunks];
+        var chunkSpans = ChunkSpan.Chunk(length, ChunkSize, ChunkSize * ItemSize);
+        return [..chunkSpans.Select(span => new Chunk(this, span, skipFirstLoad))];
     }
 
     private static int CalculateChunkSize()
@@ -182,7 +164,7 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
 
     public void Write()
     {
-        store.SetLength(chunks.Length > 0 ? chunks[^1].EndOffset : sizeof(long));
+        store.SetLength(Extent);
         store.Write(0, length);
 
         foreach(var chunk in chunks) chunk.Evict();
@@ -240,10 +222,8 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(BigArray<T> owner, long offset, long start, int length, bool skipFirstLoad)
+    private class Chunk(BigArray<T> owner, ChunkSpan span, bool skipFirstLoad)
     {
-        public static readonly int ItemSize = IStore.SizeOf<T>();
-
         private T[]? array;
 
         public T[] Array
@@ -251,7 +231,6 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                LastUsedAt = Environment.TickCount64;
                 array ??= Load();
                 return array;
             }
@@ -259,18 +238,19 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
 
         public long LastUsedAt { get; set; } = long.MinValue;
 
-        public long EndOffset => offset + (Length * ItemSize);
-
-        public long Start => start;
-        public int Length => array?.Length ?? length;
-        public long End => Start + Length;
+        public long Offset => span.Offset + sizeof(long);
+        public long Start => span.Start;
+        public int Length => span.Length;
+        public long End => span.End;
 
         private T[] Load()
         {
+            LastUsedAt = Environment.TickCount64;
             owner.EvictOldest();
-            var array = new T[length];
+
+            var array = new T[Length];
             if(skipFirstLoad) skipFirstLoad = false;
-            else owner.Store.Read(offset, array);
+            else owner.Store.Read(Offset, array);
             return array;
         }
 
@@ -278,12 +258,9 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
         {
             if(array == null) return;
 
-            owner.Store.Write(offset, array);
-            length = array.Length;
+            owner.Store.Write(Offset, array);
             array = null;
             LastUsedAt = long.MinValue;
         }
-
-        public Chunk Next(int length) => new(owner, EndOffset, End, length, skipFirstLoad);
     }
 }
