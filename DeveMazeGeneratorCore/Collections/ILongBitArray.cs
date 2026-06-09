@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace DeveMazeGeneratorCore.Collections;
 
-public interface IBigBitArray : IEnumerable
+public interface ILongBitArray : IEnumerable
 {
     bool this[long index] { get; set; }
 
@@ -14,6 +14,6 @@ public interface IBigBitArray : IEnumerable
     bool Peek();
     bool[] ToArray();
     IList<bool> ToList();
-    IBigBitArray Clone();
-    Task<IBigBitArray> CloneAsync();
+    ILongBitArray Clone();
+    Task<ILongBitArray> CloneAsync();
 }

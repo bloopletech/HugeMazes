@@ -7,7 +7,7 @@ using DeveMazeGeneratorCore.IO;
 namespace DeveMazeGeneratorCore.Collections;
 
 // Based on https://github.com/dotnet/runtime/blob/081d220c0a773ffb7c6bea6b48727833576a65ef/src/libraries/System.Private.CoreLib/src/System/Collections/BitArray.cs
-public class BigBitArray : IBigBitArray, IStorable
+public class LongBitArray : ILongBitArray, IStorable
 {
     private const int ChunkByteSize = (256 * 1024 * 1024) - 1;
     private const int BitsPerByte = 8; // sizeof(byte) * 8
@@ -19,14 +19,14 @@ public class BigBitArray : IBigBitArray, IStorable
     private long bitLength;
     private bool disposed;
 
-    public BigBitArray(IStore store, bool leaveOpen = false)
+    public LongBitArray(IStore store, bool leaveOpen = false)
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
         chunks = null!;
     }
 
-    public BigBitArray(IStore store, long bitLength, bool leaveOpen = false)
+    public LongBitArray(IStore store, long bitLength, bool leaveOpen = false)
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
@@ -35,7 +35,7 @@ public class BigBitArray : IBigBitArray, IStorable
     }
 
     public IStore Store => store;
-    public bool IsBig => Extent > int.MaxValue;
+    public bool IsLong => Extent > int.MaxValue;
     public long Extent => GetByteArrayLengthFromBitLength(bitLength) + sizeof(long);
 
     public long Length => bitLength;
@@ -177,24 +177,24 @@ public class BigBitArray : IBigBitArray, IStorable
         GC.SuppressFinalize(this);
     }
 
-    public IBigBitArray Clone() => Clone(IStore.Create(IsBig));
+    public ILongBitArray Clone() => Clone(IStore.Create(IsLong));
 
-    public IBigBitArray Clone(IStore destination, bool leaveOpen = false)
+    public ILongBitArray Clone(IStore destination, bool leaveOpen = false)
     {
         Write();
         store.CopyTo(destination);
-        var result = new BigBitArray(destination, leaveOpen);
+        var result = new LongBitArray(destination, leaveOpen);
         result.Read();
         return result;
     }
 
-    public async Task<IBigBitArray> CloneAsync() => await CloneAsync(IStore.Create(IsBig));
+    public async Task<ILongBitArray> CloneAsync() => await CloneAsync(IStore.Create(IsLong));
 
-    public async Task<IBigBitArray> CloneAsync(IStore destination, bool leaveOpen = false)
+    public async Task<ILongBitArray> CloneAsync(IStore destination, bool leaveOpen = false)
     {
         await WriteAsync();
         await store.CopyToAsync(destination);
-        var result = new BigBitArray(destination, leaveOpen);
+        var result = new LongBitArray(destination, leaveOpen);
         await result.ReadAsync();
         return result;
     }
@@ -211,7 +211,7 @@ public class BigBitArray : IBigBitArray, IStorable
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(BigBitArray owner, ChunkSpan span, bool skipFirstLoad)
+    private class Chunk(LongBitArray owner, ChunkSpan span, bool skipFirstLoad)
     {
         private BitArray? array;
 

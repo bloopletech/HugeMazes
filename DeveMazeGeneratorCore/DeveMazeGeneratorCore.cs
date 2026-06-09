@@ -48,7 +48,7 @@ public static class DeveMazeGeneratorCore
         return maze;
     }
 
-    public static IMazePath Solve(IMaze maze) => Solve(maze, IStore.Create(maze.IsBig));
+    public static IMazePath Solve(IMaze maze) => Solve(maze, IStore.Create(maze.IsLong));
 
     public static IMazePath Solve(IMaze maze, IStore store) => Solve(maze, MazePathType.MazePath, store);
 

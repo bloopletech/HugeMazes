@@ -1,6 +1,6 @@
 namespace DeveMazeGeneratorCore.Collections;
 
-public interface IBigArray<T> : IEnumerable<T> where T : struct
+public interface ILongArray<T> : IEnumerable<T> where T : struct
 {
     T this[long index] { get; set; }
 
@@ -14,6 +14,6 @@ public interface IBigArray<T> : IEnumerable<T> where T : struct
     T Peek();
     T[] ToArray();
     IList<T> ToList();
-    IBigArray<T> Clone();
-    Task<IBigArray<T>> CloneAsync();
+    ILongArray<T> Clone();
+    Task<ILongArray<T>> CloneAsync();
 }

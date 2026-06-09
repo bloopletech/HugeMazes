@@ -31,7 +31,7 @@ public class BitGrid : IBitGrid, IStorable
     }
 
     public IStore Store => store;
-    public bool IsBig => Extent > int.MaxValue;
+    public bool IsLong => Extent > int.MaxValue;
     public long Extent => CollectionsMarshal.AsBytes(array).Length + (sizeof(int) * 2);
     public int Width => width;
     public int Height => height;
@@ -111,7 +111,7 @@ public class BitGrid : IBitGrid, IStorable
         GC.SuppressFinalize(this);
     }
 
-    public IBitGrid Clone() => Clone(IStore.Create(IsBig));
+    public IBitGrid Clone() => Clone(IStore.Create(IsLong));
 
     public IBitGrid Clone(IStore destination, bool leaveOpen = false)
     {
@@ -122,7 +122,7 @@ public class BitGrid : IBitGrid, IStorable
         return result;
     }
 
-    public async Task<IBitGrid> CloneAsync() => Clone(IStore.Create(IsBig));
+    public async Task<IBitGrid> CloneAsync() => Clone(IStore.Create(IsLong));
 
     public async Task<IBitGrid> CloneAsync(IStore destination, bool leaveOpen = false)
     {

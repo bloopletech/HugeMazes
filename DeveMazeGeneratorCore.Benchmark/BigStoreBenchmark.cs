@@ -11,14 +11,14 @@ public class BigStoreBenchmark
     [Benchmark(Baseline = true)]
     public void GenerateBaseline()
     {
-        IStore.BigOverride = false;
+        IStore.LongOverride = false;
         DeveMazeGeneratorCore.BenchmarkBaseline();
     }
 
     [Benchmark]
     public void GenerateFast()
     {
-        IStore.BigOverride = false;
+        IStore.LongOverride = false;
         DeveMazeGeneratorCore.BenchmarkBaseline();
     }
 }

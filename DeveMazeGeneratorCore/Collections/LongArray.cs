@@ -6,7 +6,7 @@ using DeveMazeGeneratorCore.IO;
 namespace DeveMazeGeneratorCore.Collections;
 
 // Based on https://github.com/dotnet/runtime/blob/081d220c0a773ffb7c6bea6b48727833576a65ef/src/libraries/System.Private.CoreLib/src/System/Collections/BitArray.cs
-public class BigArray<T> : IBigArray<T>, IStorable where T : struct
+public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 {
     private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
     private static readonly int ItemSize = IStore.SizeOf<T>();
@@ -18,14 +18,14 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
     private long length;
     private bool disposed;
 
-    public BigArray(IStore store, bool leaveOpen = false)
+    public LongArray(IStore store, bool leaveOpen = false)
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
         chunks = null!;
     }
 
-    public BigArray(IStore store, long length, bool leaveOpen = false)
+    public LongArray(IStore store, long length, bool leaveOpen = false)
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
@@ -34,7 +34,7 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
     }
 
     public IStore Store => store;
-    public bool IsBig => Extent > int.MaxValue;
+    public bool IsLong => Extent > int.MaxValue;
     public long Extent => (length * ItemSize) + sizeof(long);
 
     public long Length => length;
@@ -195,24 +195,24 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
         GC.SuppressFinalize(this);
     }
 
-    public IBigArray<T> Clone() => Clone(IStore.Create(IsBig));
+    public ILongArray<T> Clone() => Clone(IStore.Create(IsLong));
 
-    public IBigArray<T> Clone(IStore destination, bool leaveOpen = false)
+    public ILongArray<T> Clone(IStore destination, bool leaveOpen = false)
     {
         Write();
         store.CopyTo(destination);
-        var result = new BigArray<T>(destination, leaveOpen);
+        var result = new LongArray<T>(destination, leaveOpen);
         result.Read();
         return result;
     }
 
-    public async Task<IBigArray<T>> CloneAsync() => await CloneAsync(IStore.Create(IsBig));
+    public async Task<ILongArray<T>> CloneAsync() => await CloneAsync(IStore.Create(IsLong));
 
-    public async Task<IBigArray<T>> CloneAsync(IStore destination, bool leaveOpen = false)
+    public async Task<ILongArray<T>> CloneAsync(IStore destination, bool leaveOpen = false)
     {
         await WriteAsync();
         await store.CopyToAsync(destination);
-        var result = new BigArray<T>(destination, leaveOpen);
+        var result = new LongArray<T>(destination, leaveOpen);
         await result.ReadAsync();
         return result;
     }
@@ -222,7 +222,7 @@ public class BigArray<T> : IBigArray<T>, IStorable where T : struct
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(BigArray<T> owner, ChunkSpan span, bool skipFirstLoad)
+    private class Chunk(LongArray<T> owner, ChunkSpan span, bool skipFirstLoad)
     {
         private T[]? array;
 

@@ -3,7 +3,7 @@ namespace DeveMazeGeneratorCore.IO;
 public interface IStorable : IDisposable
 {
     IStore Store { get; }
-    bool IsBig { get; }
+    bool IsLong { get; }
     long Extent { get; }
 
     void Read();
