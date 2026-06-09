@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Structures;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.Fonts;
@@ -34,12 +35,12 @@ public class MazesController : ControllerBase
     [HttpGet("Maze/{width}/{height}", Name = "GenerateMaze")]
     public ActionResult GenerateMaze(int width, int height)
     {
-        var maze = DeveMazeGeneratorCore.Generate(width, height);
-        var image = Renderer.Render(maze, RenderColors.Default);
+        using var maze = DeveMazeGeneratorCore.Generate(width, height);
+        using var imageStream = new MemoryStream();
+        using var image = DeveMazeGeneratorCore.Render(maze, new StreamStore(imageStream));
 
-        using var memoryStream = new MemoryStream();
-        Renderer.Serialize(memoryStream, image);
-        var data = memoryStream.ToArray();
+        image.Write();
+        var data = imageStream.ToArray();
         return File(data, "image/png");
     }
 
@@ -48,22 +49,22 @@ public class MazesController : ControllerBase
     public ActionResult GenerateMazeWithPath(int width, int height)
     {
         var w = Stopwatch.StartNew();
-        var maze = DeveMazeGeneratorCore.Generate(width, height);
+        using var maze = DeveMazeGeneratorCore.Generate(width, height);
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        var path = DeveMazeGeneratorCore.Solve(maze);
+        using var path = DeveMazeGeneratorCore.Solve(maze);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();
-        var image = Renderer.CreateImage(maze, path, RenderColors.Default);
-        using var memoryStream = new MemoryStream();
-        Renderer.Serialize(memoryStream, image);
+        using var imageStream = new MemoryStream();
+        using var image = DeveMazeGeneratorCore.Render(maze, path, new StreamStore(imageStream));
+        image.Write();
         var toImageTime = w.Elapsed;
 
         Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");
 
-        var data = memoryStream.ToArray();
+        var data = imageStream.ToArray();
         return File(data, "image/png");
     }
 
@@ -72,17 +73,17 @@ public class MazesController : ControllerBase
     public ActionResult GenerateMazeWithPathSeed(int seed, int width, int height)
     {
         var w = Stopwatch.StartNew();
-        var maze = DeveMazeGeneratorCore.Generate(width, height, seed);
+        using var maze = DeveMazeGeneratorCore.Generate(width, height, seed);
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        var path = DeveMazeGeneratorCore.Solve(maze);
+        using var path = DeveMazeGeneratorCore.Solve(maze);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();
-        var image = Renderer.CreateImage(maze, path, RenderColors.Default);
         using var memoryStream = new MemoryStream();
-        Renderer.Serialize(memoryStream, image);
+        using var image = DeveMazeGeneratorCore.Render(maze, path, new StreamStore(memoryStream));
+        image.Write();
         var toImageTime = w.Elapsed;
 
         Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");

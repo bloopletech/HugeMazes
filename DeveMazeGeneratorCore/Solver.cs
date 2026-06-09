@@ -8,14 +8,14 @@ namespace DeveMazeGeneratorCore;
 /// <summary>
 /// This class specifically ads a position to the path it returns which can be used to more efficiently save the maze path later
 /// </summary>
-public static class PathFinder
+public static class Solver
 {
     /// <summary>
     /// Finds the path between the start and the endpoint in a maze
     /// </summary>
     /// <param name="maze">The maze.InnerMap</param>
     /// <returns>The shortest path in a list of points</returns>
-    public static MazePoint[] Find(IMaze maze)
+    public static MazePoint[] Solve(IMaze maze)
     {
         maze.EnsureMinimumSize();
 
@@ -101,38 +101,30 @@ public static class PathFinder
         return pointsPos;
     }
 
-    public static void Find(IMaze maze, IGridMazePath path)
-    {
-        var points = Find(maze);
-        foreach(var point in points) path[point.X, point.Y] = true;
-    }
-
     /// <summary>
     /// Finds the path between the start and the endpoint in a maze
     /// </summary>
     /// <param name="maze">The maze.InnerMap</param>
     /// <returns>The shortest path in a list of points</returns>
-    public static void Find(IMaze maze, IPointsMazePath path)
+    public static void Solve(IMaze maze, IMazePath path)
     {
         maze.EnsureMinimumSize();
-
-        var points = path.Points;
 
         var start = new MazePoint(1, 1);
         var end = new MazePoint(maze.Width - 2, maze.Height - 2);
 
         var width = maze.Width;
         var height = maze.Height;
-        
-        points.Clear();
-        points.Add(start);
+
+        path.Clear();
+        path.Add(start);
 
         var prev = MazePoint.Empty;
         var lastBackTrackDir = -1;
 
-        while(points.Count != 0)
+        while(path.Count != 0)
         {
-            var cur = points[points.Count - 1];
+            var cur = path[path.Count - 1];
             var (x, y) = cur;
 
             if(cur == end) break; //Path found
@@ -140,35 +132,35 @@ public static class PathFinder
             //Make sure the point was not the previous point, also make sure that if we backtracked we don't go to a direction we already went to, also make sure that the point is white
             if((prev.X != x + 1 || prev.Y != y) && lastBackTrackDir < 0 && x + 1 < width - 1 && maze[x + 1, y])
             {
-                points.Add(new(x + 1, y));
+                path.Add(new(x + 1, y));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
             else if((prev.X != x || prev.Y != y + 1) && lastBackTrackDir < 1 && y + 1 < height - 1 && maze[x, y + 1])
             {
-                points.Add(new(x, y + 1));
+                path.Add(new(x, y + 1));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
             else if((prev.X != x - 1 || prev.Y != y) && lastBackTrackDir < 2 && x - 1 > 0 && maze[x - 1, y])
             {
-                points.Add(new(x - 1, y));
+                path.Add(new(x - 1, y));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
             else if((prev.X != x || prev.Y != y - 1) && lastBackTrackDir < 3 && y - 1 > 0 && maze[x, y - 1])
             {
-                points.Add(new(x, y - 1));
+                path.Add(new(x, y - 1));
                 lastBackTrackDir = -1;
                 prev = cur;
             }
             else
             {
-                points.Pop();
+                path.Pop();
 
-                if(points.Count == 0) break; //No path found
+                if(path.Count == 0) break; //No path found
 
-                var next = points[points.Count - 1];
+                var next = path[path.Count - 1];
 
                 //Set the direction we backtracked from
                 if(x > next.X) lastBackTrackDir = 0;
@@ -177,7 +169,7 @@ public static class PathFinder
                 else if(y < next.Y) lastBackTrackDir = 3;
 
                 //Set the new previous point
-                prev = points.Count == 1 ? MazePoint.Empty : points[points.Count - 2];
+                prev = path.Count == 1 ? MazePoint.Empty : path[path.Count - 2];
             }
         }
     }

@@ -7,30 +7,25 @@ using DeveMazeGeneratorCore.IO;
 namespace DeveMazeGeneratorCore.Collections;
 
 // Based on https://github.com/dotnet/runtime/blob/081d220c0a773ffb7c6bea6b48727833576a65ef/src/libraries/System.Private.CoreLib/src/System/Collections/BitArray.cs
-public class LongBitArray : ILongBitArray, IStorable
+public class LongBitArray : Storable, ILongBitArray
 {
     private const int ChunkByteSize = (256 * 1024 * 1024) - 1;
     private const int ChunkSize = ChunkByteSize * 8; // sizeof(byte) * 8
 
-    private readonly IStore store;
-    private readonly bool leaveOpen;
-    private readonly Chunk[] chunks;
-    private bool disposed;
+    private Chunk[] chunks;
 
-    public LongBitArray(IStore store, long bitLength, bool leaveOpen = false)
+    public LongBitArray(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        this.store = store;
-        this.leaveOpen = leaveOpen;
-        chunks = [..Chunk.Produce(this, bitLength, ChunkSize, sizeof(long))];
+        chunks = InitChunks(0);
     }
 
-    public IStore Store => store;
-    public bool IsLong => Extent > int.MaxValue;
-    public long Extent => chunks[^1].EndOffset;
+    public LongBitArray(IStore store, long bitLength, bool leaveOpen = false) : base(store, leaveOpen)
+    {
+        chunks = InitChunks(bitLength);
+    }
 
+    public override long Extent => chunks[^1].EndOffset;
     public long Length => chunks[^1].End;
-    public int IntLength => (int)Math.Min(Length, int.MaxValue);
-
     public bool IsReadOnly => false;
     public bool IsFixedSize => true;
 
@@ -70,33 +65,7 @@ public class LongBitArray : ILongBitArray, IStorable
 
     public bool Peek() => this[Length - 1];
 
-    public bool[] ToArray()
-    {
-        var array = new bool[IntLength];
-
-        foreach(var chunk in chunks)
-        {
-            var count = (int)(Math.Min(array.Length, chunk.End) - chunk.Start);
-            if(count <= 0) break;
-            for(var i = 0; i < count; i++) array[(int)chunk.Start + i] = chunk.Array[i];
-        }
-
-        return array;
-    }
-
-    public IList<bool> ToList()
-    {
-        var list = new List<bool>();
-
-        foreach(var chunk in chunks)
-        {
-            var count = (int)(Math.Min(IntLength, chunk.End) - chunk.Start);
-            if(count <= 0) break;
-            for(var i = 0; i < count; i++) list.Add(chunk.Array[i]);
-        }
-
-        return list;
-    }
+    private Chunk[] InitChunks(long bitLength) => [.. Chunk.Produce(this, bitLength, ChunkSize, sizeof(long))];
 
     public void EvictOldest()
     {
@@ -104,33 +73,17 @@ public class LongBitArray : ILongBitArray, IStorable
         foreach(var c in toEvict) c.Evict();
     }
 
-    public static LongBitArray Read(IStore store, bool leaveOpen = false) => new(store, store.ReadInt64(0), leaveOpen);
+    public override void Read()
+    {
+        chunks = InitChunks(store.ReadInt64(0));
+    }
 
-    public void Write()
+    public override void Write()
     {
         store.SetLength(Extent);
         store.Write(0, Length);
 
         foreach(var chunk in chunks) chunk.Evict();
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if(!disposed)
-        {
-            if(disposing)
-            {
-                Write();
-                if(!leaveOpen) store.Dispose();
-            }
-            disposed = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 
     public ILongBitArray Clone() => Clone(IStore.Create(IsLong));
@@ -139,7 +92,9 @@ public class LongBitArray : ILongBitArray, IStorable
     {
         Write();
         store.CopyTo(destination);
-        return Read(destination, leaveOpen);
+        var result = new LongBitArray(destination, leaveOpen);
+        result.Read();
+        return result;
     }
 
     private static void ThrowArgumentOutOfRangeException(long index) => throw new ArgumentOutOfRangeException(

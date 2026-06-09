@@ -6,14 +6,23 @@ using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
-public class BitGrid(IStore store, Size size, bool leaveOpen = false) : IBitGrid, IStorable
+public class BitGrid : Storable, IBitGrid
 {
-    private readonly BitArray array = new((int)size.Area);
-    private bool disposed;
+    private BitArray array;
+    private Size size;
 
-    public IStore Store => store;
-    public bool IsLong => Extent > int.MaxValue;
-    public long Extent => CollectionsMarshal.AsBytes(array).Length + Size.SizeOf;
+    public BitGrid(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
+    {
+        array = null!;
+    }
+
+    public BitGrid(IStore store, Size size, bool leaveOpen = false) : base(store, leaveOpen)
+    {
+        this.size = size;
+        array = new((int)size.Area);
+    }
+
+    public override long Extent => CollectionsMarshal.AsBytes(array).Length + Size.SizeOf;
     public Size Size => size;
     public int Width => size.Width;
     public int Height => size.Height;
@@ -27,46 +36,31 @@ public class BitGrid(IStore store, Size size, bool leaveOpen = false) : IBitGrid
         set => array[x + (y * size.Height)] = value;
     }
 
-    public static BitGrid Read(IStore store, bool leaveOpen = false)
+    public override void Read()
     {
-        var size = store.Read<Size>(0);
-        var result = new BitGrid(store, size, leaveOpen);
-        store.ReadExactly(Size.SizeOf, CollectionsMarshal.AsBytes(result.array));
-        return result;
+        size = store.Read<Size>(0);
+        array = new((int)size.Area);
+        store.ReadExactly(Size.SizeOf, CollectionsMarshal.AsBytes(array));
     }
 
-    public void Write()
+    public override void Write()
     {
         store.Write(0, size);
         store.Write(Size.SizeOf, CollectionsMarshal.AsBytes(array));
     }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if(!disposed)
-        {
-            if(disposing)
-            {
-                Write();
-                if(!leaveOpen) store.Dispose();
-            }
+    IBitGrid IBitGrid.Clone() => Clone();
+    public BitGrid Clone() => Clone(IStore.Create(IsLong));
 
-            disposed = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    public IBitGrid Clone() => Clone(IStore.Create(IsLong));
-
-    public IBitGrid Clone(IStore destination, bool leaveOpen = false)
+    IBitGrid IBitGrid.Clone(IStore destination, bool leaveOpen) => Clone(destination, leaveOpen);
+    public BitGrid Clone(IStore destination, bool leaveOpen = false)
     {
         Write();
         store.CopyTo(destination);
-        return Read(destination, leaveOpen);
+        var result = new BitGrid(destination, leaveOpen);
+        result.Read();
+        return result;
     }
+
+
 }

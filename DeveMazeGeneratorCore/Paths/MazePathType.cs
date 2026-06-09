@@ -4,6 +4,4 @@ public enum MazePathType : ushort
 {
     Unknown,
     MazePath,
-    BitGridMazePath,
-    BigBitGridMazePath,
 }

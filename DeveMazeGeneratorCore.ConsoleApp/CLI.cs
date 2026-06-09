@@ -2,7 +2,6 @@ using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Paths;
-using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.ConsoleApp;
 
@@ -95,13 +94,12 @@ public class CLI(Options options)
     private Action RenderTask()
     {
         mazeFileName ??= options.Next();
-        var imageFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".png"));
+        var imageFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".ppm"));
         return () =>
         {
             maze ??= Load(mazeFileName);
-            using var image = Renderer.Render(maze, RenderColors.Default);
-            Renderer.Save(imageFileName, image);
-
+            using var image = DeveMazeGeneratorCore.Render(maze, new StreamStore(imageFileName));
+            image.Write();
             Console.WriteLine($"Saved maze image to {imageFileName}");
         };
     }
@@ -110,14 +108,13 @@ public class CLI(Options options)
     {
         mazeFileName ??= options.Next();
         pathFileName ??= options.Next();
-        var imageFileName = options.NextFileName(Path.ChangeExtension(pathFileName, ".path.png"));
+        var imageFileName = options.NextFileName(Path.ChangeExtension(pathFileName, ".path.ppm"));
         return () =>
         {
             maze ??= Load(mazeFileName);
             path ??= LoadPath(pathFileName);
-            using var image = Renderer.CreateImage(maze, path, RenderColors.Default);
-            Renderer.Save(imageFileName, image);
-
+            using var image = DeveMazeGeneratorCore.Render(maze, path, new StreamStore(imageFileName));
+            image.Write();
             Console.WriteLine($"Saved maze with solution image to {imageFileName}");
         };
     }

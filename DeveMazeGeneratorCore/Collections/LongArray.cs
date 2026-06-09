@@ -6,31 +6,26 @@ using DeveMazeGeneratorCore.IO;
 namespace DeveMazeGeneratorCore.Collections;
 
 // Based on https://github.com/dotnet/runtime/blob/081d220c0a773ffb7c6bea6b48727833576a65ef/src/libraries/System.Private.CoreLib/src/System/Collections/BitArray.cs
-public class LongArray<T> : ILongArray<T>, IStorable where T : struct
+public class LongArray<T> : Storable, ILongArray<T> where T : struct
 {
     private static readonly int ItemSize = IStore.SizeOf<T>();
     private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
     private static readonly int ChunkSize = CalculateChunkSize(MaxChunkByteSize);
 
-    private readonly IStore store;
-    private readonly bool leaveOpen;
-    private readonly Chunk[] chunks;
-    private bool disposed;
+    private Chunk[] chunks;
 
-    public LongArray(IStore store, long length, bool leaveOpen = false)
+    public LongArray(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        this.store = store;
-        this.leaveOpen = leaveOpen;
-        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long))];
+        chunks = InitChunks(0);
     }
 
-    public IStore Store => store;
-    public bool IsLong => Extent > int.MaxValue;
-    public long Extent => chunks[^1].EndOffset;
+    public LongArray(IStore store, long length, bool leaveOpen = false) : base(store, leaveOpen)
+    {
+        chunks = InitChunks(length);
+    }
 
+    public override long Extent => chunks[^1].EndOffset;
     public long Length => chunks[^1].End;
-    public int IntLength => (int)Math.Min(Length, int.MaxValue);
-
     public bool IsReadOnly => false;
     public bool IsFixedSize => true;
 
@@ -82,33 +77,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
     public T Peek() => this[Length - 1];
 
-    public T[] ToArray()
-    {
-        var array = new T[IntLength];
-
-        foreach(var chunk in chunks)
-        {
-            var count = (int)(Math.Min(array.Length, chunk.End) - chunk.Start);
-            if(count <= 0) break;
-            Array.Copy(chunk.Array, 0, array, (int)chunk.Start, count);
-        }
-
-        return array;
-    }
-
-    public IList<T> ToList()
-    {
-        var list = new List<T>();
-
-        foreach(var chunk in chunks)
-        {
-            var count = (int)(Math.Min(IntLength, chunk.End) - chunk.Start);
-            if(count <= 0) break;
-            list.AddRange(chunk.Array[..count]);
-        }
-
-        return list;
-    }
+    private Chunk[] InitChunks(long count) => [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
 
     public void EvictOldest()
     {
@@ -116,33 +85,17 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         foreach(var c in toEvict) c.Evict();
     }
 
-    public static LongArray<T> Read(IStore store, bool leaveOpen = false) => new(store, store.ReadInt64(0), leaveOpen);
+    public override void Read()
+    {
+        chunks = InitChunks(store.ReadInt64(0));
+    }
 
-    public void Write()
+    public override void Write()
     {
         store.SetLength(Extent);
         store.Write(0, Length);
 
         foreach(var chunk in chunks) chunk.Evict();
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if(!disposed)
-        {
-            if(disposing)
-            {
-                Write();
-                if(!leaveOpen) store.Dispose();
-            }
-            disposed = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 
     public ILongArray<T> Clone() => Clone(IStore.Create(IsLong));
@@ -151,7 +104,9 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     {
         Write();
         store.CopyTo(destination);
-        return Read(destination, leaveOpen);
+        var result = new LongArray<T>(destination, leaveOpen);
+        result.Read();
+        return result;
     }
 
     private static void ThrowArgumentOutOfRangeException(long index) => throw new ArgumentOutOfRangeException(

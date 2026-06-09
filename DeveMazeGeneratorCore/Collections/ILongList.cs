@@ -4,12 +4,10 @@ namespace DeveMazeGeneratorCore.Collections;
 
 public interface ILongList<T> : IEnumerable<T> where T : struct
 {
-    T this[long index] { get; set; }
-
     long Count { get; }
+    T this[long index] { get; set; }
     bool IsFixedSize { get; }
     bool IsReadOnly { get; }
-
     void Add(T item);
     void Clear();
     bool Contains(T item);
@@ -22,8 +20,6 @@ public interface ILongList<T> : IEnumerable<T> where T : struct
     T Shift();
     void Unshift(T item);
     T Peek();
-    T[] ToArray();
-    IList<T> ToList();
     ILongList<T> Clone();
     ILongList<T> Clone(IStore destination, bool leaveOpen = false);
 }
