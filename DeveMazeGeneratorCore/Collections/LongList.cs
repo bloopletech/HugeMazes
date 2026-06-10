@@ -201,8 +201,7 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
 
     public void Read()
     {
-        var count = store.ReadInt64(0);
-        chunks = InitChunks(count);
+        chunks = InitChunks(store.ReadInt64(0));
     }
 
     public async Task ReadAsync()
