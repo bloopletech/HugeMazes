@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using DeveMazeGeneratorCore.IO;
@@ -19,14 +20,14 @@ public class LongBitArray : ILongBitArray, IStorable
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = InitChunks(0, false);
+        chunks = InitChunks(0);
     }
 
     public LongBitArray(IStore store, long bitLength, bool leaveOpen = false)
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = InitChunks(bitLength, true);
+        chunks = InitChunks(bitLength);
     }
 
     public IStore Store => store;
@@ -66,14 +67,14 @@ public class LongBitArray : ILongBitArray, IStorable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        chunks = InitChunks(0, false);
+        chunks = InitChunks(0);
     }
 
     public IEnumerator<bool> GetEnumerator()
     {
         foreach(var chunk in chunks)
         {
-            for(var i = 0; i < chunk.Length; i++) yield return chunk.Array[i];
+            for(var i = 0; i < chunk.Count; i++) yield return chunk.Array[i];
         }
     }
 
@@ -109,10 +110,10 @@ public class LongBitArray : ILongBitArray, IStorable
         return list;
     }
 
-    private Chunk[] InitChunks(long bitLength, bool skipFirstLoad)
+    private Chunk[] InitChunks(long bitLength)
     {
-        if(bitLength == 0) return [new(this, new(), skipFirstLoad)];
-        return [..ChunkBitSpan.Chunk(bitLength, ChunkSize).Select(span => new Chunk(this, span, skipFirstLoad))];
+        if(bitLength == 0) return [new(this, 0, 0, 0)];
+        return [..Chunk.Produce(this, bitLength, ChunkSize)];
     }
 
     public void EvictOldest()
@@ -123,7 +124,7 @@ public class LongBitArray : ILongBitArray, IStorable
 
     public void Read()
     {
-        chunks = InitChunks(store.ReadInt64(0), false);
+        chunks = InitChunks(store.ReadInt64(0));
     }
 
     public async Task ReadAsync()
@@ -192,7 +193,15 @@ public class LongBitArray : ILongBitArray, IStorable
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(LongBitArray owner, ChunkBitSpan span, bool skipFirstLoad)
+    // Based on https://github.com/dotnet/runtime/blob/081d220c0a773ffb7c6bea6b48727833576a65ef/src/libraries/System.Private.CoreLib/src/System/Collections/BitArray.cs
+    /// <summary>Determines the number of <see cref="byte"/>s required to store <paramref name="bitLength"/> bits.</summary>
+    private static int GetByteArrayLengthFromBitLength(int bitLength)
+    {
+        Debug.Assert(bitLength >= 0);
+        return (int)(((uint)bitLength + 7u) >> 3);
+    }
+
+    private record struct Chunk(LongBitArray Owner, long Start, int Count, long Offset)
     {
         private BitArray? array;
 
@@ -208,21 +217,17 @@ public class LongBitArray : ILongBitArray, IStorable
 
         public long LastUsedAt { get; set; } = long.MinValue;
 
-        public long Offset => span.Offset + sizeof(long);
-        public long EndOffset => span.EndOffset + sizeof(long);
-
-        public long Start => span.Start;
-        public int Length => span.Count;
-        public long End => span.End;
+        public readonly int Length => GetByteArrayLengthFromBitLength(Count);
+        public readonly long EndOffset => Offset + Length;
+        public readonly long End => Start + Count;
 
         public BitArray Load()
         {
             LastUsedAt = Environment.TickCount64;
-            owner.EvictOldest();
+            Owner.EvictOldest();
 
-            var array = new BitArray(span.Count);
-            if(skipFirstLoad) skipFirstLoad = false;
-            else owner.Store.ReadExactly(Offset, CollectionsMarshal.AsBytes(array));
+            var array = new BitArray(Count);
+            if(Owner.Store.Length >= EndOffset) Owner.Store.ReadExactly(Offset, CollectionsMarshal.AsBytes(array));
             return array;
         }
 
@@ -230,9 +235,20 @@ public class LongBitArray : ILongBitArray, IStorable
         {
             if(array == null) return;
 
-            owner.Store.Write(Offset, CollectionsMarshal.AsBytes(array));
+            Owner.Store.Write(Offset, CollectionsMarshal.AsBytes(array));
             array = null;
             LastUsedAt = long.MinValue;
+        }
+
+        public static IEnumerable<Chunk> Produce(LongBitArray owner, long length, int chunkSize)
+        {
+            var chunkByteSize = GetByteArrayLengthFromBitLength(chunkSize);
+            for(long start = 0, i = 0; start < length; i++)
+            {
+                var stride = (int)Math.Min(chunkSize, length - start);
+                yield return new(owner, start, stride, (i * chunkByteSize) + sizeof(long));
+                start += stride;
+            }
         }
     }
 }

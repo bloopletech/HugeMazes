@@ -9,8 +9,9 @@ namespace DeveMazeGeneratorCore.Collections;
 // Based on https://github.com/dotnet/runtime/blob/b82454cad0aaaae3db2cf18fbf2cccc36e201ccc/src/libraries/System.Private.CoreLib/src/System/Collections/Generic/List.cs
 public class LongList<T> : ILongList<T>, IStorable where T : struct
 {
+    private static readonly int ItemSize = IStore.SizeOf<T>();
     private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
-    private static readonly int ChunkSize = ChunkSpan<T>.CalculateChunkSize(MaxChunkByteSize);
+    private static readonly int ChunkSize = CalculateChunkSize(MaxChunkByteSize);
 
     private readonly IStore store;
     private readonly bool leaveOpen;
@@ -189,8 +190,7 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
 
     private List<Chunk> InitChunks(long count)
     {
-        if(count == 0) return [new(this, new())];
-        return [..ChunkSpan<T>.Chunk(count, ChunkSize).Select(span => new Chunk(this, span))];
+        return count == 0 ? [new(this, 0, 0, 0)] : [..Chunk.Produce(this, count, ChunkSize)];
     }
 
     public void EvictOldest()
@@ -271,7 +271,14 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(LongList<T> owner, ChunkSpan<T> span)
+    private static int CalculateChunkSize(int maxChunkByteSize)
+    {
+        var result = (int.MaxValue / ItemSize).RoundDownToPowerOf2();
+        while((result * ItemSize) > maxChunkByteSize) result >>= 1;
+        return result;
+    }
+
+    private record struct Chunk(LongList<T> Owner, long Start, int SavedCount, long Offset)
     {
         private List<T>? list;
 
@@ -287,21 +294,19 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
 
         public long LastUsedAt { get; set; } = long.MinValue;
 
-        public long Offset => span.Offset + sizeof(long);
-        public long EndOffset => Offset + (Count * ChunkSpan<T>.ItemSize);
-
-        public long Start => span.Start;
-        public int Count => list?.Count ?? span.Count;
-        public long End => Start + Count;
+        public readonly int Count => list?.Count ?? SavedCount;
+        public readonly int Length => ItemSize * Count;
+        public readonly long EndOffset => Offset + Length;
+        public readonly long End => Start + Count;
 
         private List<T> Load()
         {
             LastUsedAt = Environment.TickCount64;
-            owner.EvictOldest();
+            Owner.EvictOldest();
 
             var list = new List<T>();
-            CollectionsMarshal.SetCount(list, span.Count);
-            owner.Store.Read(Offset, CollectionsMarshal.AsSpan(list));
+            CollectionsMarshal.SetCount(list, SavedCount);
+            Owner.Store.Read(Offset, CollectionsMarshal.AsSpan(list));
             return list;
         }
 
@@ -309,12 +314,23 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         {
             if(list == null) return;
 
-            owner.Store.Write(Offset, CollectionsMarshal.AsSpan(list));
-            span = span with { Count = list.Count };
+            Owner.Store.Write(Offset, CollectionsMarshal.AsSpan(list));
+            SavedCount = list.Count;
             list = null;
             LastUsedAt = long.MinValue;
         }
 
-        public Chunk Next() => new(owner, new(End, 0, EndOffset));
+        public readonly Chunk Next() => new(Owner, End, 0, EndOffset);
+
+        public static IEnumerable<Chunk> Produce(LongList<T> owner, long length, int chunkSize)
+        {
+            var chunkByteSize = chunkSize * ItemSize;
+            for(long start = 0, i = 0; start < length; i++)
+            {
+                var stride = (int)Math.Min(chunkSize, length - start);
+                yield return new(owner, start, stride, (i * chunkByteSize) + sizeof(long));
+                start += stride;
+            }
+        }
     }
 }
