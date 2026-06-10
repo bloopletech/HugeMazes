@@ -224,7 +224,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         public long Count => count;
         public long End => start + count;
 
-        public long Offset => offset;
+        public long Offset => offset + sizeof(long);
         public int Length => ItemSize * count;
         public long EndOffset => offset + Length;
         
@@ -253,7 +253,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
             for(long start = 0, i = 0; start < length; i++)
             {
                 var stride = (int)Math.Min(chunkSize, length - start);
-                yield return new(owner, start, stride, (i * chunkByteSize) + sizeof(long));
+                yield return new(owner, start, stride, i * chunkByteSize);
                 start += stride;
             }
         }
