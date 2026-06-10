@@ -19,7 +19,7 @@ public class LongBitArray : ILongBitArray, IStorable
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = [];
+        chunks = InitChunks(0, false);
     }
 
     public LongBitArray(IStore store, long bitLength, bool leaveOpen = false)
@@ -66,7 +66,7 @@ public class LongBitArray : ILongBitArray, IStorable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        chunks = [];
+        chunks = InitChunks(0, false);
     }
 
     public IEnumerator<bool> GetEnumerator()
@@ -111,6 +111,7 @@ public class LongBitArray : ILongBitArray, IStorable
 
     private Chunk[] InitChunks(long bitLength, bool skipFirstLoad)
     {
+        if(bitLength == 0) return [new(this, new(), skipFirstLoad)];
         return [..ChunkBitSpan.Chunk(bitLength, ChunkSize).Select(span => new Chunk(this, span, skipFirstLoad))];
     }
 
