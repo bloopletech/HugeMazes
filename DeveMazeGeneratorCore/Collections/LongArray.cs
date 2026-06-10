@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
+using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Collections;
@@ -7,8 +8,9 @@ namespace DeveMazeGeneratorCore.Collections;
 // Based on https://github.com/dotnet/runtime/blob/081d220c0a773ffb7c6bea6b48727833576a65ef/src/libraries/System.Private.CoreLib/src/System/Collections/BitArray.cs
 public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 {
+    private static readonly int ItemSize = IStore.SizeOf<T>();
     private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
-    private static readonly int ChunkSize = ChunkSpan<T>.CalculateChunkSize(MaxChunkByteSize);
+    private static readonly int ChunkSize = CalculateChunkSize(MaxChunkByteSize);
 
     private readonly IStore store;
     private readonly bool leaveOpen;
@@ -19,14 +21,14 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = InitChunks(0, false);
+        chunks = InitChunks(0);
     }
 
     public LongArray(IStore store, long length, bool leaveOpen = false)
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = InitChunks(length, true);
+        chunks = InitChunks(length);
     }
 
     public IStore Store => store;
@@ -66,7 +68,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        chunks = InitChunks(0, false);
+        chunks = InitChunks(0);
     }
 
     public bool Contains(T item) => chunks.Any(c => c.Array.Contains(item));
@@ -121,10 +123,10 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         return list;
     }
 
-    private Chunk[] InitChunks(long length, bool skipFirstLoad)
+    private Chunk[] InitChunks(long length)
     {
-        if(length == 0) return [new(this, new(), skipFirstLoad)];
-        return [..ChunkSpan<T>.Chunk(length, ChunkSize).Select(span => new Chunk(this, span, skipFirstLoad))];
+        if(length == 0) return [new(this, 0, 0, 0)];
+        return [..Chunk.Produce(this, length, ChunkSize)];
     }
 
     public void EvictOldest()
@@ -135,7 +137,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
     public void Read()
     {
-        chunks = InitChunks(store.ReadInt64(0), false);
+        chunks = InitChunks(store.ReadInt64(0));
     }
 
     public async Task ReadAsync()
@@ -204,7 +206,14 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(LongArray<T> owner, ChunkSpan<T> span, bool skipFirstLoad)
+    private static int CalculateChunkSize(int maxChunkByteSize)
+    {
+        var result = (int.MaxValue / ItemSize).RoundDownToPowerOf2();
+        while((result * ItemSize) > maxChunkByteSize) result >>= 1;
+        return result;
+    }
+
+    private record struct Chunk(LongArray<T> Owner, long Start, int Count, long Offset)
     {
         private T[]? array;
 
@@ -220,21 +229,17 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
         public long LastUsedAt { get; set; } = long.MinValue;
 
-        public long Offset => span.Offset + sizeof(long);
-        public long EndOffset => span.EndOffset + sizeof(long);
-
-        public long Start => span.Start;
-        public int Length => span.Count;
-        public long End => span.End;
+        public readonly int Length => ItemSize * Count;
+        public readonly long EndOffset => Offset + Length;
+        public readonly long End => Start + Count;
 
         private T[] Load()
         {
             LastUsedAt = Environment.TickCount64;
-            owner.EvictOldest();
+            Owner.EvictOldest();
 
-            var array = new T[Length];
-            if(skipFirstLoad) skipFirstLoad = false;
-            else owner.Store.Read(Offset, array);
+            var array = new T[Count];
+            if(Owner.Store.Length >= EndOffset) Owner.Store.Read(Offset, array);
             return array;
         }
 
@@ -242,9 +247,20 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         {
             if(array == null) return;
 
-            owner.Store.Write(Offset, array);
+            Owner.Store.Write(Offset, array);
             array = null;
             LastUsedAt = long.MinValue;
+        }
+
+        public static IEnumerable<Chunk> Produce(LongArray<T> owner, long length, int chunkSize)
+        {
+            var chunkByteSize = chunkSize * ItemSize;
+            for(long start = 0, i = 0; start < length; i++)
+            {
+                var stride = (int)Math.Min(chunkSize, length - start);
+                yield return new(owner, start, stride, (i * chunkByteSize) + sizeof(long));
+                start += stride;
+            }
         }
     }
 }
