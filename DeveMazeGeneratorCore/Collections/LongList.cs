@@ -190,8 +190,8 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
 
     private List<Chunk> InitChunks(long count)
     {
-        if(count == 0) return [new(this, new())];
-        var chunkSpans = ChunkSpan.Chunk(count, ChunkSize, ChunkSize * ItemSize);
+        if(count == 0) return [new(this, new(0, 0, 0, ItemSize))];
+        var chunkSpans = ChunkSpan.Chunk(count, ChunkSize, ItemSize);
         return [.. chunkSpans.Select(span => new Chunk(this, span))];
     }
 
@@ -320,11 +320,11 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
             if(list == null) return;
 
             owner.Store.Write(Offset, CollectionsMarshal.AsSpan(list));
-            span = span with { Length = list.Count };
+            span = span with { Count = list.Count };
             list = null;
             LastUsedAt = long.MinValue;
         }
 
-        public Chunk Next(int count = 0) => new(owner, new(EndOffset, End, count));
+        public Chunk Next() => new(owner, new(End, 0, EndOffset, ItemSize));
     }
 }

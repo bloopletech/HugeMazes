@@ -133,7 +133,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
     private Chunk[] InitChunks(bool skipFirstLoad)
     {
-        var chunkSpans = ChunkSpan.Chunk(length, ChunkSize, ChunkSize * ItemSize);
+        var chunkSpans = ChunkSpan.Chunk(length, ChunkSize, ItemSize);
         return [..chunkSpans.Select(span => new Chunk(this, span, skipFirstLoad))];
     }
 
@@ -240,7 +240,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
         public long Offset => span.Offset + sizeof(long);
         public long Start => span.Start;
-        public int Length => span.Length;
+        public int Length => span.Count;
         public long End => span.End;
 
         private T[] Load()
