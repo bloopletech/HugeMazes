@@ -20,7 +20,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = null!;
+        chunks = [];
     }
 
     public LongArray(IStore store, long length, bool leaveOpen = false)
@@ -33,7 +33,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
     public IStore Store => store;
     public bool IsLong => Extent > int.MaxValue;
-    public long Extent => (length * ChunkSpan<T>.ItemSize) + sizeof(long);
+    public long Extent => chunks.LastOrDefault()?.EndOffset ?? 0;
 
     public long Length => length;
     public int IntLength => (int)Math.Min(length, int.MaxValue);
@@ -58,17 +58,11 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static (int, int) ChunkOffset(long offset)
-    {
-        var (chunk, chunkOffset) = Math.DivRem((ulong)offset, (ulong)ChunkSize);
-        return ((int)chunk, (int)chunkOffset);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (int, int) Index(long index)
     {
         if((ulong)index >= (ulong)length) ThrowArgumentOutOfRangeException(index);
-        return ChunkOffset(index);
+        var (chunk, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
+        return ((int)chunk, (int)chunkOffset);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -229,6 +223,8 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         public long LastUsedAt { get; set; } = long.MinValue;
 
         public long Offset => span.Offset + sizeof(long);
+        public long EndOffset => span.EndOffset + sizeof(long);
+
         public long Start => span.Start;
         public int Length => span.Count;
         public long End => span.End;
