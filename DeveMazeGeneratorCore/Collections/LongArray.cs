@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
-using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Collections;
@@ -9,8 +8,7 @@ namespace DeveMazeGeneratorCore.Collections;
 public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 {
     private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
-    private static readonly int ItemSize = IStore.SizeOf<T>();
-    private static readonly int ChunkSize = CalculateChunkSize();
+    private static readonly int ChunkSize = ChunkSpan<T>.CalculateChunkSize(MaxChunkByteSize);
 
     private readonly IStore store;
     private readonly bool leaveOpen;
@@ -35,7 +33,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
     public IStore Store => store;
     public bool IsLong => Extent > int.MaxValue;
-    public long Extent => (length * ItemSize) + sizeof(long);
+    public long Extent => (length * ChunkSpan<T>.ItemSize) + sizeof(long);
 
     public long Length => length;
     public int IntLength => (int)Math.Min(length, int.MaxValue);
@@ -133,15 +131,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
     private Chunk[] InitChunks(bool skipFirstLoad)
     {
-        var chunkSpans = ChunkSpan.Chunk(length, ChunkSize, ItemSize);
-        return [..chunkSpans.Select(span => new Chunk(this, span, skipFirstLoad))];
-    }
-
-    private static int CalculateChunkSize()
-    {
-        var result = (int.MaxValue / ItemSize).RoundDownToPowerOf2();
-        while((result * ItemSize) > MaxChunkByteSize) result >>= 1;
-        return result;
+        return [..ChunkSpan<T>.Chunk(length, ChunkSize).Select(span => new Chunk(this, span, skipFirstLoad))];
     }
 
     public void EvictOldest()
@@ -222,7 +212,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(LongArray<T> owner, ChunkSpan span, bool skipFirstLoad)
+    private class Chunk(LongArray<T> owner, ChunkSpan<T> span, bool skipFirstLoad)
     {
         private T[]? array;
 

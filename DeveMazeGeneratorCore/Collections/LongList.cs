@@ -10,8 +10,7 @@ namespace DeveMazeGeneratorCore.Collections;
 public class LongList<T> : ILongList<T>, IStorable where T : struct
 {
     private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
-    private static readonly int ItemSize = IStore.SizeOf<T>();
-    private static readonly int ChunkSize = CalculateChunkSize();
+    private static readonly int ChunkSize = ChunkSpan<T>.CalculateChunkSize(MaxChunkByteSize);
 
     private readonly IStore store;
     private readonly bool leaveOpen;
@@ -190,9 +189,8 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
 
     private List<Chunk> InitChunks(long count)
     {
-        if(count == 0) return [new(this, new(0, 0, 0, ItemSize))];
-        var chunkSpans = ChunkSpan.Chunk(count, ChunkSize, ItemSize);
-        return [.. chunkSpans.Select(span => new Chunk(this, span))];
+        if(count == 0) return [new(this, new())];
+        return [..ChunkSpan<T>.Chunk(count, ChunkSize).Select(span => new Chunk(this, span))];
     }
 
     public void EvictOldest()
@@ -205,13 +203,6 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
     {
         var count = store.ReadInt64(0);
         chunks = InitChunks(count);
-    }
-
-    private static int CalculateChunkSize()
-    {
-        var result = (int.MaxValue / ItemSize).RoundDownToPowerOf2();
-        while((result * ItemSize) > MaxChunkByteSize) result >>= 1;
-        return result;
     }
 
     public async Task ReadAsync()
@@ -281,7 +272,7 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(LongList<T> owner, ChunkSpan span)
+    private class Chunk(LongList<T> owner, ChunkSpan<T> span)
     {
         private List<T>? list;
 
@@ -298,7 +289,7 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         public long LastUsedAt { get; set; } = long.MinValue;
 
         public long Offset => span.Offset + sizeof(long);
-        public long EndOffset => Offset + (Count * ItemSize);
+        public long EndOffset => Offset + (Count * ChunkSpan<T>.ItemSize);
 
         public long Start => span.Start;
         public int Count => list?.Count ?? span.Count;
@@ -325,6 +316,6 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
             LastUsedAt = long.MinValue;
         }
 
-        public Chunk Next() => new(owner, new(End, 0, EndOffset, ItemSize));
+        public Chunk Next() => new(owner, new(End, 0, EndOffset));
     }
 }
