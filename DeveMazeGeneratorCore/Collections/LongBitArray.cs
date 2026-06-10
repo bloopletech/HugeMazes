@@ -1,12 +1,10 @@
 using System.Collections;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Collections;
 
-// Based on https://github.com/dotnet/runtime/blob/081d220c0a773ffb7c6bea6b48727833576a65ef/src/libraries/System.Private.CoreLib/src/System/Collections/BitArray.cs
 public class LongBitArray : ILongBitArray, IStorable
 {
     private const int ChunkByteSize = (256 * 1024 * 1024) - 1;
@@ -22,7 +20,7 @@ public class LongBitArray : ILongBitArray, IStorable
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = null!;
+        chunks = [];
     }
 
     public LongBitArray(IStore store, long bitLength, bool leaveOpen = false)
@@ -35,7 +33,7 @@ public class LongBitArray : ILongBitArray, IStorable
 
     public IStore Store => store;
     public bool IsLong => Extent > int.MaxValue;
-    public long Extent => GetByteArrayLengthFromBitLength(bitLength) + sizeof(long);
+    public long Extent => chunks.LastOrDefault()?.EndOffset ?? 0;
 
     public long Length => bitLength;
     public int IntLength => (int)Math.Min(bitLength, int.MaxValue);
@@ -60,17 +58,11 @@ public class LongBitArray : ILongBitArray, IStorable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static (int, int) ChunkOffset(long offset, int chunkSize)
-    {
-        var (chunk, chunkOffset) = Math.DivRem((ulong)offset, (ulong)chunkSize);
-        return ((int)chunk, (int)chunkOffset);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (int, int) Index(long index)
     {
         if((ulong)index >= (ulong)bitLength) ThrowArgumentOutOfRangeException(index);
-        return ChunkOffset(index, ChunkSize);
+        var (chunk, chunkOffset) = Math.DivRem((ulong)index, ChunkSize);
+        return ((int)chunk, (int)chunkOffset);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -197,13 +189,6 @@ public class LongBitArray : ILongBitArray, IStorable
         return result;
     }
 
-    /// <summary>Determines the number of <see cref="byte"/>s required to store <paramref name="bitLength"/> bits.</summary>
-    private static long GetByteArrayLengthFromBitLength(long bitLength)
-    {
-        Debug.Assert(bitLength >= 0);
-        return (long)(((ulong)bitLength + 7u) >> 3);
-    }
-
     private static void ThrowArgumentOutOfRangeException(long index) => throw new ArgumentOutOfRangeException(
         nameof(index),
         index,
@@ -226,6 +211,7 @@ public class LongBitArray : ILongBitArray, IStorable
         public long LastUsedAt { get; set; } = long.MinValue;
 
         public long Offset => span.Offset + sizeof(long);
+        public long EndOffset => span.EndOffset + sizeof(long);
 
         public long Start => span.Start;
         public int Length => span.Count;
