@@ -10,8 +10,7 @@ namespace DeveMazeGeneratorCore.Collections;
 public class LongBitArray : ILongBitArray, IStorable
 {
     private const int ChunkByteSize = (256 * 1024 * 1024) - 1;
-    private const int BitsPerByte = 8; // sizeof(byte) * 8
-    private const int ChunkBitSize = ChunkByteSize * BitsPerByte;
+    private const int ChunkSize = ChunkByteSize * 8; // sizeof(byte) * 8
 
     private readonly IStore store;
     private readonly bool leaveOpen;
@@ -71,7 +70,7 @@ public class LongBitArray : ILongBitArray, IStorable
     private (int, int) Index(long index)
     {
         if((ulong)index >= (ulong)bitLength) ThrowArgumentOutOfRangeException(index);
-        return ChunkOffset(index, ChunkBitSize);
+        return ChunkOffset(index, ChunkSize);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -122,8 +121,7 @@ public class LongBitArray : ILongBitArray, IStorable
 
     private Chunk[] InitChunks(bool skipFirstLoad)
     {
-        var chunkSpans = ChunkBitSpan.Chunk(bitLength, ChunkBitSize);
-        return [..chunkSpans.Select((span, index) => new Chunk(this, span, skipFirstLoad))];
+        return [..ChunkBitSpan.Chunk(bitLength, ChunkSize).Select(span => new Chunk(this, span, skipFirstLoad))];
     }
 
     public void EvictOldest()
