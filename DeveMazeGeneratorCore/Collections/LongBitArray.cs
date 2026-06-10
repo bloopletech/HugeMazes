@@ -122,7 +122,7 @@ public class LongBitArray : ILongBitArray, IStorable
 
     private Chunk[] InitChunks(bool skipFirstLoad)
     {
-        var chunkSpans = ChunkSpan.Chunk(bitLength, ChunkBitSize, ChunkByteSize);
+        var chunkSpans = ChunkBitSpan.Chunk(bitLength, ChunkBitSize);
         return [..chunkSpans.Select((span, index) => new Chunk(this, span, skipFirstLoad))];
     }
 
@@ -211,7 +211,7 @@ public class LongBitArray : ILongBitArray, IStorable
         index,
         "Index was out of range. Must be non-negative and less than the size of the collection");
 
-    private class Chunk(LongBitArray owner, ChunkSpan span, bool skipFirstLoad)
+    private class Chunk(LongBitArray owner, ChunkBitSpan span, bool skipFirstLoad)
     {
         private BitArray? array;
 
@@ -230,7 +230,7 @@ public class LongBitArray : ILongBitArray, IStorable
         public long Offset => span.Offset + sizeof(long);
 
         public long Start => span.Start;
-        public int Length => span.Length;
+        public int Length => span.Count;
         public long End => span.End;
 
         public BitArray Load()
@@ -238,7 +238,7 @@ public class LongBitArray : ILongBitArray, IStorable
             LastUsedAt = Environment.TickCount64;
             owner.EvictOldest();
 
-            var array = new BitArray(span.Length);
+            var array = new BitArray(span.Count);
             if(skipFirstLoad) skipFirstLoad = false;
             else owner.Store.ReadExactly(Offset, CollectionsMarshal.AsBytes(array));
             return array;
