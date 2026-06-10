@@ -13,7 +13,6 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     private readonly IStore store;
     private readonly bool leaveOpen;
     private Chunk[] chunks;
-    private long length;
     private bool disposed;
 
     public LongArray(IStore store, bool leaveOpen = false)
@@ -27,16 +26,15 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        this.length = length;
-        chunks = InitChunks(true);
+        chunks = InitChunks(length, true);
     }
 
     public IStore Store => store;
     public bool IsLong => Extent > int.MaxValue;
-    public long Extent => chunks.LastOrDefault()?.EndOffset ?? 0;
+    public long Extent => chunks[^1].EndOffset;
 
-    public long Length => length;
-    public int IntLength => (int)Math.Min(length, int.MaxValue);
+    public long Length => chunks[^1].End;
+    public int IntLength => (int)Math.Min(Length, int.MaxValue);
 
     public bool IsReadOnly => false;
     public bool IsFixedSize => true;
@@ -60,7 +58,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (int, int) Index(long index)
     {
-        if((ulong)index >= (ulong)length) ThrowArgumentOutOfRangeException(index);
+        if((ulong)index >= (ulong)Length) ThrowArgumentOutOfRangeException(index);
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
         return ((int)chunk, (int)chunkOffset);
     }
@@ -123,7 +121,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         return list;
     }
 
-    private Chunk[] InitChunks(bool skipFirstLoad)
+    private Chunk[] InitChunks(long length, bool skipFirstLoad)
     {
         return [..ChunkSpan<T>.Chunk(length, ChunkSize).Select(span => new Chunk(this, span, skipFirstLoad))];
     }
@@ -136,8 +134,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
     public void Read()
     {
-        length = store.ReadInt64(0);
-        chunks = InitChunks(false);
+        chunks = InitChunks(store.ReadInt64(0), false);
     }
 
     public async Task ReadAsync()
@@ -149,7 +146,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     public void Write()
     {
         store.SetLength(Extent);
-        store.Write(0, length);
+        store.Write(0, Length);
 
         foreach(var chunk in chunks) chunk.Evict();
     }

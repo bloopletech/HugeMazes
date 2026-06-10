@@ -13,7 +13,6 @@ public class LongBitArray : ILongBitArray, IStorable
     private readonly IStore store;
     private readonly bool leaveOpen;
     private Chunk[] chunks;
-    private long bitLength;
     private bool disposed;
 
     public LongBitArray(IStore store, bool leaveOpen = false)
@@ -27,16 +26,15 @@ public class LongBitArray : ILongBitArray, IStorable
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        this.bitLength = bitLength;
-        chunks = InitChunks(true);
+        chunks = InitChunks(bitLength, true);
     }
 
     public IStore Store => store;
     public bool IsLong => Extent > int.MaxValue;
-    public long Extent => chunks.LastOrDefault()?.EndOffset ?? 0;
+    public long Extent => chunks[^1].EndOffset;
 
-    public long Length => bitLength;
-    public int IntLength => (int)Math.Min(bitLength, int.MaxValue);
+    public long Length => chunks[^1].End;
+    public int IntLength => (int)Math.Min(Length, int.MaxValue);
 
     public bool IsReadOnly => false;
     public bool IsFixedSize => true;
@@ -60,7 +58,7 @@ public class LongBitArray : ILongBitArray, IStorable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (int, int) Index(long index)
     {
-        if((ulong)index >= (ulong)bitLength) ThrowArgumentOutOfRangeException(index);
+        if((ulong)index >= (ulong)Length) ThrowArgumentOutOfRangeException(index);
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, ChunkSize);
         return ((int)chunk, (int)chunkOffset);
     }
@@ -111,7 +109,7 @@ public class LongBitArray : ILongBitArray, IStorable
         return list;
     }
 
-    private Chunk[] InitChunks(bool skipFirstLoad)
+    private Chunk[] InitChunks(long bitLength, bool skipFirstLoad)
     {
         return [..ChunkBitSpan.Chunk(bitLength, ChunkSize).Select(span => new Chunk(this, span, skipFirstLoad))];
     }
@@ -124,8 +122,7 @@ public class LongBitArray : ILongBitArray, IStorable
 
     public void Read()
     {
-        bitLength = store.ReadInt64(0);
-        chunks = InitChunks(false);
+        chunks = InitChunks(store.ReadInt64(0), false);
     }
 
     public async Task ReadAsync()
@@ -137,7 +134,7 @@ public class LongBitArray : ILongBitArray, IStorable
     public void Write()
     {
         store.SetLength(Extent);
-        store.Write(0, bitLength);
+        store.Write(0, Length);
 
         foreach(var chunk in chunks) chunk.Evict();
     }
