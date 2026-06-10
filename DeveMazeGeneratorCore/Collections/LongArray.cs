@@ -19,7 +19,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = [];
+        chunks = InitChunks(0, false);
     }
 
     public LongArray(IStore store, long length, bool leaveOpen = false)
@@ -66,7 +66,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        chunks = [];
+        chunks = InitChunks(0, false);
     }
 
     public bool Contains(T item) => chunks.Any(c => c.Array.Contains(item));
@@ -123,6 +123,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
     private Chunk[] InitChunks(long length, bool skipFirstLoad)
     {
+        if(length == 0) return [new(this, new(), skipFirstLoad)];
         return [..ChunkSpan<T>.Chunk(length, ChunkSize).Select(span => new Chunk(this, span, skipFirstLoad))];
     }
 
