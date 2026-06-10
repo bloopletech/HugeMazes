@@ -213,33 +213,28 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         return result;
     }
 
-    private record struct Chunk(LongArray<T> Owner, long Start, int Count, long Offset)
+    private class Chunk(LongArray<T> owner, long start, int count, long offset)
     {
         private T[]? array;
+        public T[] Array => array ??= Load();
 
-        public T[] Array
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                array ??= Load();
-                return array;
-            }
-        }
+        public long LastUsedAt { get; private set; }
 
-        public long LastUsedAt { get; set; } = long.MinValue;
+        public long Start => start;
+        public long Count => count;
+        public long End => start + count;
 
-        public readonly int Length => ItemSize * Count;
-        public readonly long EndOffset => Offset + Length;
-        public readonly long End => Start + Count;
-
+        public long Offset => offset;
+        public int Length => ItemSize * count;
+        public long EndOffset => offset + Length;
+        
         private T[] Load()
         {
             LastUsedAt = Environment.TickCount64;
-            Owner.EvictOldest();
+            owner.EvictOldest();
 
-            var array = new T[Count];
-            if(Owner.Store.Length >= EndOffset) Owner.Store.Read(Offset, array);
+            var array = new T[count];
+            if(owner.Store.Length >= EndOffset) owner.Store.Read(Offset, array);
             return array;
         }
 
@@ -247,9 +242,9 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         {
             if(array == null) return;
 
-            Owner.Store.Write(Offset, array);
+            owner.Store.Write(Offset, array);
             array = null;
-            LastUsedAt = long.MinValue;
+            LastUsedAt = 0;
         }
 
         public static IEnumerable<Chunk> Produce(LongArray<T> owner, long length, int chunkSize)

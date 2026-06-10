@@ -278,35 +278,29 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         return result;
     }
 
-    private record struct Chunk(LongList<T> Owner, long Start, int SavedCount, long Offset)
+    private class Chunk(LongList<T> owner, long start, int count, long offset)
     {
         private List<T>? list;
+        public List<T> List => list ??= Load();
 
-        public List<T> List
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                list ??= Load();
-                return list;
-            }
-        }
+        public long LastUsedAt { get; private set; }
 
-        public long LastUsedAt { get; set; } = long.MinValue;
+        public long Start => start;
+        public int Count => list?.Count ?? count;
+        public long End => start + Count;
 
-        public readonly int Count => list?.Count ?? SavedCount;
-        public readonly int Length => ItemSize * Count;
-        public readonly long EndOffset => Offset + Length;
-        public readonly long End => Start + Count;
+        public long Offset => offset;
+        public int Length => ItemSize * Count;
+        public long EndOffset => offset + Length;
 
         private List<T> Load()
         {
             LastUsedAt = Environment.TickCount64;
-            Owner.EvictOldest();
+            owner.EvictOldest();
 
             var list = new List<T>();
-            CollectionsMarshal.SetCount(list, SavedCount);
-            Owner.Store.Read(Offset, CollectionsMarshal.AsSpan(list));
+            CollectionsMarshal.SetCount(list, count);
+            owner.Store.Read(offset, CollectionsMarshal.AsSpan(list));
             return list;
         }
 
@@ -314,13 +308,13 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         {
             if(list == null) return;
 
-            Owner.Store.Write(Offset, CollectionsMarshal.AsSpan(list));
-            SavedCount = list.Count;
+            owner.Store.Write(offset, CollectionsMarshal.AsSpan(list));
+            count = list.Count;
             list = null;
-            LastUsedAt = long.MinValue;
+            LastUsedAt = 0;
         }
 
-        public readonly Chunk Next() => new(Owner, End, 0, EndOffset);
+        public Chunk Next() => new(owner, End, 0, EndOffset);
 
         public static IEnumerable<Chunk> Produce(LongList<T> owner, long length, int chunkSize)
         {
