@@ -111,11 +111,7 @@ public class LongBitArray : ILongBitArray, IStorable
         return list;
     }
 
-    private Chunk[] InitChunks(long bitLength)
-    {
-        if(bitLength == 0) return [new(this, 0, 0, 0)];
-        return [..Chunk.Produce(this, bitLength, ChunkSize)];
-    }
+    private Chunk[] InitChunks(long bitLength) => [..Chunk.Produce(this, bitLength, ChunkSize, sizeof(long))];
 
     public void EvictOldest()
     {
@@ -212,7 +208,7 @@ public class LongBitArray : ILongBitArray, IStorable
         public long Count => count;
         public long End => start + count;
 
-        public long Offset => offset + sizeof(long);
+        public long Offset => offset;
         public int Length => GetByteArrayLengthFromBitLength(count);
         public long EndOffset => offset + Length;
         
@@ -235,13 +231,19 @@ public class LongBitArray : ILongBitArray, IStorable
             LastUsedAt = 0;
         }
 
-        public static IEnumerable<Chunk> Produce(LongBitArray owner, long length, int chunkSize)
+        public static IEnumerable<Chunk> Produce(LongBitArray owner, long count, int chunkSize, long offset)
         {
-            var chunkByteSize = GetByteArrayLengthFromBitLength(chunkSize);
-            for(long start = 0, i = 0; start < length; i++)
+            if(count == 0)
             {
-                var stride = (int)Math.Min(chunkSize, length - start);
-                yield return new(owner, start, stride, i * chunkByteSize);
+                yield return new(owner, 0, 0, offset);
+                yield break;
+            }
+
+            var chunkByteSize = GetByteArrayLengthFromBitLength(chunkSize);
+            for(long start = 0, i = 0; start < count; i++)
+            {
+                var stride = (int)Math.Min(chunkSize, count - start);
+                yield return new(owner, start, stride, (i * chunkByteSize) + offset);
                 start += stride;
             }
         }
