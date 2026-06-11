@@ -123,11 +123,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         return list;
     }
 
-    private Chunk[] InitChunks(long length)
-    {
-        if(length == 0) return [new(this, 0, 0, 0)];
-        return [..Chunk.Produce(this, length, ChunkSize)];
-    }
+    private Chunk[] InitChunks(long count) => [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
 
     public void EvictOldest()
     {
@@ -224,7 +220,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         public long Count => count;
         public long End => start + count;
 
-        public long Offset => offset + sizeof(long);
+        public long Offset => offset;
         public int Length => ItemSize * count;
         public long EndOffset => offset + Length;
         
@@ -247,13 +243,19 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
             LastUsedAt = 0;
         }
 
-        public static IEnumerable<Chunk> Produce(LongArray<T> owner, long length, int chunkSize)
+        public static IEnumerable<Chunk> Produce(LongArray<T> owner, long count, int chunkSize, long offset)
         {
-            var chunkByteSize = chunkSize * ItemSize;
-            for(long start = 0, i = 0; start < length; i++)
+            if(count == 0)
             {
-                var stride = (int)Math.Min(chunkSize, length - start);
-                yield return new(owner, start, stride, i * chunkByteSize);
+                yield return new(owner, 0, 0, offset);
+                yield break;
+            }
+
+            var chunkByteSize = chunkSize * ItemSize;
+            for(long start = 0, i = 0; start < count; i++)
+            {
+                var stride = (int)Math.Min(chunkSize, count - start);
+                yield return new(owner, start, stride, (i * chunkByteSize) + offset);
                 start += stride;
             }
         }

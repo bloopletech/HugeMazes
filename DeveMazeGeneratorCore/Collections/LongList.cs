@@ -188,10 +188,7 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         return list;
     }
 
-    private List<Chunk> InitChunks(long count)
-    {
-        return count == 0 ? [new(this, 0, 0, 0)] : [..Chunk.Produce(this, count, ChunkSize)];
-    }
+    private List<Chunk> InitChunks(long count) => [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
 
     public void EvictOldest()
     {
@@ -289,7 +286,7 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         public int Count => list?.Count ?? count;
         public long End => start + Count;
 
-        public long Offset => offset + sizeof(long);
+        public long Offset => offset;
         public int Length => ItemSize * Count;
         public long EndOffset => offset + Length;
 
@@ -316,13 +313,19 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
 
         public Chunk Next() => new(owner, End, 0, EndOffset);
 
-        public static IEnumerable<Chunk> Produce(LongList<T> owner, long length, int chunkSize)
+        public static IEnumerable<Chunk> Produce(LongList<T> owner, long count, int chunkSize, long offset)
         {
-            var chunkByteSize = chunkSize * ItemSize;
-            for(long start = 0, i = 0; start < length; i++)
+            if(count == 0)
             {
-                var stride = (int)Math.Min(chunkSize, length - start);
-                yield return new(owner, start, stride, i * chunkByteSize);
+                yield return new(owner, 0, 0, offset);
+                yield break;
+            }
+
+            var chunkByteSize = chunkSize * ItemSize;
+            for(long start = 0, i = 0; start < count; i++)
+            {
+                var stride = (int)Math.Min(chunkSize, count - start);
+                yield return new(owner, start, stride, (i * chunkByteSize) + offset);
                 start += stride;
             }
         }
