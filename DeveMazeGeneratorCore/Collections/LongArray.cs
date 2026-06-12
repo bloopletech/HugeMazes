@@ -14,21 +14,14 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
 
     private readonly IStore store;
     private readonly bool leaveOpen;
-    private Chunk[] chunks;
+    private readonly Chunk[] chunks;
     private bool disposed;
-
-    public LongArray(IStore store, bool leaveOpen = false)
-    {
-        this.store = store;
-        this.leaveOpen = leaveOpen;
-        chunks = InitChunks(0);
-    }
 
     public LongArray(IStore store, long length, bool leaveOpen = false)
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = InitChunks(length);
+        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long))];
     }
 
     public IStore Store => store;
@@ -63,12 +56,6 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         if((ulong)index >= (ulong)Length) ThrowArgumentOutOfRangeException(index);
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
         return ((int)chunk, (int)chunkOffset);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Clear()
-    {
-        chunks = InitChunks(0);
     }
 
     public bool Contains(T item) => chunks.Any(c => c.Array.Contains(item));
@@ -123,24 +110,13 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         return list;
     }
 
-    private Chunk[] InitChunks(long count) => [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
-
     public void EvictOldest()
     {
         var toEvict = chunks.OrderByDescending(c => c.LastUsedAt).Skip(3);
         foreach(var c in toEvict) c.Evict();
     }
 
-    public void Read()
-    {
-        chunks = InitChunks(store.ReadInt64(0));
-    }
-
-    public async Task ReadAsync()
-    {
-        // TODO: Figure out some background queue writer async thingo
-        Read();
-    }
+    public static LongArray<T> Read(IStore store, bool leaveOpen = false) => new(store, store.ReadInt64(0), leaveOpen);
 
     public void Write()
     {
@@ -148,12 +124,6 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
         store.Write(0, Length);
 
         foreach(var chunk in chunks) chunk.Evict();
-    }
-
-    public async Task WriteAsync()
-    {
-        // TODO: Figure out some background queue writer async thingo
-        Write();
     }
 
     protected virtual void Dispose(bool disposing)
@@ -181,20 +151,7 @@ public class LongArray<T> : ILongArray<T>, IStorable where T : struct
     {
         Write();
         store.CopyTo(destination);
-        var result = new LongArray<T>(destination, leaveOpen);
-        result.Read();
-        return result;
-    }
-
-    public async Task<ILongArray<T>> CloneAsync() => await CloneAsync(IStore.Create(IsLong));
-
-    public async Task<ILongArray<T>> CloneAsync(IStore destination, bool leaveOpen = false)
-    {
-        await WriteAsync();
-        await store.CopyToAsync(destination);
-        var result = new LongArray<T>(destination, leaveOpen);
-        await result.ReadAsync();
-        return result;
+        return Read(destination, leaveOpen);
     }
 
     private static void ThrowArgumentOutOfRangeException(long index) => throw new ArgumentOutOfRangeException(

@@ -6,7 +6,7 @@ namespace DeveMazeGeneratorCore.Paths;
 
 public sealed class MazePath(LongList<MazePoint> points) : IPointsMazePath
 {
-    public MazePath(IStore store, bool leaveOpen = false) : this(new LongList<MazePoint>(store, leaveOpen))
+    public MazePath(IStore store, bool leaveOpen = false) : this(new LongList<MazePoint>(store, 0, leaveOpen))
     {
     }
 
@@ -15,13 +15,11 @@ public sealed class MazePath(LongList<MazePoint> points) : IPointsMazePath
     public long Extent => points.Extent;
     public ILongList<MazePoint> Points => points;
 
-    public void Read() => points.Read();
-
-    public async Task ReadAsync() => await points.ReadAsync();
+    public static MazePath Read(
+        IStore store,
+        bool leaveOpen = false) => new(LongList<MazePoint>.Read(store, leaveOpen));
 
     public void Write() => points.Write();
-
-    public async Task WriteAsync() => await points.WriteAsync();
 
     public void Dispose() => points.Dispose();
 

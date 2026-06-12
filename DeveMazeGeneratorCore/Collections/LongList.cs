@@ -18,11 +18,11 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
     private List<Chunk> chunks;
     private bool disposed;
 
-    public LongList(IStore store, bool leaveOpen = false)
+    public LongList(IStore store, long count = 0, bool leaveOpen = false)
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = InitChunks(0);
+        chunks = InitChunks(count);
     }
 
     public IStore Store => store;
@@ -196,16 +196,7 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         foreach(var c in toEvict) c.Evict();
     }
 
-    public void Read()
-    {
-        chunks = InitChunks(store.ReadInt64(0));
-    }
-
-    public async Task ReadAsync()
-    {
-        // TODO: Figure out some background queue reader async thingo
-        Read();
-    }
+    public static LongList<T> Read(IStore store, bool leaveOpen = false) => new(store, store.ReadInt64(0), leaveOpen);
 
     public void Write()
     {
@@ -213,12 +204,6 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
         store.Write(0, Count);
 
         foreach(var chunk in chunks) chunk.Evict();
-    }
-
-    public async Task WriteAsync()
-    {
-        // TODO: Figure out some background queue writer async thingo
-        Write();
     }
 
     protected virtual void Dispose(bool disposing)
@@ -247,20 +232,7 @@ public class LongList<T> : ILongList<T>, IStorable where T : struct
     {
         Write();
         store.CopyTo(destination);
-        var result = new LongList<T>(destination, leaveOpen);
-        result.Read();
-        return result;
-    }
-
-    public async Task<ILongList<T>> CloneAsync() => await CloneAsync(IStore.Create(IsLong));
-
-    public async Task<ILongList<T>> CloneAsync(IStore destination, bool leaveOpen = false)
-    {
-        await WriteAsync();
-        await store.CopyToAsync(destination);
-        var result = new LongList<T>(destination, leaveOpen);
-        await result.ReadAsync();
-        return result;
+        return Read(destination, leaveOpen);
     }
 
     private static void ThrowArgumentOutOfRangeException(long index) => throw new ArgumentOutOfRangeException(

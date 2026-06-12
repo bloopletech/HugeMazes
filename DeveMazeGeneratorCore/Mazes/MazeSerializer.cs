@@ -1,4 +1,5 @@
 using DeveMazeGeneratorCore.IO;
+using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
@@ -28,41 +29,31 @@ public class MazeSerializer
     public static IMaze Read(IStore store)
     {
         var type = ReadHeader(store);
-        var maze = InitForRead(type, store);
-        maze.Read();
-        return maze;
+        return InitForRead(type, store);
     }
 
-    public static async Task<IMaze> ReadAsync(IStore store)
-    {
-        var type = ReadHeader(store);
-        var maze = InitForRead(type, store);
-        await maze.ReadAsync();
-        return maze;
-    }
-
-    public static IMaze Create(MazeType type, IStore store, int width, int height)
+    public static IMaze Create(MazeType type, IStore store, Size size)
     {
         WriteHeader(store, type);
-        return InitForWrite(type, store, width, height);
+        return InitForWrite(type, store, size);
     }
 
     private static IMaze InitForRead(MazeType type, IStore store) => type switch
     {
-        MazeType.BitGridMaze => new BitGridMaze(store.WithPosition()),
-        MazeType.LongBitGridMaze => new LongBitGridMaze(store.WithPosition()),
+        MazeType.BitGridMaze => BitGridMaze.Read(store.WithPosition()),
+        MazeType.LongBitGridMaze => LongBitGridMaze.Read(store.WithPosition()),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
-    private static IMaze InitForWrite(MazeType type, IStore store, int width, int height) => type switch
+    private static IMaze InitForWrite(MazeType type, IStore store, Size size) => type switch
     {
-        MazeType.BitGridMaze => new BitGridMaze(store.WithPosition(), width, height),
-        MazeType.LongBitGridMaze => new LongBitGridMaze(store.WithPosition(), width, height),
+        MazeType.BitGridMaze => new BitGridMaze(store.WithPosition(), size),
+        MazeType.LongBitGridMaze => new LongBitGridMaze(store.WithPosition(), size),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
-    public static MazeType DetermineMazeType(int width, int height)
+    public static MazeType DetermineMazeType(Size size)
     {
-        return ((long)width * height) > int.MaxValue ? MazeType.LongBitGridMaze : MazeType.BitGridMaze;
+        return size.Area > int.MaxValue ? MazeType.LongBitGridMaze : MazeType.BitGridMaze;
     }
 }

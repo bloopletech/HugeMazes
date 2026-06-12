@@ -14,10 +14,10 @@ namespace DeveMazeGeneratorCore.Tests.Generators;
 public class MazeSamples
 {
     [TestMethod]
-    public async Task GeneratingAMazeWithABlockInTheMiddleWorks()
+    public void GeneratingAMazeWithABlockInTheMiddleWorks()
     {
         using var store = new StreamStore(new MemoryStream());
-        var maze = new BitGridMaze(store, 129, 129);
+        var maze = new BitGridMaze(store, new(129, 129));
 
         for(int y = 33; y < 96; y++)
         {
@@ -38,6 +38,6 @@ public class MazeSamples
         var image = Renderer.CreateImage(maze, path, RenderColors.Default);
 
         using var fs = new FileStream("GeneratingAMazeWithABlockInTheMiddleWorks.png", FileMode.Create);
-        await Renderer.Serialize(fs, image);
+        Renderer.Serialize(fs, image);
     }
 }

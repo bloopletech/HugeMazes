@@ -1,4 +1,5 @@
 using System.Collections;
+using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Collections;
 
@@ -10,10 +11,9 @@ public interface ILongBitArray : IEnumerable
     bool IsFixedSize { get; }
     bool IsReadOnly { get; }
 
-    void Clear();
     bool Peek();
     bool[] ToArray();
     IList<bool> ToList();
     ILongBitArray Clone();
-    Task<ILongBitArray> CloneAsync();
+    ILongBitArray Clone(IStore destination, bool leaveOpen = false);
 }

@@ -177,15 +177,15 @@ public static class Renderer
         return image;
     }
 
-    public static async Task Serialize(Stream stream, Image image)
+    public static void Serialize(Stream stream, Image image)
     {
-        await image.SaveAsync(stream, new PngEncoder() { CompressionLevel = PngCompressionLevel.Level1 });
+        image.Save(stream, new PngEncoder() { CompressionLevel = PngCompressionLevel.Level1 });
     }
 
-    public static async Task Save(string fileName, Image image)
+    public static void Save(string fileName, Image image)
     {
         using var fs = File.Open(fileName, FileMode.Create);
-        await Serialize(fs, image);
+        Serialize(fs, image);
     }
 }
 #endif

@@ -1,4 +1,5 @@
 using DeveMazeGeneratorCore.IO;
+using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Paths;
 
@@ -28,42 +29,28 @@ public static class MazePathSerializer
     public static IMazePath Read(IStore store)
     {
         var type = ReadHeader(store);
-        var path = InitForRead(type, store);
-        path.Read();
-        return path;
+        return InitForRead(type, store);
     }
 
-    public static async Task<IMazePath> ReadAsync(IStore store)
-    {
-        var type = ReadHeader(store);
-        var path = InitForRead(type, store);
-        await path.ReadAsync();
-        return path;
-    }
-
-    public static IMazePath Create(MazePathType type, IStore store, int width, int height)
+    public static IMazePath Create(MazePathType type, IStore store, Size size)
     {
         WriteHeader(store, type);
-        return InitForWrite(type, store, width, height);
+        return InitForWrite(type, store, size);
     }
 
     private static IMazePath InitForRead(MazePathType type, IStore store) => type switch
     {
-        MazePathType.MazePath => new MazePath(store.WithPosition()),
-        MazePathType.BitGridMazePath => new BitGridMazePath(store.WithPosition()),
-        MazePathType.BigBitGridMazePath => new LongBitGridMazePath(store.WithPosition()),
+        MazePathType.MazePath => MazePath.Read(store.WithPosition()),
+        MazePathType.BitGridMazePath => BitGridMazePath.Read(store.WithPosition()),
+        MazePathType.BigBitGridMazePath => LongBitGridMazePath.Read(store.WithPosition()),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
-    private static IMazePath InitForWrite(
-        MazePathType type,
-        IStore store,
-        int width,
-        int height) => type switch
+    private static IMazePath InitForWrite(MazePathType type, IStore store, Size size) => type switch
     {
         MazePathType.MazePath => new MazePath(store.WithPosition()),
-        MazePathType.BitGridMazePath => new BitGridMazePath(store.WithPosition(), width, height),
-        MazePathType.BigBitGridMazePath => new LongBitGridMazePath(store.WithPosition(), width, height),
+        MazePathType.BitGridMazePath => new BitGridMazePath(store.WithPosition(), size),
+        MazePathType.BigBitGridMazePath => new LongBitGridMazePath(store.WithPosition(), size),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 }

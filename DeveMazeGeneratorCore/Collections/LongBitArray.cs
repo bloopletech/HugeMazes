@@ -14,21 +14,14 @@ public class LongBitArray : ILongBitArray, IStorable
 
     private readonly IStore store;
     private readonly bool leaveOpen;
-    private Chunk[] chunks;
+    private readonly Chunk[] chunks;
     private bool disposed;
-
-    public LongBitArray(IStore store, bool leaveOpen = false)
-    {
-        this.store = store;
-        this.leaveOpen = leaveOpen;
-        chunks = InitChunks(0);
-    }
 
     public LongBitArray(IStore store, long bitLength, bool leaveOpen = false)
     {
         this.store = store;
         this.leaveOpen = leaveOpen;
-        chunks = InitChunks(bitLength);
+        chunks = [..Chunk.Produce(this, bitLength, ChunkSize, sizeof(long))];
     }
 
     public IStore Store => store;
@@ -63,12 +56,6 @@ public class LongBitArray : ILongBitArray, IStorable
         if((ulong)index >= (ulong)Length) ThrowArgumentOutOfRangeException(index);
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, ChunkSize);
         return ((int)chunk, (int)chunkOffset);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Clear()
-    {
-        chunks = InitChunks(0);
     }
 
     public IEnumerator<bool> GetEnumerator()
@@ -111,24 +98,13 @@ public class LongBitArray : ILongBitArray, IStorable
         return list;
     }
 
-    private Chunk[] InitChunks(long bitLength) => [..Chunk.Produce(this, bitLength, ChunkSize, sizeof(long))];
-
     public void EvictOldest()
     {
         var toEvict = chunks.OrderByDescending(c => c.LastUsedAt).Skip(3);
         foreach(var c in toEvict) c.Evict();
     }
 
-    public void Read()
-    {
-        chunks = InitChunks(store.ReadInt64(0));
-    }
-
-    public async Task ReadAsync()
-    {
-        // TODO: Figure out some background queue writer async thingo
-        Read();
-    }
+    public static LongBitArray Read(IStore store, bool leaveOpen = false) => new(store, store.ReadInt64(0), leaveOpen);
 
     public void Write()
     {
@@ -136,12 +112,6 @@ public class LongBitArray : ILongBitArray, IStorable
         store.Write(0, Length);
 
         foreach(var chunk in chunks) chunk.Evict();
-    }
-
-    public async Task WriteAsync()
-    {
-        // TODO: Figure out some background queue writer async thingo
-        Write();
     }
 
     protected virtual void Dispose(bool disposing)
@@ -169,20 +139,7 @@ public class LongBitArray : ILongBitArray, IStorable
     {
         Write();
         store.CopyTo(destination);
-        var result = new LongBitArray(destination, leaveOpen);
-        result.Read();
-        return result;
-    }
-
-    public async Task<ILongBitArray> CloneAsync() => await CloneAsync(IStore.Create(IsLong));
-
-    public async Task<ILongBitArray> CloneAsync(IStore destination, bool leaveOpen = false)
-    {
-        await WriteAsync();
-        await store.CopyToAsync(destination);
-        var result = new LongBitArray(destination, leaveOpen);
-        await result.ReadAsync();
-        return result;
+        return Read(destination, leaveOpen);
     }
 
     private static void ThrowArgumentOutOfRangeException(long index) => throw new ArgumentOutOfRangeException(
