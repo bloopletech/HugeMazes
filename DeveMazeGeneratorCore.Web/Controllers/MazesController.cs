@@ -38,7 +38,7 @@ public class MazesController : ControllerBase
         var image = Renderer.Render(maze, RenderColors.Default);
 
         using var memoryStream = new MemoryStream();
-        Renderer.Serialize(memoryStream, image).Wait();
+        Renderer.Serialize(memoryStream, image);
         var data = memoryStream.ToArray();
         return File(data, "image/png");
     }
@@ -58,7 +58,7 @@ public class MazesController : ControllerBase
         w.Restart();
         var image = Renderer.CreateImage(maze, path, RenderColors.Default);
         using var memoryStream = new MemoryStream();
-        Renderer.Serialize(memoryStream, image).Wait();
+        Renderer.Serialize(memoryStream, image);
         var toImageTime = w.Elapsed;
 
         Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");
@@ -82,7 +82,7 @@ public class MazesController : ControllerBase
         w.Restart();
         var image = Renderer.CreateImage(maze, path, RenderColors.Default);
         using var memoryStream = new MemoryStream();
-        Renderer.Serialize(memoryStream, image).Wait();
+        Renderer.Serialize(memoryStream, image);
         var toImageTime = w.Elapsed;
 
         Console.WriteLine($"Maze generation time: {mazeGenerationTime}, Path find time: {pathGenerationTime}, To image time: {toImageTime}");

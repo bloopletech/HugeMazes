@@ -1,3 +1,5 @@
+using DeveMazeGeneratorCore.IO;
+
 namespace DeveMazeGeneratorCore.Mazes;
 
 public interface IBitGrid
@@ -8,5 +10,5 @@ public interface IBitGrid
     int Width { get; }
 
     IBitGrid Clone();
-    Task<IBitGrid> CloneAsync();
+    IBitGrid Clone(IStore destination, bool leaveOpen = false);
 }

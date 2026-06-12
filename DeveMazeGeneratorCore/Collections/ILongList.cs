@@ -1,3 +1,5 @@
+using DeveMazeGeneratorCore.IO;
+
 namespace DeveMazeGeneratorCore.Collections;
 
 public interface ILongList<T> : IEnumerable<T> where T : struct
@@ -23,5 +25,5 @@ public interface ILongList<T> : IEnumerable<T> where T : struct
     T[] ToArray();
     IList<T> ToList();
     ILongList<T> Clone();
-    Task<ILongList<T>> CloneAsync();
+    ILongList<T> Clone(IStore destination, bool leaveOpen = false);
 }

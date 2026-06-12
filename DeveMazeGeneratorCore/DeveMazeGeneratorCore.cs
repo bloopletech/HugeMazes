@@ -15,7 +15,7 @@ public static class DeveMazeGeneratorCore
         seed);
 
     public static IMaze Generate(IStore store, int width, int height, int? seed = null) => Generate(
-        MazeSerializer.DetermineMazeType(width, height),
+        MazeSerializer.DetermineMazeType(new(width, height)),
         AlgorithmType.Backtrack,
         store,
         width,
@@ -38,7 +38,7 @@ public static class DeveMazeGeneratorCore
         int height,
         int? seed = null)
     {
-        var maze = MazeSerializer.Create(mazeType, store, width, height);
+        var maze = MazeSerializer.Create(mazeType, store, new(width, height));
         var random = seed.HasValue ? new Random(seed.Value) : new Random();
         var realSeed = random.GetSeed();
 
@@ -54,7 +54,7 @@ public static class DeveMazeGeneratorCore
 
     public static IMazePath Solve(IMaze maze, MazePathType pathType, IStore store)
     {
-        var path = MazePathSerializer.Create(pathType, store, maze.Width, maze.Height);
+        var path = MazePathSerializer.Create(pathType, store, maze.Size);
         if(path is IGridMazePath gridPath) PathFinder.Find(maze, gridPath);
         else if(path is IPointsMazePath pointsPath) PathFinder.Find(maze, pointsPath);
         return path;

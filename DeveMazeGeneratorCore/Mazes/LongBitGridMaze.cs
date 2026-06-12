@@ -1,25 +1,19 @@
 using System.Runtime.CompilerServices;
 using DeveMazeGeneratorCore.IO;
+using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
 public sealed class LongBitGridMaze(LongBitGrid grid) : IMaze
 {
-    public LongBitGridMaze(IStore store, bool leaveOpen = false) : this(new LongBitGrid(store, leaveOpen))
-    {
-    }
-
-    public LongBitGridMaze(
-        IStore store,
-        int width,
-        int height,
-        bool leaveOpen = false) : this(new LongBitGrid(store, width, height, leaveOpen))
+    public LongBitGridMaze(IStore store, Size size, bool leaveOpen = false) : this(new LongBitGrid(store, size, leaveOpen))
     {
     }
 
     public IStore Store => grid.Store;
     public bool IsLong => grid.IsLong;
     public long Extent => grid.Extent;
+    public Size Size => grid.Size;
     public int Width => grid.Width;
     public int Height => grid.Height;
 
@@ -32,13 +26,9 @@ public sealed class LongBitGridMaze(LongBitGrid grid) : IMaze
         set => grid[x, y] = value;
     }
 
-    public void Read() => grid.Read();
-
-    public async Task ReadAsync() => await grid.ReadAsync();
+    public static LongBitGridMaze Read(IStore store, bool leaveOpen = false) => new(LongBitGrid.Read(store, leaveOpen));
 
     public void Write() => grid.Write();
-
-    public async Task WriteAsync() => await grid.WriteAsync();
 
     public void Dispose() => grid.Dispose();
 

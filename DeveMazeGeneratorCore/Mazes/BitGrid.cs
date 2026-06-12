@@ -2,93 +2,43 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using DeveMazeGeneratorCore.IO;
+using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
-public class BitGrid : IBitGrid, IStorable
+public class BitGrid(IStore store, Size size, bool leaveOpen = false) : IBitGrid, IStorable
 {
-    private readonly IStore store;
-    private readonly bool leaveOpen;
-    private BitArray array;
-    private int width;
-    private int height;
+    private readonly BitArray array = new((int)size.Area);
     private bool disposed;
-
-    public BitGrid(IStore store, bool leaveOpen = false)
-    {
-        this.store = store;
-        this.leaveOpen = leaveOpen;
-        array = null!;
-    }
-
-    public BitGrid(IStore store, int width, int height, bool leaveOpen = false)
-    {
-        this.store = store;
-        this.leaveOpen = leaveOpen;
-        this.width = width;
-        this.height = height;
-        array = new(width * height);
-    }
 
     public IStore Store => store;
     public bool IsLong => Extent > int.MaxValue;
-    public long Extent => CollectionsMarshal.AsBytes(array).Length + (sizeof(int) * 2);
-    public int Width => width;
-    public int Height => height;
+    public long Extent => CollectionsMarshal.AsBytes(array).Length + Size.SizeOf;
+    public Size Size => size;
+    public int Width => size.Width;
+    public int Height => size.Height;
 
     public bool this[int x, int y]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => array[x + (y * height)];
+        get => array[x + (y * size.Height)];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => array[x + (y * height)] = value;
+        set => array[x + (y * size.Height)] = value;
     }
 
-    public void Read()
+    public static BitGrid Read(IStore store, bool leaveOpen = false)
     {
-        store.Position = 0;
-
-        width = store.ReadInt32();
-        height = store.ReadInt32();
-
-        array = new BitArray(width * height);
-        store.ReadExactly(CollectionsMarshal.AsBytes(array));
-    }
-
-    public async Task ReadAsync()
-    {
-        Read();
-        //store.Position = 0;
-
-        //width = store.ReadInt32();
-        //height = store.ReadInt32();
-
-        //array = new BitArray(width * height);
-        //await store.ReadExactlyAsync(array.GetArray());
+        var size = store.Read<Size>(0);
+        var result = new BitGrid(store, size, leaveOpen);
+        store.ReadExactly(Size.SizeOf, CollectionsMarshal.AsBytes(result.array));
+        return result;
     }
 
     public void Write()
     {
-        store.Position = 0;
-
-        store.Write(width);
-        store.Write(height);
-
-        store.Write(CollectionsMarshal.AsBytes(array));
-        //store.WriteArray(array.GetArray());
-    }
-
-    public async Task WriteAsync()
-    {
-        Write();
-        //store.Position = 0;
-
-        //store.Write(width);
-        //store.Write(height);
-
-        //await store.WriteAsync(array.GetArray());
-        ////await store.WriteArrayAsync(array.GetArray());
+        store.Write(0, size);
+        store.Write(Size.SizeOf, CollectionsMarshal.AsBytes(array));
     }
 
     protected virtual void Dispose(bool disposing)
@@ -117,19 +67,6 @@ public class BitGrid : IBitGrid, IStorable
     {
         Write();
         store.CopyTo(destination);
-        var result = new BitGrid(destination, leaveOpen);
-        result.Read();
-        return result;
-    }
-
-    public async Task<IBitGrid> CloneAsync() => Clone(IStore.Create(IsLong));
-
-    public async Task<IBitGrid> CloneAsync(IStore destination, bool leaveOpen = false)
-    {
-        await WriteAsync();
-        await store.CopyToAsync(destination);
-        var result = new BitGrid(destination, leaveOpen);
-        await result.ReadAsync();
-        return result;
+        return Read(destination, leaveOpen);
     }
 }

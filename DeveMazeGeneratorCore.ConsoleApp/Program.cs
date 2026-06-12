@@ -1,8 +1,8 @@
 using DeveMazeGeneratorCore.ConsoleApp;
 using DeveMazeGeneratorCore.IO;
 
-CLI.SkipReuse = false;
+CLI.SkipReuse = true;
 IStore.LongOverride = true;
 
 var cli = new CLI(new Options(args));
-await cli.Run();
+cli.Run();

@@ -1,5 +1,6 @@
 using System.Text;
 using DeveMazeGeneratorCore.IO;
+using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Mazes;
 
@@ -10,12 +11,15 @@ namespace DeveMazeGeneratorCore.Mazes;
 /// </summary>
 public interface IMaze : IStorable
 {
+    Size Size { get; }
     int Height { get; }
     int Width { get; }
+    bool IsLong { get; }
 
     bool this[int x, int y] { get; set; }
 
     IMaze Clone();
+    IMaze Clone(IStore destination, bool leaveOpen = false);
 
     public void EnsureMinimumSize()
     {

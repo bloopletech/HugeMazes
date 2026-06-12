@@ -195,5 +195,6 @@ public interface IStore : IDisposable
 
     public static IStore Create(long extent) => Create(extent > int.MaxValue);
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2211")]
     public static bool? LongOverride;
 }

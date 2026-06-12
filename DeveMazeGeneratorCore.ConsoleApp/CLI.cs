@@ -8,6 +8,7 @@ namespace DeveMazeGeneratorCore.ConsoleApp;
 
 public class CLI(Options options)
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2211")]
     public static bool SkipReuse = false;
 
     private string? mazeFileName;
@@ -15,15 +16,15 @@ public class CLI(Options options)
     private string? pathFileName;
     private IMazePath? path;
 
-    public async Task Run()
+    public void Run()
     {
         try
         {
-            var tasks = new List<Func<Task>>();
+            var tasks = new List<Action>();
             while(options.HasNext()) tasks.Add(CreateTask(options.Next()));
             foreach(var task in tasks)
             {
-                await task();
+                task();
 
                 if(SkipReuse)
                 {
@@ -41,27 +42,25 @@ public class CLI(Options options)
         }
     }
 
-    private Func<Task> CreateTask(string task) => task switch
+    private Action CreateTask(string task) => task switch
     {
         "generate" => GenerateTask(),
-        "load" => LoadTask(),
         "verify" => VerifyTask(),
         "solve" => SolveTask(),
-        "load-path" => LoadPathTask(),
         "render" => RenderTask(),
         "render-path" => RenderPathTask(),
         "benchmark" => BenchmarkTask(),
         _ => throw new InvalidOperationException($"Unknown task: {task}"),
     };
 
-    private Func<Task> GenerateTask()
+    private Action GenerateTask()
     {
         var width = options.NextInt().MakeUneven();
         var height = options.NextInt().MakeUneven();
         int? seed = options.HasNextInt() ? options.NextInt() : null;
         mazeFileName = options.NextFileName($"{Environment.TickCount}.maze");
 
-        return async () =>
+        return () =>
         {
             maze = DeveMazeGeneratorCore.Generate(new StreamStore(mazeFileName), width, height, seed);
             maze.Write();
@@ -69,96 +68,74 @@ public class CLI(Options options)
         };
     }
 
-    private Func<Task> LoadTask()
-    {
-        mazeFileName = options.Next();
-
-        return async () =>
-        {
-            maze = await LoadAsync(mazeFileName);
-            Console.WriteLine($"Loaded maze from {mazeFileName}");
-        };
-    }
-
-    private Func<Task> VerifyTask()
+    private Action VerifyTask()
     {
         mazeFileName ??= options.Next();
-        return async () =>
+        return () =>
         {
-            maze ??= await LoadAsync(mazeFileName);
+            maze ??= Load(mazeFileName);
             var result = Verifier.IsPerfectMaze(maze);
             Console.WriteLine($"Is our maze perfect?: {result}");
         };
     }
 
-    private Func<Task> SolveTask()
+    private Action SolveTask()
     {
         mazeFileName ??= options.Next();
         pathFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".path"));
-        return async () =>
+        return () =>
         {
-            maze ??= await LoadAsync(mazeFileName);
+            maze ??= Load(mazeFileName);
             path = DeveMazeGeneratorCore.Solve(maze, new StreamStore(pathFileName));
             path.Write();
             Console.WriteLine($"Saved solution to {pathFileName}");
         };
     }
 
-    private Func<Task> LoadPathTask()
-    {
-        pathFileName = options.Next();
-
-        return async () =>
-        {
-            path = await LoadPathAsync(pathFileName);
-            Console.WriteLine($"Loaded solution from {pathFileName}");
-        };
-    }
-
-    private Func<Task> RenderTask()
+    private Action RenderTask()
     {
         mazeFileName ??= options.Next();
         var imageFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".png"));
-        return async () =>
+        return () =>
         {
-            maze ??= await LoadAsync(mazeFileName);
+            maze ??= Load(mazeFileName);
             using var image = Renderer.Render(maze, RenderColors.Default);
-            await Renderer.Save(imageFileName, image);
+            Renderer.Save(imageFileName, image);
 
             Console.WriteLine($"Saved maze image to {imageFileName}");
         };
     }
 
-    private Func<Task> RenderPathTask()
+    private Action RenderPathTask()
     {
         mazeFileName ??= options.Next();
         pathFileName ??= options.Next();
         var imageFileName = options.NextFileName(Path.ChangeExtension(pathFileName, ".path.png"));
-        return async () =>
+        return () =>
         {
-            maze ??= await LoadAsync(mazeFileName);
-            path ??= await LoadPathAsync(pathFileName);
+            maze ??= Load(mazeFileName);
+            path ??= LoadPath(pathFileName);
             using var image = Renderer.CreateImage(maze, path, RenderColors.Default);
-            await Renderer.Save(imageFileName, image);
+            Renderer.Save(imageFileName, image);
 
             Console.WriteLine($"Saved maze with solution image to {imageFileName}");
         };
     }
 
-    private Func<Task> BenchmarkTask() => async () =>
+    private static Action BenchmarkTask() => () =>
     {
         var maze = DeveMazeGeneratorCore.BenchmarkBaseline();
         var result = Verifier.IsPerfectMaze(maze);
         if(!result) throw new InvalidOperationException("Maze is not perfect");
     };
 
-    private static async Task<IMaze> LoadAsync(string fileName)
+    private static IMaze Load(string fileName)
     {
-        return await MazeSerializer.ReadAsync(new StreamStore(fileName));
+        return MazeSerializer.Read(new StreamStore(fileName));
     }
 
-    private static async Task<IMazePath> LoadPathAsync(string fileName)
+    private static IMazePath LoadPath(string fileName)
     {
-        return await MazePathSerializer.ReadAsync(new StreamStore(fileName));
+        return MazePathSerializer.Read(new StreamStore(fileName));
     }
 }

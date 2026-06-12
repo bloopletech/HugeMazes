@@ -1,14 +1,12 @@
 namespace DeveMazeGeneratorCore.IO;
 
+//public interface IStorable<T> : IDisposable where T : IStorable<T>
 public interface IStorable : IDisposable
 {
     IStore Store { get; }
-    bool IsLong { get; }
     long Extent { get; }
 
-    void Read();
+    //static abstract T Read(IStore store, bool leaveOpen = false);
+    //static abstract Task<T> ReadAsync(IStore store, bool leaveOpen = false);
     void Write();
-
-    Task ReadAsync();
-    Task WriteAsync();
 }

@@ -1,26 +1,20 @@
 using System.Runtime.CompilerServices;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Paths;
 
 public sealed class BitGridMazePath(BitGrid grid) : IGridMazePath
 {
-    public BitGridMazePath(IStore store, bool leaveOpen = false) : this(new BitGrid(store, leaveOpen))
-    {
-    }
-
-    public BitGridMazePath(
-        IStore store,
-        int width,
-        int height,
-        bool leaveOpen = false) : this(new BitGrid(store, width, height, leaveOpen))
+    public BitGridMazePath(IStore store, Size size, bool leaveOpen = false) : this(new BitGrid(store, size, leaveOpen))
     {
     }
 
     public IStore Store => grid.Store;
     public bool IsLong => grid.IsLong;
     public long Extent => grid.Extent;
+    public Size Size => grid.Size;
     public int Width => grid.Width;
     public int Height => grid.Height;
 
@@ -33,13 +27,9 @@ public sealed class BitGridMazePath(BitGrid grid) : IGridMazePath
         set => grid[x, y] = value;
     }
 
-    public void Read() => grid.Read();
-
-    public async Task ReadAsync() => Read();
+    public static BitGridMazePath Read(IStore store, bool leaveOpen = false) => new(BitGrid.Read(store, leaveOpen));
 
     public void Write() => grid.Write();
-
-    public async Task WriteAsync() => Write();
 
     public void Dispose() => grid.Dispose();
 
