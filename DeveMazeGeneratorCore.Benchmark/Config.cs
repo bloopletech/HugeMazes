@@ -10,8 +10,8 @@ public class Config : ManualConfig
 {
     public Config()
     {
-        AddDiagnoser(new CPUUsageDiagnoser());
-        AddDiagnoser(new MemoryDiagnoser(new MemoryDiagnoserConfig()));
+        //AddDiagnoser(new CPUUsageDiagnoser());
+        AddDiagnoser(MemoryDiagnoser.Default);
         //[InliningDiagnoser]
         //[TailCallDiagnoser]
         //[EtwProfiler]

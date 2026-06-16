@@ -1,14 +1,8 @@
 using BenchmarkDotNet.Running;
+using DeveMazeGeneratorCore.Benchmark;
 
-namespace DeveMazeGeneratorCore.Benchmark;
+Console.WriteLine("Running the Benchmark job");
 
-public static class Program
-{
-    public static void Main()
-    {
-        Console.WriteLine("Running the Benchmark job");
-
-        //var config = DefaultConfig.Instance.WithSummaryStyle(SummaryStyle.Default.WithMaxParameterColumnWidth(200));
-        BenchmarkRunner.Run<MazeBenchmarkJob>();
-    }
-}
+//var config = DefaultConfig.Instance.WithSummaryStyle(SummaryStyle.Default.WithMaxParameterColumnWidth(200));
+//BenchmarkRunner.Run<MazeBenchmarkJob>();
+BenchmarkRunner.Run<BigStoreBenchmark>();
