@@ -40,11 +40,12 @@ public static class Renderer
     {
         var image = Render(maze, destination, colours);
 
-        for(var i = 0L; i < path.Count; i++)
+        var i = 0;
+        foreach(var point in path)
         {
-            var point = path[i];
             var shade = (byte)(i / (double)path.Count * 255.0);
             image[point.X, point.Y] = new Colour(shade, (byte)(255 - shade), 0);
+            i++;
         }
 
         if(colours.Start.HasValue) image[1, 1] = colours.Start.Value;

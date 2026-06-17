@@ -46,9 +46,11 @@ public class CLI(Options options)
         "generate" => GenerateTask(),
         "verify" => VerifyTask(),
         "solve" => SolveTask(),
+        "verify-path" => VerifyPathTask(),
         "render" => RenderTask(),
         "render-path" => RenderPathTask(),
         "benchmark" => BenchmarkTask(),
+        "benchmark-direction-maze-path" => BenchmarkDirectionMazePathTask(),
         _ => throw new InvalidOperationException($"Unknown task: {task}"),
     };
 
@@ -87,7 +89,18 @@ public class CLI(Options options)
             maze ??= Load(mazeFileName);
             path = DeveMazeGeneratorCore.Solve(maze, new StreamStore(pathFileName));
             path.Write();
-            Console.WriteLine($"Saved solution to {pathFileName}");
+            Console.WriteLine($"Saved path to {pathFileName}");
+        };
+    }
+
+    private Action VerifyPathTask()
+    {
+        pathFileName ??= options.Next();
+        return () =>
+        {
+            path ??= LoadPath(pathFileName);
+            var result = Verifier.IsPerfectPath(path);
+            Console.WriteLine($"Is our path perfect?: {result}");
         };
     }
 
@@ -115,7 +128,7 @@ public class CLI(Options options)
             path ??= LoadPath(pathFileName);
             using var image = DeveMazeGeneratorCore.Render(maze, path, new StreamStore(imageFileName));
             image.Write();
-            Console.WriteLine($"Saved maze with solution image to {imageFileName}");
+            Console.WriteLine($"Saved maze with path image to {imageFileName}");
         };
     }
 
@@ -124,6 +137,15 @@ public class CLI(Options options)
         var maze = DeveMazeGeneratorCore.BenchmarkBaseline();
         var result = Verifier.IsPerfectMaze(maze);
         if(!result) throw new InvalidOperationException("Maze is not perfect");
+    };
+
+    private static Action BenchmarkDirectionMazePathTask() => () =>
+    {
+        var maze = DeveMazeGeneratorCore.BenchmarkBaseline();
+        var path = MazePathSerializer.Create(MazePathType.DirectionMazePath, IStore.Create(maze.IsLong), maze.Size);
+        Solver.Solve(maze, path);
+        var result = Verifier.IsPerfectPath(path);
+        if(!result) throw new InvalidOperationException("Path is not perfect");
     };
 
     private static IMaze Load(string fileName)

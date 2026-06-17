@@ -48,7 +48,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (int, int) Index(long index)
     {
-        if((ulong)index >= (ulong)Length) ThrowArgumentOutOfRangeException(index);
+        if((ulong)index >= (ulong)Length) ExceptionExtensions.ThrowOutOfRangeException(index);
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
         return ((int)chunk, (int)chunkOffset);
     }
@@ -108,11 +108,6 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         result.Read();
         return result;
     }
-
-    private static void ThrowArgumentOutOfRangeException(long index) => throw new ArgumentOutOfRangeException(
-        nameof(index),
-        index,
-        "Index was out of range. Must be non-negative and less than the size of the collection");
 
     private static int CalculateChunkSize(int maxChunkByteSize)
     {

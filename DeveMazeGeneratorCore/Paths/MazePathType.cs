@@ -4,4 +4,5 @@ public enum MazePathType : ushort
 {
     Unknown,
     MazePath,
+    DirectionMazePath,
 }

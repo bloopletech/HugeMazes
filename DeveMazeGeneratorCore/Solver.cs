@@ -124,7 +124,7 @@ public static class Solver
 
         while(path.Count != 0)
         {
-            var cur = path[path.Count - 1];
+            var cur = path.Peek();
             var (x, y) = cur;
 
             if(cur == end) break; //Path found
@@ -160,7 +160,7 @@ public static class Solver
 
                 if(path.Count == 0) break; //No path found
 
-                var next = path[path.Count - 1];
+                var next = path.Peek();
 
                 //Set the direction we backtracked from
                 if(x > next.X) lastBackTrackDir = 0;

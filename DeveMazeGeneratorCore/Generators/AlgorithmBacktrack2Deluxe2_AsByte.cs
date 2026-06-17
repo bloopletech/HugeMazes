@@ -1,8 +1,7 @@
 using System.Runtime.CompilerServices;
-using DeveMazeGeneratorCore.Collections;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
-using DeveMazeGeneratorCore.Structures;
+using DeveMazeGeneratorCore.Paths;
 
 namespace DeveMazeGeneratorCore.Generators;
 
@@ -16,7 +15,7 @@ public class AlgorithmBacktrack2Deluxe2_AsByte(IMaze maze, Random random) : IAlg
         int width = maze.Width - 1;
         int height = maze.Height - 1;
 
-        using var stack = new LongList<MazePoint>(IStore.Create(maze.IsLong));
+        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong));
         stack.Clear();
         stack.Push(new(1, 1));
         maze[1, 1] = true;

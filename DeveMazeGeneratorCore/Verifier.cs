@@ -1,6 +1,7 @@
 using DeveMazeGeneratorCore.Collections;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Paths;
 using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore;
@@ -26,7 +27,7 @@ public class Verifier
 
     public static void FloodFill(IMaze maze)
     {
-        using var stack = new LongList<MazePoint>(IStore.Create(maze.IsLong));
+        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong));
         stack.Clear();
         stack.Push(new(0, 0));
 
@@ -36,8 +37,7 @@ public class Verifier
         while(stack.Count != 0)
         {
             var cur = stack.Pop();
-            var x = cur.X;
-            var y = cur.Y;
+            var (x, y) = cur;
 
             maze[x, y] = true;
 
@@ -46,5 +46,30 @@ public class Verifier
             if(y > 0 && !maze[x, y - 1]) stack.Push(new(x, y - 1));
             if(y < height && !maze[x, y + 1]) stack.Push(new(x, y + 1));
         }
+    }
+
+    public static bool IsPerfectPath(IMazePath path)
+    {
+        MazePoint last = MazePoint.Empty;
+
+        foreach(var point in path)
+        {
+            if(last == MazePoint.Empty)
+            {
+                if(point != MazePoint.Start) return false;
+            }
+            else
+            {
+                var xDelta = Math.Abs(point.X - last.X);
+                var yDelta = Math.Abs(point.Y - last.Y);
+                if(xDelta != 1 && yDelta != 1) return false;
+            }
+
+            last = point;
+        }
+
+        if(last == MazePoint.Empty) return false;
+        if(last.X != path.Width - 2 || last.Y != path.Height - 2) return false;
+        return true;
     }
 }

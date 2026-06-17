@@ -56,7 +56,8 @@ public static class DeveMazeGeneratorCore
 
     public static IMazePath Solve(IMaze maze) => Solve(maze, IStore.Create(maze.IsLong));
 
-    public static IMazePath Solve(IMaze maze, IStore store) => Solve(maze, MazePathType.MazePath, store);
+    //public static IMazePath Solve(IMaze maze, IStore store) => Solve(maze, MazePathType.MazePath, store);
+    public static IMazePath Solve(IMaze maze, IStore store) => Solve(maze, MazePathType.DirectionMazePath, store);
 
     public static IMazePath Solve(IMaze maze, MazePathType pathType, IStore store)
     {
