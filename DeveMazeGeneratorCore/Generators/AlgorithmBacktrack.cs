@@ -1,6 +1,6 @@
-using DeveMazeGeneratorCore.Collections;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
+using DeveMazeGeneratorCore.Paths;
 using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Generators;
@@ -17,7 +17,7 @@ public class AlgorithmBacktrack(IMaze maze, Random random) : IAlgorithm
 
         //var capacityEstimate = Convert.ToInt32(Math.Ceiling(width * height * 0.05));
 
-        using var stack = new LongList<MazePoint>(IStore.Create(maze.IsLong));
+        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong));
         stack.Clear();
         stack.Push(new(1, 1));
         maze[1, 1] = true;

@@ -39,15 +39,17 @@ public static class MazePathSerializer
         return InitForWrite(type, store.Offset<MazePathHeader>(), size);
     }
 
-    private static MazePath InitForRead(MazePathType type, IStore store) => type switch
+    private static IMazePath InitForRead(MazePathType type, IStore store) => type switch
     {
         MazePathType.MazePath => new MazePath(store),
+        MazePathType.DirectionMazePath => new DirectionMazePath(store),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
-    private static MazePath InitForWrite(MazePathType type, IStore store, Size size) => type switch
+    private static IMazePath InitForWrite(MazePathType type, IStore store, Size size) => type switch
     {
         MazePathType.MazePath => new MazePath(store, size),
+        MazePathType.DirectionMazePath => new DirectionMazePath(store, size),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 }
