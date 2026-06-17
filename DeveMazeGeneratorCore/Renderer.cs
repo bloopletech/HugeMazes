@@ -10,7 +10,14 @@ public static class Renderer
     public static IImage Render(IMaze maze, IStore destination, RenderColours colours)
     {
         var image = new LongImage(destination, maze.Size);
-        foreach(var (x, y) in image.ByPixel()) image[x, y] = maze[x, y] ? colours.Background : colours.Wall;
+
+        for(int y = 0; y < image.Height; y++)
+        {
+            for(int x = 0; x < image.Width; x++)
+            {
+                image[x, y] = maze[x, y] ? colours.Background : colours.Wall;
+            }
+        }
 
         if(colours.Start.HasValue) image[1, 1] = colours.Start.Value;
         if(colours.End.HasValue) image[maze.Width - 2, maze.Height - 2] = colours.End.Value;
