@@ -9,6 +9,7 @@ public interface ILongBitArray : IEnumerable
     bool this[long index] { get; set; }
     bool IsFixedSize { get; }
     bool IsReadOnly { get; }
+    void Clear();
     bool Peek();
     ILongBitArray Clone();
     ILongBitArray Clone(IStore destination, bool leaveOpen = false);

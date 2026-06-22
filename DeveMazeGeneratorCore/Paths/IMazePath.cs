@@ -15,9 +15,6 @@ public interface IMazePath : IEnumerable<MazePoint>, IStorable
     void Push(MazePoint point);
     MazePoint Peek();
 
-    int Height { get; }
-    int Width { get; }
-
     IMazePath Clone();
     IMazePath Clone(IStore destination, bool leaveOpen = false);
 }

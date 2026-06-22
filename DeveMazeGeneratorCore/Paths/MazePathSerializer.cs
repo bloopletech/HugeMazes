@@ -28,28 +28,21 @@ public static class MazePathSerializer
     public static IMazePath Read(IStore store)
     {
         var type = ReadHeader(store);
-        var result = InitForRead(type, store.Offset<MazePathHeader>());
+        var result = Init(type, store.Offset<MazePathHeader>());
         result.Read();
         return result;
     }
 
-    public static IMazePath Create(MazePathType type, IStore store, Size size)
+    public static IMazePath Create(MazePathType type, IStore store)
     {
         WriteHeader(store, type);
-        return InitForWrite(type, store.Offset<MazePathHeader>(), size);
+        return Init(type, store.Offset<MazePathHeader>());
     }
 
-    private static IMazePath InitForRead(MazePathType type, IStore store) => type switch
+    private static IMazePath Init(MazePathType type, IStore store) => type switch
     {
         MazePathType.MazePath => new MazePath(store),
         MazePathType.DirectionMazePath => new DirectionMazePath(store),
-        _ => throw new InvalidDataException($"Unknown maze type {type}")
-    };
-
-    private static IMazePath InitForWrite(MazePathType type, IStore store, Size size) => type switch
-    {
-        MazePathType.MazePath => new MazePath(store, size),
-        MazePathType.DirectionMazePath => new DirectionMazePath(store, size),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 }

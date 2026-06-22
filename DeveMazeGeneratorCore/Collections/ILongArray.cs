@@ -8,6 +8,7 @@ public interface ILongArray<T> : IEnumerable<T> where T : struct
     T this[long index] { get; set; }
     bool IsFixedSize { get; }
     bool IsReadOnly { get; }
+    void Clear();
     bool Contains(T item);
     long IndexOf(T item);
     T Peek();

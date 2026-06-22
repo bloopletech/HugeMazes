@@ -95,11 +95,13 @@ public class CLI(Options options)
 
     private Action VerifyPathTask()
     {
+        mazeFileName ??= options.Next();
         pathFileName ??= options.Next();
         return () =>
         {
+            maze ??= Load(mazeFileName);
             path ??= LoadPath(pathFileName);
-            var result = Verifier.IsPerfectPath(path);
+            var result = Verifier.IsPerfectPath(maze, path);
             Console.WriteLine($"Is our path perfect?: {result}");
         };
     }
@@ -142,9 +144,9 @@ public class CLI(Options options)
     private static Action BenchmarkDirectionMazePathTask() => () =>
     {
         var maze = DeveMazeGeneratorCore.BenchmarkBaseline();
-        var path = MazePathSerializer.Create(MazePathType.DirectionMazePath, IStore.Create(maze.IsLong), maze.Size);
+        var path = MazePathSerializer.Create(MazePathType.DirectionMazePath, IStore.Create(maze.IsLong));
         Solver.Solve(maze, path);
-        var result = Verifier.IsPerfectPath(path);
+        var result = Verifier.IsPerfectPath(maze, path);
         if(!result) throw new InvalidOperationException("Path is not perfect");
     };
 

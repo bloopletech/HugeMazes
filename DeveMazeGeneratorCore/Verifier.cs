@@ -27,7 +27,7 @@ public class Verifier
 
     public static void FloodFill(IMaze maze)
     {
-        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong));
+        using var stack = new LongList<MazePoint>(IStore.Create(maze.IsLong));
         stack.Clear();
         stack.Push(new(0, 0));
 
@@ -48,7 +48,7 @@ public class Verifier
         }
     }
 
-    public static bool IsPerfectPath(IMazePath path)
+    public static bool IsPerfectPath(IMaze maze, IMazePath path)
     {
         MazePoint last = MazePoint.Empty;
 
@@ -69,7 +69,7 @@ public class Verifier
         }
 
         if(last == MazePoint.Empty) return false;
-        if(last.X != path.Width - 2 || last.Y != path.Height - 2) return false;
+        if(last.X != maze.Width - 2 || last.Y != maze.Height - 2) return false;
         return true;
     }
 }
