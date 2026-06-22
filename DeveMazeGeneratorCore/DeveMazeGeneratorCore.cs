@@ -61,7 +61,7 @@ public static class DeveMazeGeneratorCore
 
     public static IMazePath Solve(IMaze maze, MazePathType pathType, IStore store)
     {
-        var path = MazePathSerializer.Create(pathType, store, maze.Size);
+        var path = MazePathSerializer.Create(pathType, store);
         Solver.Solve(maze, path);
         return path;
     }
@@ -118,6 +118,6 @@ public static class DeveMazeGeneratorCore
             BenchmarkSeed);
     }
 
-    private const int BenchmarkSize = (4096 * 2 * 2 * 2) + 1;
-    private const int BenchmarkSeed = 1337;
+    public const int BenchmarkSize = (4096 * 2 * 2 * 2) + 1;
+    public const int BenchmarkSeed = 1337;
 }

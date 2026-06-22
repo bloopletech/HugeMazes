@@ -22,7 +22,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsAotCompatible>true</IsAotCompatible>
-    <!--<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>-->
+    <!-- <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>-->
   </PropertyGroup>
 
   <ItemGroup>

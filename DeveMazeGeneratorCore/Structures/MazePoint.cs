@@ -23,22 +23,22 @@ public record struct MazePoint(int X, int Y)
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly MazePoint NextDirection(MazeDirection direction) => direction switch
+    public readonly MazePoint NextDirection(MazeDirection direction, int delta) => direction switch
     {
-        MazeDirection.North => new(X, Y - 1),
-        MazeDirection.East => new(X + 1, Y),
-        MazeDirection.South => new(X, Y + 1),
-        MazeDirection.West => new(X - 1, Y),
+        MazeDirection.North => new(X, Y - delta),
+        MazeDirection.East => new(X + delta, Y),
+        MazeDirection.South => new(X, Y + delta),
+        MazeDirection.West => new(X - delta, Y),
         _ => throw new InvalidOperationException("Impossible case reached")
     };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly MazePoint PrevDirection(MazeDirection direction) => direction switch
+    public readonly MazePoint PrevDirection(MazeDirection direction, int delta) => direction switch
     {
-        MazeDirection.North => new(X, Y + 1),
-        MazeDirection.East => new(X - 1, Y),
-        MazeDirection.South => new(X, Y - 1),
-        MazeDirection.West => new(X + 1, Y),
+        MazeDirection.North => new(X, Y + delta),
+        MazeDirection.East => new(X - delta, Y),
+        MazeDirection.South => new(X, Y - delta),
+        MazeDirection.West => new(X + delta, Y),
         _ => throw new InvalidOperationException("Impossible case reached")
     };
 
