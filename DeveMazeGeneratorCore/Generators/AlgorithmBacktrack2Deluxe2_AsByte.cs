@@ -15,7 +15,7 @@ public class AlgorithmBacktrack2Deluxe2_AsByte(IMaze maze, Random random) : IAlg
         int width = maze.Width - 1;
         int height = maze.Height - 1;
 
-        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong));
+        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong), maze.Size, 2);
         stack.Clear();
         stack.Push(new(1, 1));
         maze[1, 1] = true;

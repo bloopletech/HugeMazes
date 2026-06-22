@@ -118,6 +118,6 @@ public static class DeveMazeGeneratorCore
             BenchmarkSeed);
     }
 
-    private const int BenchmarkSize = (4096 * 2 * 2 * 2) + 1;
-    private const int BenchmarkSeed = 1337;
+    public const int BenchmarkSize = (4096 * 2 * 2 * 2) + 1;
+    public const int BenchmarkSeed = 1337;
 }

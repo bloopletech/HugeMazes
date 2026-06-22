@@ -17,9 +17,9 @@ public class DirectionMazePath : Storable, IMazePath
         directions = null!;
     }
 
-    public DirectionMazePath(IStore store, Size size, bool leaveOpen = false) : base(store, leaveOpen)
+    public DirectionMazePath(IStore store, Size size, int stride, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        header = new Header(size, MazePoint.Empty, MazePoint.Empty);
+        header = new Header(size, MazePoint.Empty, MazePoint.Empty, stride);
         directions = new(store.Offset<Header>(true));
     }
 
@@ -44,12 +44,12 @@ public class DirectionMazePath : Storable, IMazePath
         if(index > (Count / 2))
         {
             value = header.End;
-            for(var i = directions.Count - 1; i >= index; i--) value = value.PrevDirection(directions[i]);
+            for(var i = directions.Count - 1; i >= index; i--) value = value.PrevDirection(directions[i], header.Stride);
             return value;
         }
 
         value = header.Start;
-        for(var i = 0; i < index; i++) value = value.NextDirection(directions[i]);
+        for(var i = 0; i < index; i++) value = value.NextDirection(directions[i], header.Stride);
         return value;
     }
 
@@ -91,7 +91,7 @@ public class DirectionMazePath : Storable, IMazePath
         foreach(var direction in directions)
         {
             yield return point;
-            point = point.NextDirection(direction);
+            point = point.NextDirection(direction, header.Stride);
         }
         if(directions.Count > 0) yield return point;
     }
@@ -117,7 +117,7 @@ public class DirectionMazePath : Storable, IMazePath
 
         if(directions.Count > 0)
         {
-            header.End = header.End.PrevDirection(directions.Pop());
+            header.End = header.End.PrevDirection(directions.Pop(), header.Stride);
             return end;
         }
 
@@ -154,7 +154,7 @@ public class DirectionMazePath : Storable, IMazePath
         return result;
     }
 
-    private record struct Header(Size Size, MazePoint Start, MazePoint End)
+    private record struct Header(Size Size, MazePoint Start, MazePoint End, int Stride)
     {
         public static readonly int SizeOf = IStore.SizeOf<Header>();
     }
