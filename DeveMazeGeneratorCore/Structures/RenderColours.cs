@@ -9,5 +9,5 @@ public readonly record struct RenderColours(
     Colour? Start = null,
     Colour? End = null)
 {
-    public static readonly RenderColours Default = new(Color.White, Color.Black, Color.Lime, Color.Blue, Color.Red);
+    public static readonly RenderColours Default = new(Color.White, Color.Black, Color.Lime, Color.Red, Color.Blue);
 }
