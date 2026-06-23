@@ -5,8 +5,8 @@ using HugeMazes.IO;
 
 namespace HugeMazes.Benchmark;
 
-[Config(typeof(Config))]
-public class BigStoreBenchmark
+[SimpleJob]
+public class BigStoreBenchmark : BaseBenchmark
 {
     [Benchmark(Baseline = true)]
     public void GenerateBaseline()
