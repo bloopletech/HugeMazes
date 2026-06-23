@@ -9,27 +9,16 @@ namespace DeveMazeGeneratorCore.Paths;
 
 public class DirectionMazePath : Storable, IMazePath
 {
-    private Size size;
     private LongList<MazeDirection> directions;
     private Adapter adapter;
 
-    public DirectionMazePath(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
+    public DirectionMazePath(IStore store, int delta = 1, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        directions = null!;
-        adapter = null!;
-    }
-
-    public DirectionMazePath(IStore store, Size size, int delta = 1, bool leaveOpen = false) : base(store, leaveOpen)
-    {
-        this.size = size;
         directions = new(store.Offset<Header>(true));
         adapter = new Adapter(directions, MazePoint.Empty, MazePoint.Empty, delta);
     }
 
     public override long Extent => directions.Extent + Header.SizeOf;
-    public Size Size => size;
-    public int Width => Size.Width;
-    public int Height => Size.Height;
 
     public long Count => adapter.Count;
     public MazePoint this[long index] => adapter.Get(index);
@@ -48,14 +37,13 @@ public class DirectionMazePath : Storable, IMazePath
         directions = new(store.Offset<Header>(true));
         directions.Read();
 
-        var (size, start, end, delta) = store.Read<Header>(0);
-        this.size = size;
+        var (start, end, delta) = store.Read<Header>(0);
         adapter = new Adapter(directions, start, end, delta);
     }
 
     public override void Write()
     {
-        store.Write(0, new Header(size, adapter.Start, adapter.End, adapter.Delta));
+        store.Write(0, new Header(adapter.Start, adapter.End, adapter.Delta));
         directions.Write();
     }
 
@@ -70,7 +58,7 @@ public class DirectionMazePath : Storable, IMazePath
         return result;
     }
 
-    private record struct Header(Size Size, MazePoint Start, MazePoint End, int Delta)
+    private record struct Header(MazePoint Start, MazePoint End, int Delta)
     {
         public static readonly int SizeOf = IStore.SizeOf<Header>();
     }

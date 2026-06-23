@@ -6,26 +6,11 @@ using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Paths;
 
-public class MazePath : Storable, IMazePath
+public class MazePath(IStore store, bool leaveOpen = false) : Storable(store, leaveOpen), IMazePath
 {
-    private LongList<MazePoint> points;
-    private Size size;
-
-    public MazePath(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
-    {
-        points = null!;
-    }
-
-    public MazePath(IStore store, Size size, bool leaveOpen = false) : base(store, leaveOpen)
-    {
-        this.size = size;
-        points = new(store.Offset<Size>(true));
-    }
+    private LongList<MazePoint> points = new(store);
 
     public override long Extent => points.Extent + Size.SizeOf;
-    public Size Size => size;
-    public int Width => size.Width;
-    public int Height => size.Height;
 
     public long Count => points.Count;
 
@@ -54,14 +39,12 @@ public class MazePath : Storable, IMazePath
 
     public override void Read()
     {
-        size = store.Read<Size>(0);
-        points = new(store.Offset<Size>(true));
+        points = new(store);
         points.Read();
     }
 
     public override void Write()
     {
-        store.Write(0, size);
         points.Write();
     }
 

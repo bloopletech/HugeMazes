@@ -48,7 +48,7 @@ public class Verifier
         }
     }
 
-    public static bool IsPerfectPath(IMazePath path)
+    public static bool IsPerfectPath(IMaze maze, IMazePath path)
     {
         MazePoint last = MazePoint.Empty;
 
@@ -69,7 +69,7 @@ public class Verifier
         }
 
         if(last == MazePoint.Empty) return false;
-        if(last.X != path.Width - 2 || last.Y != path.Height - 2) return false;
+        if(last.X != maze.Width - 2 || last.Y != maze.Height - 2) return false;
         return true;
     }
 }

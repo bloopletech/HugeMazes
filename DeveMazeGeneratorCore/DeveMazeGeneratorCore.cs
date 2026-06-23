@@ -61,7 +61,7 @@ public static class DeveMazeGeneratorCore
 
     public static IMazePath Solve(IMaze maze, MazePathType pathType, IStore store)
     {
-        var path = MazePathSerializer.Create(pathType, store, maze.Size);
+        var path = MazePathSerializer.Create(pathType, store);
         Solver.Solve(maze, path);
         return path;
     }
