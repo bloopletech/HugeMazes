@@ -4,7 +4,8 @@ using BenchmarkDotNet.Attributes;
 
 namespace DeveMazeGeneratorCore.Benchmark;
 
-[Config(typeof(Config))]
+[Use<BaseBenchmark>]
+[Use<SimpleJobSource>]
 public class MazeBenchmarkJob
 {
     [Benchmark(Baseline = true)]

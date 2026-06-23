@@ -5,7 +5,8 @@ using DeveMazeGeneratorCore.IO;
 
 namespace DeveMazeGeneratorCore.Benchmark;
 
-[Config(typeof(Config))]
+[Use<BaseBenchmark>]
+[Use<SimpleJobSource>]
 public class BigStoreBenchmark
 {
     [Benchmark(Baseline = true)]

@@ -1,12 +1,11 @@
-#pragma warning disable CA1822 // Mark members as static
-
 using BenchmarkDotNet.Attributes;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Paths;
 
 namespace DeveMazeGeneratorCore.Benchmark;
 
-[Config(typeof(Config))]
+[Use<BaseBenchmark>]
+[Use<SimpleJobSource>]
 public class MazePathBenchmark
 {
     private IMaze maze = null!;
