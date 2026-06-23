@@ -19,11 +19,11 @@ public class DirectionMazePath : Storable, IMazePath
         adapter = null!;
     }
 
-    public DirectionMazePath(IStore store, Size size, int stride = 1, bool leaveOpen = false) : base(store, leaveOpen)
+    public DirectionMazePath(IStore store, Size size, int delta = 1, bool leaveOpen = false) : base(store, leaveOpen)
     {
         this.size = size;
         directions = new(store.Offset<Header>(true));
-        adapter = new Adapter(directions, MazePoint.Empty, MazePoint.Empty, stride);
+        adapter = new Adapter(directions, MazePoint.Empty, MazePoint.Empty, delta);
     }
 
     public override long Extent => directions.Extent + Header.SizeOf;
@@ -48,14 +48,14 @@ public class DirectionMazePath : Storable, IMazePath
         directions = new(store.Offset<Header>(true));
         directions.Read();
 
-        var (size, start, end, stride) = store.Read<Header>(0);
+        var (size, start, end, delta) = store.Read<Header>(0);
         this.size = size;
-        adapter = new Adapter(directions, start, end, stride);
+        adapter = new Adapter(directions, start, end, delta);
     }
 
     public override void Write()
     {
-        store.Write(0, new Header(size, adapter.Start, adapter.End, adapter.Stride));
+        store.Write(0, new Header(size, adapter.Start, adapter.End, adapter.Delta));
         directions.Write();
     }
 
@@ -70,19 +70,19 @@ public class DirectionMazePath : Storable, IMazePath
         return result;
     }
 
-    private record struct Header(Size Size, MazePoint Start, MazePoint End, int Stride)
+    private record struct Header(Size Size, MazePoint Start, MazePoint End, int Delta)
     {
         public static readonly int SizeOf = IStore.SizeOf<Header>();
     }
 
-    private class Adapter(LongList<MazeDirection> directions, MazePoint start, MazePoint end, int stride)
+    private class Adapter(LongList<MazeDirection> directions, MazePoint start, MazePoint end, int delta)
     {
         private bool HasStart => start != MazePoint.Empty;
 
         public long Count => HasStart ? directions.Count + 1 : 0; // Fencepost
         public MazePoint Start => start;
         public MazePoint End => end;
-        public int Stride => stride;
+        public int Delta => delta;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public MazePoint Get(long index)
@@ -96,12 +96,12 @@ public class DirectionMazePath : Storable, IMazePath
             if(index > (Count / 2))
             {
                 value = end;
-                for(var i = directions.Count - 1; i >= index; i--) value = value.PrevDirection(directions[i], stride);
+                for(var i = directions.Count - 1; i >= index; i--) value = value.PrevDirection(directions[i], delta);
                 return value;
             }
 
             value = start;
-            for(var i = 0; i < index; i++) value = value.NextDirection(directions[i], stride);
+            for(var i = 0; i < index; i++) value = value.NextDirection(directions[i], delta);
             return value;
         }
 
@@ -136,7 +136,7 @@ public class DirectionMazePath : Storable, IMazePath
             if(HasStart) yield return point;
             foreach(var direction in directions)
             {
-                point = point.NextDirection(direction, stride);
+                point = point.NextDirection(direction, delta);
                 yield return point;
             }
         }
@@ -157,7 +157,7 @@ public class DirectionMazePath : Storable, IMazePath
         {
             if(!HasStart) ExceptionExtensions.ThrowOutOfRangeException(0);
             var prevEnd = end;
-            if(directions.Count > 0) end = end.PrevDirection(directions.Pop(), stride);
+            if(directions.Count > 0) end = end.PrevDirection(directions.Pop(), delta);
             else end = start = MazePoint.Empty;
             return prevEnd;
         }
