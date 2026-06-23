@@ -1,9 +1,13 @@
+using System.Diagnostics;
 using BenchmarkDotNet.Running;
 using HugeMazes.Benchmark;
 
-Console.WriteLine("Running the Benchmark job");
+BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, NoExportersDefaultConfig.Instance);
 
-//var config = DefaultConfig.Instance.WithSummaryStyle(SummaryStyle.Default.WithMaxParameterColumnWidth(200));
-//BenchmarkRunner.Run<MazeBenchmarkJob>();
-//BenchmarkRunner.Run<BigStoreBenchmark>();
-BenchmarkRunner.Run<BitGridBenchmark>();
+var resultsPath = Path.Join(AppContext.BaseDirectory, "BenchmarkDotNet.Artifacts", "results");
+
+Process.Start(new ProcessStartInfo
+{
+    FileName = resultsPath,
+    UseShellExecute = true,
+});

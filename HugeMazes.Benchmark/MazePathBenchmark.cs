@@ -1,5 +1,3 @@
-#pragma warning disable CA1822 // Mark members as static
-
 using BenchmarkDotNet.Attributes;
 using HugeMazes.IO;
 using HugeMazes.Mazes;
@@ -7,8 +5,8 @@ using HugeMazes.Paths;
 
 namespace HugeMazes.Benchmark;
 
-[Config(typeof(Config))]
-public class MazePathBenchmark
+[SimpleJob]
+public class MazePathBenchmark : BaseBenchmark
 {
     private IMaze maze = null!;
 

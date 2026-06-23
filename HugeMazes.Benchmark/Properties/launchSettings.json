@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HugeMazes.Benchmark": {
+      "commandName": "Project",
+      "commandLineArgs": "benchmark"
+    }
+  }
+}
