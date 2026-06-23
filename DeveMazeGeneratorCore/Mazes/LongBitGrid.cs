@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using DeveMazeGeneratorCore.Collections;
+using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Structures;
 
@@ -29,10 +30,17 @@ public class LongBitGrid : Storable, IBitGrid
     public bool this[int x, int y]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => array[x + ((long)y * size.Height)];
-
+        get => array[Index(x, y)];
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => array[x + ((long)y * size.Height)] = value;
+        set => array[Index(x, y)] = value;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private long Index(int x, int y)
+    {
+        if(x < 0 || x >= size.Width) ExceptionExtensions.ThrowOutOfRangeException(x);
+        if(y < 0 || y >= size.Height) ExceptionExtensions.ThrowOutOfRangeException(y);
+        return x + ((long)y * size.Height);
     }
 
     public override void Read()

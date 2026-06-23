@@ -48,7 +48,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (int, int) Index(long index)
     {
-        if((ulong)index >= (ulong)Length) ExceptionExtensions.ThrowOutOfRangeException(index);
+        if(index < 0 || (ulong)index >= (ulong)Length) ExceptionExtensions.ThrowOutOfRangeException(index);
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
         return ((int)chunk, (int)chunkOffset);
     }
