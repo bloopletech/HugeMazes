@@ -28,14 +28,14 @@ public class DirectionMazePath : Storable, IMazePath
     public int Width => Size.Width;
     public int Height => Size.Height;
 
-    public long Count => directions.Count + 1; // Fencepost
+    public long Count => directions.Count + (header.Start != MazePoint.Empty ? 1 : 0); // Fencepost
 
     public MazePoint this[long index] => Get(index);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private MazePoint Get(long index)
     {
-        if(header.Start == MazePoint.Empty) ExceptionExtensions.ThrowOutOfRangeException(index);
+        if(index < 0 || index >= Count) ExceptionExtensions.ThrowOutOfRangeException(index);
         if(index == 0) return header.Start;
         if(index == Count - 1) return header.End;
 
@@ -128,7 +128,11 @@ public class DirectionMazePath : Storable, IMazePath
 
     public void Push(MazePoint point) => Add(point);
 
-    public MazePoint Peek() => header.End;
+    public MazePoint Peek()
+    {
+        if(header.End == MazePoint.Empty) ExceptionExtensions.ThrowOutOfRangeException(0);
+        return header.End;
+    }
 
     public override void Read()
     {

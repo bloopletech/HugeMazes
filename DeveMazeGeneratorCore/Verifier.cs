@@ -27,7 +27,7 @@ public class Verifier
 
     public static void FloodFill(IMaze maze)
     {
-        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong), maze.Size, 1);
+        using var stack = new LongList<MazePoint>(IStore.Create(maze.IsLong));
         stack.Clear();
         stack.Push(new(0, 0));
 
