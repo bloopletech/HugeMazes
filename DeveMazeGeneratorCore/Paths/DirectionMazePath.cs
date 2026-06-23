@@ -9,81 +9,53 @@ namespace DeveMazeGeneratorCore.Paths;
 
 public class DirectionMazePath : Storable, IMazePath
 {
-    private Header header;
+    private Size size;
     private LongList<MazeDirection> directions;
-    private Range range;
+    private Adapter adapter;
 
     public DirectionMazePath(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
         directions = null!;
-        range = null!;
+        adapter = null!;
     }
 
-    public DirectionMazePath(IStore store, Size size, int stride, bool leaveOpen = false) : base(store, leaveOpen)
+    public DirectionMazePath(IStore store, Size size, int stride = 1, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        header = new Header(size, MazePoint.Empty, MazePoint.Empty, stride);
+        this.size = size;
         directions = new(store.Offset<Header>(true));
-        range = new Range(directions, header.Start, header.End, header.Stride);
+        adapter = new Adapter(directions, MazePoint.Empty, MazePoint.Empty, stride);
     }
 
     public override long Extent => directions.Extent + Header.SizeOf;
-    public Size Size => header.Size;
+    public Size Size => size;
     public int Width => Size.Width;
     public int Height => Size.Height;
 
-    public long Count => range.Count;
-
-    public MazePoint this[long index] => range.Get(index);
-
-    public void Add(MazePoint point) => range.Add(point);
-
-    public void Clear() => range.Clear();
-
-    public bool Contains(MazePoint point)
-    {
-        foreach(var item in this)
-        {
-            if(item == point) return true;
-        }
-
-        return false;
-    }
-
-    public IEnumerator<MazePoint> GetEnumerator() => range.GetEnumerator();
+    public long Count => adapter.Count;
+    public MazePoint this[long index] => adapter.Get(index);
+    public void Add(MazePoint point) => adapter.Add(point);
+    public void Clear() => adapter.Clear();
+    public bool Contains(MazePoint point) => adapter.Contains(point);
+    public IEnumerator<MazePoint> GetEnumerator() => adapter.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    public long IndexOf(MazePoint point)
-    {
-        var index = 0;
-        foreach(var item in this)
-        {
-            if(item == point) return index;
-            index++;
-        }
-
-        return -1;
-    }
-
-    public MazePoint Pop() => range.Pop();
-
+    public long IndexOf(MazePoint point) => adapter.IndexOf(point);
+    public MazePoint Pop() => adapter.Pop();
     public void Push(MazePoint point) => Add(point);
-
-    public MazePoint Peek() => range.Peek();
+    public MazePoint Peek() => adapter.Peek();
 
     public override void Read()
     {
-        header = store.Read<Header>(0);
         directions = new(store.Offset<Header>(true));
         directions.Read();
-        range = new Range(directions, header.Start, header.End, header.Stride);
+
+        var (size, start, end, stride) = store.Read<Header>(0);
+        this.size = size;
+        adapter = new Adapter(directions, start, end, stride);
     }
 
     public override void Write()
     {
-        header.Start = range.Start;
-        header.End = range.End;
-        header.Stride = range.Stride;
-        store.Write(0, header);
+        store.Write(0, new Header(size, adapter.Start, adapter.End, adapter.Stride));
         directions.Write();
     }
 
@@ -103,14 +75,14 @@ public class DirectionMazePath : Storable, IMazePath
         public static readonly int SizeOf = IStore.SizeOf<Header>();
     }
 
-    private class Range(LongList<MazeDirection> directions, MazePoint start, MazePoint end, int stride)
+    private class Adapter(LongList<MazeDirection> directions, MazePoint start, MazePoint end, int stride)
     {
-        private bool hasStart = start == MazePoint.Empty;
+        private bool HasStart => start != MazePoint.Empty;
 
-        public long Count => hasStart ? directions.Count + 1 : 0; // Fencepost
+        public long Count => HasStart ? directions.Count + 1 : 0; // Fencepost
         public MazePoint Start => start;
         public MazePoint End => end;
-        public int Stride => Stride;
+        public int Stride => stride;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public MazePoint Get(long index)
@@ -133,30 +105,35 @@ public class DirectionMazePath : Storable, IMazePath
             return value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(MazePoint point)
         {
-            if(!hasStart)
-            {
-                end = start = point;
-                hasStart = true;
-                return;
-            }
-
-            directions.Add(MazePoint.CalcDirection(end, point));
+            if(!HasStart) start = point;
+            else directions.Add(MazePoint.CalcDirection(end, point));
             end = point;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
         {
             directions.Clear();
-            //end = start = MazePoint.Empty;
-            hasStart = false;
+            end = start = MazePoint.Empty;
+        }
+
+        public bool Contains(MazePoint point)
+        {
+            foreach(var item in this)
+            {
+                if(item == point) return true;
+            }
+
+            return false;
         }
 
         public IEnumerator<MazePoint> GetEnumerator()
         {
             var point = start;
-            if(hasStart) yield return point;
+            if(HasStart) yield return point;
             foreach(var direction in directions)
             {
                 point = point.NextDirection(direction, stride);
@@ -164,25 +141,30 @@ public class DirectionMazePath : Storable, IMazePath
             }
         }
 
-        public MazePoint Pop()
+        public long IndexOf(MazePoint point)
         {
-            if(!hasStart) ExceptionExtensions.ThrowOutOfRangeException(0);
-            var oldEnd = end;
-
-            if(directions.Count > 0)
+            var index = 0;
+            foreach(var item in this)
             {
-                end = end.PrevDirection(directions.Pop(), stride);
-                return oldEnd;
+                if(item == point) return index;
+                index++;
             }
 
-            //end = start = MazePoint.Empty;
-            hasStart = false;
-            return oldEnd;
+            return -1;
+        }
+
+        public MazePoint Pop()
+        {
+            if(!HasStart) ExceptionExtensions.ThrowOutOfRangeException(0);
+            var prevEnd = end;
+            if(directions.Count > 0) end = end.PrevDirection(directions.Pop(), stride);
+            else end = start = MazePoint.Empty;
+            return prevEnd;
         }
 
         public MazePoint Peek()
         {
-            if(!hasStart) ExceptionExtensions.ThrowOutOfRangeException(0);
+            if(!HasStart) ExceptionExtensions.ThrowOutOfRangeException(0);
             return end;
         }
     }

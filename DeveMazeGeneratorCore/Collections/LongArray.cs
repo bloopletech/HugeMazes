@@ -53,6 +53,12 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         return ((int)chunk, (int)chunkOffset);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear()
+    {
+        foreach(var chunk in chunks) Array.Clear(chunk.Array);
+    }
+
     public bool Contains(T item) => chunks.Any(c => c.Array.Contains(item));
 
     public IEnumerator<T> GetEnumerator()

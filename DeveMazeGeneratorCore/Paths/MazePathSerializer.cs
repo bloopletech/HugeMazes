@@ -49,7 +49,7 @@ public static class MazePathSerializer
     private static IMazePath InitForWrite(MazePathType type, IStore store, Size size) => type switch
     {
         MazePathType.MazePath => new MazePath(store, size),
-        MazePathType.DirectionMazePath => new DirectionMazePath(store, size, 1),
+        MazePathType.DirectionMazePath => new DirectionMazePath(store, size),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 }

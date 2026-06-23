@@ -54,6 +54,12 @@ public class LongBitArray : Storable, ILongBitArray
         return ((int)chunk, (int)chunkOffset);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear()
+    {
+        foreach(var chunk in chunks) chunk.Array.SetAll(false);
+    }
+
     public IEnumerator<bool> GetEnumerator()
     {
         foreach(var chunk in chunks)
