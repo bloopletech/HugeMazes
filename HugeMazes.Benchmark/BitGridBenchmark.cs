@@ -7,8 +7,9 @@ using HugeMazes.Mazes;
 
 namespace HugeMazes.Benchmark;
 
-[Config(typeof(Config))]
-public class BitGridBenchmark
+//[Config(typeof(DebugBuildConfig))]
+[DryJob]
+public class BitGridBenchmark : BaseBenchmark
 {
     [Benchmark(Baseline = true)]
     public void GenerateBaseline()
@@ -27,7 +28,7 @@ public class BitGridBenchmark
     public void GenerateLong()
     {
         var maze = HugeMazes.Generate(
-            IStore.Create(true),
+            IStore.Create(false),
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSeed,

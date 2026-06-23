@@ -4,8 +4,8 @@ using BenchmarkDotNet.Attributes;
 
 namespace HugeMazes.Benchmark;
 
-[Config(typeof(Config))]
-public class MazeBenchmarkJob
+[SimpleJob]
+public class MazeBenchmarkJob : BaseBenchmark
 {
     [Benchmark(Baseline = true)]
     public void GenerateBaseline()

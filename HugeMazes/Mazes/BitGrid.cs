@@ -69,6 +69,4 @@ public class BitGrid : Storable, IBitGrid
         result.Read();
         return result;
     }
-
-
 }
