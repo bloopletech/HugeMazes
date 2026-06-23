@@ -9,21 +9,21 @@ namespace DeveMazeGeneratorCore;
 public class LongImage : Storable, IImage
 {
     private LongArray<Colour> array;
-    private Size size;
+    private MazeSize size;
 
     public LongImage(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
         array = null!;
     }
 
-    public LongImage(IStore store, Size size, bool leaveOpen = false) : base(store, leaveOpen)
+    public LongImage(IStore store, MazeSize size, bool leaveOpen = false) : base(store, leaveOpen)
     {
         this.size = size;
         array = new(store.Offset(Offset, true), size.Area, true);
     }
 
     public override long Extent => array.Extent + Offset;
-    public Size Size => size;
+    public MazeSize Size => size;
     public int Width => size.Width;
     public int Height => size.Height;
 
@@ -57,7 +57,7 @@ public class LongImage : Storable, IImage
 
     public override void Read()
     {
-        size = store.Read<Size>(0);
+        size = store.Read<MazeSize>(0);
         array = new(store.Offset(Offset, true), size.Area, true);
     }
 

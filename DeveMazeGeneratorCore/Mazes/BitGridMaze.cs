@@ -10,14 +10,14 @@ public sealed class BitGridMaze(BitGrid grid) : IMaze
     {
     }
 
-    public BitGridMaze(IStore store, Size size, bool leaveOpen = false) : this(new BitGrid(store, size, leaveOpen))
+    public BitGridMaze(IStore store, MazeSize size, bool leaveOpen = false) : this(new BitGrid(store, size, leaveOpen))
     {
     }
 
     public IStore Store => grid.Store;
     public bool IsLong => grid.IsLong;
     public long Extent => grid.Extent;
-    public Size Size => grid.Size;
+    public MazeSize Size => grid.Size;
     public int Width => grid.Width;
     public int Height => grid.Height;
 

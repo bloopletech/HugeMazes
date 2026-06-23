@@ -33,7 +33,7 @@ public class MazeSerializer
         return result;
     }
 
-    public static IMaze Create(MazeType type, IStore store, Size size)
+    public static IMaze Create(MazeType type, IStore store, MazeSize size)
     {
         WriteHeader(store, type);
         return InitForWrite(type, store.Offset<MazeHeader>(), size);
@@ -46,14 +46,14 @@ public class MazeSerializer
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
-    private static IMaze InitForWrite(MazeType type, IStore store, Size size) => type switch
+    private static IMaze InitForWrite(MazeType type, IStore store, MazeSize size) => type switch
     {
         MazeType.BitGridMaze => new BitGridMaze(store, size),
         MazeType.LongBitGridMaze => new LongBitGridMaze(store, size),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
-    public static MazeType DetermineMazeType(Size size)
+    public static MazeType DetermineMazeType(MazeSize size)
     {
         return size.Area > int.MaxValue ? MazeType.LongBitGridMaze : MazeType.BitGridMaze;
     }

@@ -16,7 +16,7 @@ public class MazeSamples
     [TestMethod]
     public void GeneratingAMazeWithABlockInTheMiddleWorks()
     {
-        using var maze = new BitGridMaze(IStore.CreateMemory(), new Size(129, 129));
+        using var maze = new BitGridMaze(IStore.CreateMemory(), new MazeSize(129, 129));
 
         for(int y = 33; y < 96; y++)
         {

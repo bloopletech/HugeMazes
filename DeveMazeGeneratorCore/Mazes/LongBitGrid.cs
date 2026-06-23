@@ -9,21 +9,21 @@ namespace DeveMazeGeneratorCore.Mazes;
 public class LongBitGrid : Storable, IBitGrid
 {
     private LongBitArray array;
-    private Size size;
+    private MazeSize size;
 
     public LongBitGrid(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
         array = null!;
     }
 
-    public LongBitGrid(IStore store, Size size, bool leaveOpen = false) : base(store, leaveOpen)
+    public LongBitGrid(IStore store, MazeSize size, bool leaveOpen = false) : base(store, leaveOpen)
     {
         this.size = size;
-        array = new(store.Offset<Size>(true), size.Area);
+        array = new(store.Offset<MazeSize>(true), size.Area);
     }
 
-    public override long Extent => array.Extent + Size.SizeOf;
-    public Size Size => size;
+    public override long Extent => array.Extent + MazeSize.SizeOf;
+    public MazeSize Size => size;
     public int Width => size.Width;
     public int Height => size.Height;
 
@@ -45,8 +45,8 @@ public class LongBitGrid : Storable, IBitGrid
 
     public override void Read()
     {
-        size = store.Read<Size>(0);
-        array = new(store.Offset<Size>(true), size.Area);
+        size = store.Read<MazeSize>(0);
+        array = new(store.Offset<MazeSize>(true), size.Area);
         array.Read();
     }
 

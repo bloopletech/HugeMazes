@@ -10,7 +10,7 @@ public class MazePath(IStore store, bool leaveOpen = false) : Storable(store, le
 {
     private LongList<MazePoint> points = new(store);
 
-    public override long Extent => points.Extent + Size.SizeOf;
+    public override long Extent => points.Extent + MazeSize.SizeOf;
 
     public long Count => points.Count;
 
