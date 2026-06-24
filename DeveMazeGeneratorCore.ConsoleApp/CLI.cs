@@ -17,11 +17,7 @@ public class CLI(Options options)
 
     public void Run()
     {
-        if(!options.HasNext())
-        {
-            Console.Write(HelpText);
-            return;
-        }
+        Parse();
 
         try
         {
@@ -47,8 +43,20 @@ public class CLI(Options options)
         }
     }
 
+    private void Parse()
+    {
+        if(!options.HasNext()) options = new(["help"]);
+        if(options.HasNextInt())
+        {
+            var width = options.Next();
+            var height = options.HasNext() ? options.Next() : width;
+            options = new(["generate", width, height, "verify", "solve", "verify-path", "render", "render-path"]);
+        }
+    }
+
     private Action CreateTask(string task) => task switch
     {
+        "help" => HelpTask(),
         "generate" => GenerateTask(),
         "verify" => VerifyTask(),
         "solve" => SolveTask(),
@@ -59,6 +67,8 @@ public class CLI(Options options)
         "benchmark-direction-maze-path" => BenchmarkDirectionMazePathTask(),
         _ => throw new InvalidOperationException($"Unknown task: {task}"),
     };
+
+    private static Action HelpTask() => () => Console.Write(HelpText);
 
     private Action GenerateTask()
     {
