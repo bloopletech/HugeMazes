@@ -5,6 +5,7 @@ using DeveMazeGeneratorCore.Generators;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Paths;
+using DeveMazeGeneratorCore.Solvers;
 using DeveMazeGeneratorCore.Structures;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -32,7 +33,8 @@ public class MazeSamples
         algorithm.Generate();
 
         using var path = new MazePath(IStore.CreateMemory());
-        Solver.Solve(maze, path);
+        var solver = ISolver.Create(SolverType.DepthFirstSmart, maze, path);
+        solver.Solve();
 
         using var image = Renderer.Render(maze, path, IStore.CreateMemory(), RenderColours.Default);
         image.Write();
