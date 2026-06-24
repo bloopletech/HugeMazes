@@ -6,9 +6,9 @@ using DeveMazeGeneratorCore.Mazes;
 
 namespace DeveMazeGeneratorCore.Benchmark;
 
-[Use<BaseBenchmark>]
+//[Use<BaseBenchmark>]
 [Use<SimpleJobSource>]
-public class BitGridBenchmark
+public class BitGridBenchmark : BaseBenchmark
 {
     [Benchmark(Baseline = true)]
     public void GenerateBaseline()

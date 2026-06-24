@@ -16,7 +16,7 @@ namespace DeveMazeGeneratorCore.Benchmark;
 //[ConcurrencyVisualizerProfiler]
 //[NativeMemoryProfiler]
 //[ThreadingDiagnoser]
-[DisassemblyDiagnoser(printSource: true)]
+[DisassemblyDiagnoser(10, printSource: true, exportHtml: true, exportCombinedDisassemblyReport: true)]
 [ExceptionDiagnoser]
 
 //[AsciiDocExporter]
