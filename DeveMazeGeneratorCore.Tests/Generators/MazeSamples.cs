@@ -33,7 +33,7 @@ public class MazeSamples
         generator.Generate();
 
         using var path = new MazePath(IStore.CreateMemory());
-        var solver = ISolver.Create(SolverType.DepthFirstSmart, maze, path);
+        var solver = ISolver.Create(SolverType.Backtrack, maze, path);
         solver.Solve();
 
         using var image = Renderer.Render(maze, path, IStore.CreateMemory(), RenderColours.Default);

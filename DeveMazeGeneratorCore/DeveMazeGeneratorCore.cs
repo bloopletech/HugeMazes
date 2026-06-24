@@ -34,7 +34,7 @@ public static class DeveMazeGeneratorCore
         IMaze maze,
         IStore? store = null,
         MazePathType pathType = MazePathType.DirectionMazePath,
-        SolverType solverType = SolverType.DepthFirstSmart)
+        SolverType solverType = SolverType.Backtrack)
     {
         store ??= IStore.Create(maze.IsLong);
 
