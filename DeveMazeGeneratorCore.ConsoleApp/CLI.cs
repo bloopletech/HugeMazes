@@ -2,6 +2,7 @@ using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Paths;
+using DeveMazeGeneratorCore.Solvers;
 
 namespace DeveMazeGeneratorCore.ConsoleApp;
 
@@ -63,7 +64,7 @@ public class CLI(Options options)
 
         return () =>
         {
-            maze = DeveMazeGeneratorCore.Generate(new StreamStore(mazeFileName), width, height, seed);
+            maze = DeveMazeGeneratorCore.Generate(width, height, seed, new StreamStore(mazeFileName));
             maze.Write();
             Console.WriteLine($"Saved maze to {mazeFileName}");
         };
@@ -142,8 +143,7 @@ public class CLI(Options options)
     private static Action BenchmarkDirectionMazePathTask() => () =>
     {
         var maze = DeveMazeGeneratorCore.BenchmarkBaseline();
-        var path = MazePathSerializer.Create(MazePathType.DirectionMazePath, IStore.Create(maze.IsLong), maze.Size);
-        Solver.Solve(maze, path);
+        var path = DeveMazeGeneratorCore.Solve(maze, null);
         var result = Verifier.IsPerfectPath(path);
         if(!result) throw new InvalidOperationException("Path is not perfect");
     };

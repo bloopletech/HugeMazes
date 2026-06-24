@@ -1,7 +1,6 @@
 #pragma warning disable CA1822 // Mark members as static
 
 using BenchmarkDotNet.Attributes;
-using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Paths;
 
@@ -21,14 +20,12 @@ public class MazePathBenchmark
     [Benchmark(Baseline = true)]
     public void GenerateBaseline()
     {
-        var path = MazePathSerializer.Create(MazePathType.MazePath, IStore.Create(maze.IsLong), maze.Size);
-        Solver.Solve(maze, path);
+        DeveMazeGeneratorCore.Solve(maze, null, MazePathType.MazePath);
     }
 
     [Benchmark]
     public void GenerateDirection()
     {
-        var path = MazePathSerializer.Create(MazePathType.DirectionMazePath, IStore.Create(maze.IsLong), maze.Size);
-        Solver.Solve(maze, path);
+        DeveMazeGeneratorCore.Solve(maze, null, MazePathType.DirectionMazePath);
     }
 }
