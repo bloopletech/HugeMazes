@@ -13,11 +13,12 @@ public class BitGridBenchmark
     public void GenerateBaseline()
     {
         var maze = DeveMazeGeneratorCore.Generate(
+            DeveMazeGeneratorCore.BenchmarkSize,
+            DeveMazeGeneratorCore.BenchmarkSize,
+            DeveMazeGeneratorCore.BenchmarkSeed,
+            null,
             MazeType.BitGridMaze,
-            AlgorithmType.Backtrack,
-            DeveMazeGeneratorCore.BenchmarkSize,
-            DeveMazeGeneratorCore.BenchmarkSize,
-            DeveMazeGeneratorCore.BenchmarkSeed);
+            GeneratorType.Backtrack);
         Verifier.IsPerfectMaze(maze);
     }
 
@@ -25,11 +26,12 @@ public class BitGridBenchmark
     public void GenerateLong()
     {
         var maze = DeveMazeGeneratorCore.Generate(
+            DeveMazeGeneratorCore.BenchmarkSize,
+            DeveMazeGeneratorCore.BenchmarkSize,
+            DeveMazeGeneratorCore.BenchmarkSeed,
+            null,
             MazeType.LongBitGridMaze,
-            AlgorithmType.Backtrack,
-            DeveMazeGeneratorCore.BenchmarkSize,
-            DeveMazeGeneratorCore.BenchmarkSize,
-            DeveMazeGeneratorCore.BenchmarkSeed);
+            GeneratorType.Backtrack);
         Verifier.IsPerfectMaze(maze);
     }
 }
