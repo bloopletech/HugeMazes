@@ -29,8 +29,8 @@ public class MazeSamples
 
         var random = new Random(1337);
 
-        var algorithm = new AlgorithmBacktrack(maze, random);
-        algorithm.Generate();
+        var generator = new BacktrackGenerator(maze, random);
+        generator.Generate();
 
         using var path = new MazePath(IStore.CreateMemory());
         var solver = ISolver.Create(SolverType.DepthFirstSmart, maze, path);

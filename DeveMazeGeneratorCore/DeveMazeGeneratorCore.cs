@@ -16,7 +16,7 @@ public static class DeveMazeGeneratorCore
         int? seed = null,
         IStore? store = null,
         MazeType mazeType = MazeType.LongBitGridMaze,
-        AlgorithmType algorithmType = AlgorithmType.Backtrack)
+        GeneratorType generatorType = GeneratorType.Backtrack)
     {
         store ??= IStore.Create(IMaze.MaxExtent(width, height));
 
@@ -24,8 +24,8 @@ public static class DeveMazeGeneratorCore
         var random = seed.HasValue ? new Random(seed.Value) : new Random();
         var realSeed = random.GetSeed();
 
-        var algorithm = IAlgorithm.Create(algorithmType, maze, random);
-        algorithm.Generate();
+        var generator = IGenerator.Create(generatorType, maze, random);
+        generator.Generate();
 
         return maze;
     }
@@ -75,7 +75,7 @@ public static class DeveMazeGeneratorCore
         BenchmarkSeed,
         null,
         MazeType.BitGridMaze,
-        AlgorithmType.Backtrack);
+        GeneratorType.Backtrack);
 
     public static IMaze BenchmarkFast() => Generate(
         BenchmarkSize,
@@ -83,7 +83,7 @@ public static class DeveMazeGeneratorCore
         BenchmarkSeed,
         null,
         MazeType.BitGridMaze,
-        AlgorithmType.Backtrack2_Deluxe2_AsByte);
+        GeneratorType.Backtrack2_Deluxe2_AsByte);
 
     public static IMaze BenchmarkLongBitGrid() => Generate(
         BenchmarkSize,
@@ -91,7 +91,7 @@ public static class DeveMazeGeneratorCore
         BenchmarkSeed,
         IStore.Create(true),
         MazeType.BitGridMaze,
-        AlgorithmType.Backtrack);
+        GeneratorType.Backtrack);
 
     private const int BenchmarkSize = (4096 * 2 * 2 * 2) + 1;
     private const int BenchmarkSeed = 1337;
