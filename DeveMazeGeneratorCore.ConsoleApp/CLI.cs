@@ -2,7 +2,6 @@ using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Paths;
-using DeveMazeGeneratorCore.Solvers;
 
 namespace DeveMazeGeneratorCore.ConsoleApp;
 
@@ -18,6 +17,12 @@ public class CLI(Options options)
 
     public void Run()
     {
+        if(!options.HasNext())
+        {
+            Console.Write(HelpText);
+            return;
+        }
+
         try
         {
             var tasks = new List<Action>();
@@ -159,4 +164,50 @@ public class CLI(Options options)
     {
         return MazePathSerializer.Read(new StreamStore(fileName));
     }
+
+    private const string HelpText = """
+        Provide list of tasks to perform as command line arguments.
+        Available tasks:
+
+        generate <width> <height> [example.maze]
+            Generate a random maze of given width and height and save maze to example.maze
+            If no filename provided, defaults to <random number>.maze
+
+        verify <example.maze>
+            Verify that given maze is valid
+
+        solve <example.maze> [example.path]
+            Solve given maze and save solution to example.path
+            If no path filename provided, defaults to <maze file basename>.path
+
+        verify-path <example.maze> <example.path>
+            Verify that given solution is valid
+
+        render <example.maze> [example.ppm]
+            Draw given maze and save image to example.ppm
+            If no image filename provided, defaults to <maze file basename>.ppm
+
+        render-path <example.maze> <example.path> [example.path.ppm]
+            Draw given maze, then draw given solution on top, and then save image to example.path.ppm
+            If no image filename provided, defaults to <maze file basename>.path.ppm
+
+        You can chain together tasks, and in that case, you don't have to repeat the same filenames.
+        Example:
+
+        generate 16384 16384 interesting.maze verify solve verify-path render render-path
+
+        Will create the following files:
+
+        interesting.maze
+            The generated maze
+
+        interesting.path
+            The solution to the maze
+
+        interesting.ppm
+            The maze rendered as an image
+
+        interesting.path.ppm
+            The maze and solution rendered as an image
+        """;
 }
