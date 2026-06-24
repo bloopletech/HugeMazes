@@ -41,7 +41,7 @@ public class BitGrid : Storable, IBitGrid
     {
         if(x < 0 || x >= size.Width) ExceptionExtensions.ThrowOutOfRangeException(x);
         if(y < 0 || y >= size.Height) ExceptionExtensions.ThrowOutOfRangeException(y);
-        return x + (y * size.Height);
+        return x + (y * size.Width);
     }
 
     public override void Read()

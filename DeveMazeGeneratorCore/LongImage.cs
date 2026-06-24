@@ -35,14 +35,14 @@ public class LongImage : Storable, IImage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            var index = x + ((long)y * size.Height);
+            var index = x + ((long)y * size.Width);
             return array[index];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            var index = x + ((long)y * size.Height);
+            var index = x + ((long)y * size.Width);
             array[index] = value;
         }
     }

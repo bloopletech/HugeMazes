@@ -40,7 +40,7 @@ public class LongBitGrid : Storable, IBitGrid
     {
         if(x < 0 || x >= size.Width) ExceptionExtensions.ThrowOutOfRangeException(x);
         if(y < 0 || y >= size.Height) ExceptionExtensions.ThrowOutOfRangeException(y);
-        return x + ((long)y * size.Height);
+        return x + ((long)y * size.Width);
     }
 
     public override void Read()
