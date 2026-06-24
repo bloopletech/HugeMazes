@@ -4,7 +4,7 @@ using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Solvers;
 
-public class DepthFirstSmartSolver(IMaze maze, IMazePath path) : ISolver
+public class BacktrackSolver(IMaze maze, IMazePath path) : ISolver
 {
     public void Solve()
     {

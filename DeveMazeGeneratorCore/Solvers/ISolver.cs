@@ -9,7 +9,7 @@ public interface ISolver
 
     public static ISolver Create(SolverType type, IMaze maze, IMazePath path) => type switch
     {
-        SolverType.DepthFirstSmart => new DepthFirstSmartSolver(maze, path),
+        SolverType.Backtrack => new BacktrackSolver(maze, path),
         _ => throw new InvalidDataException($"Unknown solver type {type}")
     };
 }
