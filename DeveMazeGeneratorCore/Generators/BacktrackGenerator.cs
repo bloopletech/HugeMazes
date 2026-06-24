@@ -5,7 +5,7 @@ using DeveMazeGeneratorCore.Structures;
 
 namespace DeveMazeGeneratorCore.Generators;
 
-public class AlgorithmBacktrack(IMaze maze, Random random) : IAlgorithm
+public class BacktrackGenerator(IMaze maze, Random random) : IGenerator
 {
     public void Generate()
     {

@@ -1,6 +1,6 @@
 namespace DeveMazeGeneratorCore.Generators;
 
-public enum AlgorithmType : ushort
+public enum GeneratorType : ushort
 {
     Unknown,
     Backtrack,
