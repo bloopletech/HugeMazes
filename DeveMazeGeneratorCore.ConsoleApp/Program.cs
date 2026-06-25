@@ -24,7 +24,38 @@ IMaze? maze = null;
 string? pathFileName = null;
 IMazePath? path = null;
 
-Action CreateTask(string task) => task switch
+Console.WriteLine($"Invoked with: {string.Join(' ', args)}");
+Console.WriteLine($"Resolves to: {options}");
+
+var tasks = new List<(string, Action)>();
+while(options.HasNext()) tasks.Add(CreateTask(options.Next()));
+
+Console.WriteLine("Running tasks:");
+foreach(var description in tasks.Select(t => t.Item1)) Console.WriteLine(description);
+Console.WriteLine();
+
+try
+{
+    foreach(var task in tasks.Select(t => t.Item2))
+    {
+        task();
+
+        if(skipReuse)
+        {
+            maze?.Dispose();
+            maze = null;
+            path?.Dispose();
+            path = null;
+        }
+    }
+}
+finally
+{
+    maze?.Dispose();
+    path?.Dispose();
+}
+
+(string, Action) CreateTask(string task) => task switch
 {
     "help" => HelpTask(),
     "generate" => GenerateTask(),
@@ -38,31 +69,31 @@ Action CreateTask(string task) => task switch
     _ => throw new InvalidOperationException($"Unknown task: {task}"),
 };
 
-static Action HelpTask() => () => Console.Write("""
+static (string, Action) HelpTask() => ("help", () => Console.Write("""
     Provide list of tasks to perform as command line arguments.
     Available tasks:
 
-    generate <width> <height> [example.maze]
-        Generate a random maze of given width and height and save maze to example.maze
+    generate <width> <height> [mazeFileName]
+        Generate a random maze of given width and height and save maze to mazeFileName
         If no filename provided, defaults to <random number>.maze
 
-    verify <example.maze>
+    verify <mazeFileName>
         Verify that given maze is valid
 
-    solve <example.maze> [example.path]
-        Solve given maze and save solution to example.path
-        If no path filename provided, defaults to <maze file basename>.path
+    solve <mazeFileName> [pathFileName]
+        Solve given maze and save maze path to pathFileName
+        If no path filename provided, defaults to <mazeFileName basename>.path
 
-    verify-path <example.maze> <example.path>
-        Verify that given solution is valid
+    verify-path <mazeFileName> <pathFileName>
+        Verify that given maze path is valid
 
-    render <example.maze> [example.ppm]
-        Draw given maze and save image to example.ppm
-        If no image filename provided, defaults to <maze file basename>.ppm
+    render <mazeFileName> [imageFileName]
+        Draw given maze and save image to imageFileName
+        If no image filename provided, defaults to <mazeFileName basename>.ppm
 
-    render-path <example.maze> <example.path> [example.path.ppm]
-        Draw given maze, then draw given solution on top, and then save image to example.path.ppm
-        If no image filename provided, defaults to <maze file basename>.path.ppm
+    render-path <mazeFileName> <pathFileName> [imageFileName]
+        Draw given maze, then draw given maze path on top, and then save image to imageFileName
+        If no image filename provided, defaults to <mazeFileName basename>.path.ppm
 
     You can chain together tasks, and in that case, you don't have to repeat the same filenames.
     Example:
@@ -82,126 +113,120 @@ static Action HelpTask() => () => Console.Write("""
 
     interesting.path.ppm
         The maze and solution rendered as an image
-    """);
+    """));
 
-Action GenerateTask()
+(string, Action) GenerateTask()
 {
     var width = options.NextInt().MakeUneven();
     var height = options.NextInt().MakeUneven();
     int? seed = options.HasNextInt() ? options.NextInt() : null;
     mazeFileName = options.NextFileName($"{Environment.TickCount}.maze");
+    var description = new { width, height, seed, mazeFileName };
 
-    return () =>
+    return ($"generate {description}", () =>
     {
+        Console.WriteLine($"Generating maze...");
         maze = Generate(width, height, seed, new StreamStore(mazeFileName));
         maze.Write();
         Console.WriteLine($"Saved maze to {mazeFileName}");
-    };
+    });
 }
 
-Action VerifyTask()
+(string, Action) VerifyTask()
 {
     mazeFileName ??= options.Next();
-    return () =>
+    var description = new { mazeFileName };
+
+    return ($"verify {description}", () =>
     {
+        Console.WriteLine($"Verifying maze...");
         maze ??= Load(mazeFileName);
         var result = IsPerfectMaze(maze);
         Console.WriteLine($"Is our maze perfect?: {result}");
-    };
+    });
 }
 
-Action SolveTask()
+(string, Action) SolveTask()
 {
     mazeFileName ??= options.Next();
     pathFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".path"));
-    return () =>
+    var description = new { mazeFileName, pathFileName };
+
+    return ($"solve {description}", () =>
     {
+        Console.WriteLine($"Solving maze...");
         maze ??= Load(mazeFileName);
         path = Solve(maze, new StreamStore(pathFileName));
         path.Write();
-        Console.WriteLine($"Saved path to {pathFileName}");
-    };
+        Console.WriteLine($"Saved maze path to {pathFileName}");
+    });
 }
 
-Action VerifyPathTask()
+(string, Action) VerifyPathTask()
 {
     mazeFileName ??= options.Next();
     pathFileName ??= options.Next();
-    return () =>
+    var description = new { mazeFileName, pathFileName };
+
+    return ($"verify-path {description}", () =>
     {
+        Console.WriteLine($"Verifying maze path...");
         maze ??= Load(mazeFileName);
         path ??= LoadPath(pathFileName);
         var result = IsPerfectPath(maze, path);
-        Console.WriteLine($"Is our path perfect?: {result}");
-    };
+        Console.WriteLine($"Is our maze path perfect?: {result}");
+    });
 }
 
-Action RenderTask()
+(string, Action) RenderTask()
 {
     mazeFileName ??= options.Next();
     var imageFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".ppm"));
-    return () =>
+    var description = new { mazeFileName, imageFileName };
+
+    return ($"render {description}", () =>
     {
+        Console.WriteLine($"Rendering maze...");
         maze ??= Load(mazeFileName);
         using var image = Render(maze, new StreamStore(imageFileName));
         image.Write();
         Console.WriteLine($"Saved maze image to {imageFileName}");
-    };
+    });
 }
 
-Action RenderPathTask()
+(string, Action) RenderPathTask()
 {
     mazeFileName ??= options.Next();
     pathFileName ??= options.Next();
     var imageFileName = options.NextFileName(Path.ChangeExtension(pathFileName, ".path.ppm"));
-    return () =>
+    var description = new { mazeFileName, pathFileName, imageFileName };
+
+    return ($"render-path {description}", () =>
     {
+        Console.WriteLine($"Rendering maze path...");
         maze ??= Load(mazeFileName);
         path ??= LoadPath(pathFileName);
         using var image = Render(maze, path, new StreamStore(imageFileName));
         image.Write();
         Console.WriteLine($"Saved maze with path image to {imageFileName}");
-    };
+    });
 }
 
-static Action BenchmarkTask() => () =>
+static (string, Action) BenchmarkTask() => ("benchmark", () =>
 {
     var maze = BenchmarkBaseline();
     var result = IsPerfectMaze(maze);
     if(!result) throw new InvalidOperationException("Maze is not perfect");
-};
+});
 
-static Action BenchmarkDirectionMazePathTask() => () =>
+static (string, Action) BenchmarkDirectionMazePathTask() => ("benchmark-direction-maze-path", () =>
 {
     var maze = BenchmarkBaseline();
     var path = Solve(maze);
     var result = IsPerfectPath(maze, path);
     if(!result) throw new InvalidOperationException("Path is not perfect");
-};
+});
 
 static IMaze Load(string fileName) => MazeSerializer.Read(new StreamStore(fileName));
 
 static IMazePath LoadPath(string fileName) => MazePathSerializer.Read(new StreamStore(fileName));
-
-try
-{
-    var tasks = new List<Action>();
-    while(options.HasNext()) tasks.Add(CreateTask(options.Next()));
-    foreach(var task in tasks)
-    {
-        task();
-
-        if(skipReuse)
-        {
-            maze?.Dispose();
-            maze = null;
-            path?.Dispose();
-            path = null;
-        }
-    }
-}
-finally
-{
-    maze?.Dispose();
-    path?.Dispose();
-}
