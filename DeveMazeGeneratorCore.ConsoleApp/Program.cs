@@ -6,6 +6,8 @@ using DeveMazeGeneratorCore.Paths;
 using static DeveMazeGeneratorCore.DeveMazeGeneratorCore;
 using static DeveMazeGeneratorCore.Verifier;
 
+using CLITask = (string? Description, System.Action Action);
+
 var skipReuse = true;
 IStore.LongOverride = true;
 
@@ -27,16 +29,16 @@ IMazePath? path = null;
 Console.WriteLine($"Invoked with: {string.Join(' ', args)}");
 Console.WriteLine($"Resolves to: {options}");
 
-var tasks = new List<(string, Action)>();
+var tasks = new List<CLITask>();
 while(options.HasNext()) tasks.Add(CreateTask(options.Next()));
 
 Console.WriteLine("Running tasks:");
-foreach(var description in tasks.Select(t => t.Item1)) Console.WriteLine(description);
+foreach(var description in tasks.Select(t => t.Description)) Console.WriteLine(description);
 Console.WriteLine();
 
 try
 {
-    foreach(var task in tasks.Select(t => t.Item2))
+    foreach(var task in tasks.Select(t => t.Action))
     {
         task();
 
@@ -55,21 +57,25 @@ finally
     path?.Dispose();
 }
 
-(string, Action) CreateTask(string task) => task switch
+CLITask CreateTask(string task)
 {
-    "help" => HelpTask(),
-    "generate" => GenerateTask(),
-    "verify" => VerifyTask(),
-    "solve" => SolveTask(),
-    "verify-path" => VerifyPathTask(),
-    "render" => RenderTask(),
-    "render-path" => RenderPathTask(),
-    "benchmark" => BenchmarkTask(),
-    "benchmark-direction-maze-path" => BenchmarkDirectionMazePathTask(),
-    _ => throw new InvalidOperationException($"Unknown task: {task}"),
-};
+    var result = task switch
+    {
+        "help" => HelpTask(),
+        "generate" => GenerateTask(),
+        "verify" => VerifyTask(),
+        "solve" => SolveTask(),
+        "verify-path" => VerifyPathTask(),
+        "render" => RenderTask(),
+        "render-path" => RenderPathTask(),
+        "benchmark" => BenchmarkTask(),
+        "benchmark-direction-maze-path" => BenchmarkDirectionMazePathTask(),
+        _ => throw new InvalidOperationException($"Unknown task: {task}"),
+    };
+    return result with { Description = $"{task} {result.Description}" };
+}
 
-static (string, Action) HelpTask() => ("help", () => Console.Write("""
+static CLITask HelpTask() => new("help", () => Console.Write("""
     Provide list of tasks to perform as command line arguments.
     Available tasks:
 
@@ -115,7 +121,7 @@ static (string, Action) HelpTask() => ("help", () => Console.Write("""
         The maze and solution rendered as an image
     """));
 
-(string, Action) GenerateTask()
+CLITask GenerateTask()
 {
     var width = options.NextInt().MakeUneven();
     var height = options.NextInt().MakeUneven();
@@ -123,7 +129,7 @@ static (string, Action) HelpTask() => ("help", () => Console.Write("""
     mazeFileName = options.NextFileName($"{Environment.TickCount}.maze");
     var description = new { width, height, seed, mazeFileName };
 
-    return ($"generate {description}", () =>
+    return (description.ToString()!, () =>
     {
         Console.WriteLine($"Generating maze...");
         maze = Generate(width, height, seed, new StreamStore(mazeFileName));
@@ -132,12 +138,12 @@ static (string, Action) HelpTask() => ("help", () => Console.Write("""
     });
 }
 
-(string, Action) VerifyTask()
+CLITask VerifyTask()
 {
     mazeFileName ??= options.Next();
     var description = new { mazeFileName };
 
-    return ($"verify {description}", () =>
+    return (description.ToString(), () =>
     {
         Console.WriteLine($"Verifying maze...");
         maze ??= Load(mazeFileName);
@@ -146,13 +152,13 @@ static (string, Action) HelpTask() => ("help", () => Console.Write("""
     });
 }
 
-(string, Action) SolveTask()
+CLITask SolveTask()
 {
     mazeFileName ??= options.Next();
     pathFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".path"));
     var description = new { mazeFileName, pathFileName };
 
-    return ($"solve {description}", () =>
+    return (description.ToString(), () =>
     {
         Console.WriteLine($"Solving maze...");
         maze ??= Load(mazeFileName);
@@ -162,13 +168,13 @@ static (string, Action) HelpTask() => ("help", () => Console.Write("""
     });
 }
 
-(string, Action) VerifyPathTask()
+CLITask VerifyPathTask()
 {
     mazeFileName ??= options.Next();
     pathFileName ??= options.Next();
     var description = new { mazeFileName, pathFileName };
 
-    return ($"verify-path {description}", () =>
+    return (description.ToString(), () =>
     {
         Console.WriteLine($"Verifying maze path...");
         maze ??= Load(mazeFileName);
@@ -178,13 +184,13 @@ static (string, Action) HelpTask() => ("help", () => Console.Write("""
     });
 }
 
-(string, Action) RenderTask()
+CLITask RenderTask()
 {
     mazeFileName ??= options.Next();
     var imageFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".ppm"));
     var description = new { mazeFileName, imageFileName };
 
-    return ($"render {description}", () =>
+    return (description.ToString(), () =>
     {
         Console.WriteLine($"Rendering maze...");
         maze ??= Load(mazeFileName);
@@ -194,14 +200,14 @@ static (string, Action) HelpTask() => ("help", () => Console.Write("""
     });
 }
 
-(string, Action) RenderPathTask()
+CLITask RenderPathTask()
 {
     mazeFileName ??= options.Next();
     pathFileName ??= options.Next();
     var imageFileName = options.NextFileName(Path.ChangeExtension(pathFileName, ".path.ppm"));
     var description = new { mazeFileName, pathFileName, imageFileName };
 
-    return ($"render-path {description}", () =>
+    return (description.ToString(), () =>
     {
         Console.WriteLine($"Rendering maze path...");
         maze ??= Load(mazeFileName);
@@ -212,14 +218,14 @@ static (string, Action) HelpTask() => ("help", () => Console.Write("""
     });
 }
 
-static (string, Action) BenchmarkTask() => ("benchmark", () =>
+static CLITask BenchmarkTask() => (null, () =>
 {
     var maze = BenchmarkBaseline();
     var result = IsPerfectMaze(maze);
     if(!result) throw new InvalidOperationException("Maze is not perfect");
 });
 
-static (string, Action) BenchmarkDirectionMazePathTask() => ("benchmark-direction-maze-path", () =>
+static CLITask BenchmarkDirectionMazePathTask() => (null, () =>
 {
     var maze = BenchmarkBaseline();
     var path = Solve(maze);
