@@ -15,4 +15,6 @@ public class Options(string[] args)
 
     public bool HasNextFileName() => HasNext() && Peek().Contains('.');
     public string NextFileName(string fallback) => HasNextFileName() ? Next() : fallback;
+
+    public override string ToString() => string.Join(' ', args);
 }
