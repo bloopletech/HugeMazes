@@ -132,7 +132,7 @@ CLITask GenerateTask()
     return (description.ToString()!, () =>
     {
         Console.WriteLine($"Generating maze...");
-        maze = Generate(width, height, seed, new StreamStore(mazeFileName));
+        maze = Generate(width, height, seed, OpenWrite(mazeFileName));
         maze.Write();
         Console.WriteLine($"Saved maze to {mazeFileName}");
     });
@@ -162,7 +162,7 @@ CLITask SolveTask()
     {
         Console.WriteLine($"Solving maze...");
         maze ??= Load(mazeFileName);
-        path = Solve(maze, new StreamStore(pathFileName));
+        path = Solve(maze, OpenWrite(pathFileName));
         path.Write();
         Console.WriteLine($"Saved maze path to {pathFileName}");
     });
@@ -194,7 +194,7 @@ CLITask RenderTask()
     {
         Console.WriteLine($"Rendering maze...");
         maze ??= Load(mazeFileName);
-        using var image = Render(maze, new StreamStore(imageFileName));
+        using var image = Render(maze, OpenWrite(imageFileName));
         image.Write();
         Console.WriteLine($"Saved maze image to {imageFileName}");
     });
@@ -212,7 +212,7 @@ CLITask RenderPathTask()
         Console.WriteLine($"Rendering maze path...");
         maze ??= Load(mazeFileName);
         path ??= LoadPath(pathFileName);
-        using var image = Render(maze, path, new StreamStore(imageFileName));
+        using var image = Render(maze, path, OpenWrite(imageFileName));
         image.Write();
         Console.WriteLine($"Saved maze with path image to {imageFileName}");
     });
@@ -233,6 +233,8 @@ static CLITask BenchmarkDirectionMazePathTask() => (null, () =>
     if(!result) throw new InvalidOperationException("Path is not perfect");
 });
 
-static IMaze Load(string fileName) => MazeSerializer.Read(new StreamStore(fileName));
+static IStore OpenWrite(string path) => new StreamStore(File.Open(path, FileMode.CreateNew));
+static IStore OpenRead(string path) => new StreamStore(File.Open(path, FileMode.Open));
 
-static IMazePath LoadPath(string fileName) => MazePathSerializer.Read(new StreamStore(fileName));
+static IMaze Load(string fileName) => MazeSerializer.Read(OpenRead(fileName));
+static IMazePath LoadPath(string fileName) => MazePathSerializer.Read(OpenRead(fileName));
