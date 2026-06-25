@@ -5,10 +5,6 @@ namespace DeveMazeGeneratorCore.IO;
 
 public sealed class StreamStore(Stream stream) : IStore
 {
-    public StreamStore(string path) : this(File.Open(path, FileMode.OpenOrCreate))
-    {
-    }
-
     private readonly BinaryReader reader = new(stream);
     private readonly BinaryWriter writer = new(stream);
 
