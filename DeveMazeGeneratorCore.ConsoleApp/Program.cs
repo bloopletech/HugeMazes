@@ -3,6 +3,7 @@ using DeveMazeGeneratorCore.Extensions;
 using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 using DeveMazeGeneratorCore.Paths;
+using NeoSmart.PrettySize;
 using static DeveMazeGeneratorCore.DeveMazeGeneratorCore;
 using static DeveMazeGeneratorCore.Verifier;
 
@@ -50,6 +51,15 @@ try
             path = null;
         }
     }
+}
+catch(InsufficientDiskSpaceException ex)
+{
+    var required = ex.Size - ex.FreeSpace;
+    Console.WriteLine($"""
+        Drive {ex.Drive} has insufficient free space to fully store {ex.Name}.
+        The drive has {PrettySize.Bytes(ex.FreeSpace)} space free but the file needs {PrettySize.Bytes(ex.Size)}.
+        You must free up {PrettySize.Bytes(required)} of disk space ({required:N0} bytes) or put the file on a different drive.
+        """);
 }
 finally
 {

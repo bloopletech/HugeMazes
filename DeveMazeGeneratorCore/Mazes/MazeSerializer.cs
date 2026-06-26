@@ -35,8 +35,10 @@ public class MazeSerializer
 
     public static IMaze Create(IStore store, MazeType type, MazeSize size)
     {
+        var maze = InitForWrite(type, store.Offset<MazeHeader>(), size);
+        maze.EnsureDiskSpace();
         WriteHeader(store, type);
-        return InitForWrite(type, store.Offset<MazeHeader>(), size);
+        return maze;
     }
 
     private static IMaze InitForRead(MazeType type, IStore store) => type switch

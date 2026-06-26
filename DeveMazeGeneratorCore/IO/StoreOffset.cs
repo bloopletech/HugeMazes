@@ -99,7 +99,8 @@ public class StoreOffset : IStore
 
     public long Length => store.Length - offset;
 
-    public void EnsureLength(long fileOffset, long size) => store.EnsureLength(offset + fileOffset, size);
+    public void EnsureLength() => store.EnsureLength();
+    public void EnsureLength(long size) => store.EnsureLength(offset + size);
 
     // Based on https://github.com/dotnet/runtime/blob/b82454cad0aaaae3db2cf18fbf2cccc36e201ccc/src/libraries/System.Private.CoreLib/src/System/IO/Stream.cs#L51
     public void CopyTo(IStore destination)

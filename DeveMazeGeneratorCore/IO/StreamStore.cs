@@ -278,10 +278,19 @@ public sealed class StreamStore(Stream stream) : IStore
 
     public long Length => stream.Length;
 
-    public void EnsureLength(long fileOffset, long size)
+    public void EnsureLength() => EnsureLength(Length);
+    public void EnsureLength(long length)
     {
-        var requiredLength = fileOffset + size;
-        if(Length < requiredLength) SetLength(requiredLength);
+        if(stream is FileStream fileStream)
+        {
+            var fileName = fileStream.Name;
+            var drive = new DriveInfo(fileName);
+            var freeSpace = drive.AvailableFreeSpace;
+
+            if(freeSpace >= length) return;
+
+            throw new InsufficientDiskSpaceException(fileName, length, drive.Name, freeSpace);
+        }
     }
 
     // Based on https://github.com/dotnet/runtime/blob/b82454cad0aaaae3db2cf18fbf2cccc36e201ccc/src/libraries/System.Private.CoreLib/src/System/IO/Stream.cs#L51

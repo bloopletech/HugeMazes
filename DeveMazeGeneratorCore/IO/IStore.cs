@@ -59,7 +59,8 @@ public interface IStore : IDisposable
     //Stream Stream { get; }
     long Length { get; }
 
-    void EnsureLength(long fileOffset, long size);
+    void EnsureLength();
+    void EnsureLength(long size);
 
     void CopyTo(IStore destination);
     void Flush(); // Also BinaryWriter

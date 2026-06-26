@@ -10,4 +10,6 @@ public interface IStorable : IDisposable
     //static abstract T Read(IStore store, bool leaveOpen = false);
     void Read();
     void Write();
+
+    public void EnsureDiskSpace() => Store.EnsureLength(Extent);
 }
