@@ -33,7 +33,7 @@ public class MazeSerializer
         return result;
     }
 
-    public static IMaze Create(MazeType type, IStore store, MazeSize size)
+    public static IMaze Create(IStore store, MazeType type, MazeSize size)
     {
         WriteHeader(store, type);
         return InitForWrite(type, store.Offset<MazeHeader>(), size);

@@ -10,17 +10,18 @@ namespace DeveMazeGeneratorCore;
 
 public static class DeveMazeGeneratorCore
 {
+    public static IStore OpenWrite(string fileName) => new StreamStore(File.Open(fileName, FileMode.CreateNew));
+    public static IStore OpenRead(string fileName) => new StreamStore(File.Open(fileName, FileMode.Open));
+
     public static IMaze Generate(
+        IStore store,
         int width,
         int height,
         int? seed = null,
-        IStore? store = null,
         MazeType mazeType = MazeType.LongBitGridMaze,
         GeneratorType generatorType = GeneratorType.Backtrack)
     {
-        store ??= IStore.Create(IMaze.MaxExtent(width, height));
-
-        var maze = MazeSerializer.Create(mazeType, store, new(width, height));
+        var maze = MazeSerializer.Create(store, mazeType, new(width, height));
         var random = seed.HasValue ? new Random(seed.Value) : new Random();
         var realSeed = random.GetSeed();
 
@@ -31,14 +32,12 @@ public static class DeveMazeGeneratorCore
     }
 
     public static IMazePath Solve(
+        IStore store,
         IMaze maze,
-        IStore? store = null,
         MazePathType pathType = MazePathType.DirectionMazePath,
         SolverType solverType = SolverType.Backtrack)
     {
-        store ??= IStore.Create(maze.IsLong);
-
-        var path = MazePathSerializer.Create(pathType, store);
+        var path = MazePathSerializer.Create(store, pathType);
 
         var solver = ISolver.Create(solverType, maze, path);
         solver.Solve();
@@ -47,50 +46,48 @@ public static class DeveMazeGeneratorCore
     }
 
     public static IImage Render(
+        IStore store,
         IMaze maze,
-        IStore? store = null,
         //ImageType imageType = ImageType.LongImage,
         RenderColours? colours = null)
     {
-        store ??= IStore.Create(maze.IsLong);
         colours ??= RenderColours.Default;
-        return Renderer.Render(maze, store, colours.Value);
+        return Renderer.Render(store, maze, colours.Value);
     }
 
     public static IImage Render(
+        IStore store,
         IMaze maze,
         IMazePath path,
-        IStore? store = null,
         //ImageType imageType = ImageType.LongImage,
         RenderColours? colours = null)
     {
-        store ??= IStore.Create(maze.IsLong);
         colours ??= RenderColours.Default;
-        return Renderer.Render(maze, path, store, colours.Value);
+        return Renderer.Render(store, maze, path, colours.Value);
     }
 
     public static IMaze BenchmarkBaseline() => Generate(
+        IStore.Create(false),
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
-        null,
         MazeType.BitGridMaze,
         GeneratorType.Backtrack);
 
     public static IMaze BenchmarkFast() => Generate(
+        IStore.Create(false),
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
-        null,
         MazeType.BitGridMaze,
         GeneratorType.Backtrack2_Deluxe2_AsByte);
 
     public static IMaze BenchmarkLongBitGrid() => Generate(
+        IStore.Create(true),
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
-        IStore.Create(true),
-        MazeType.BitGridMaze,
+        MazeType.LongBitGridMaze,
         GeneratorType.Backtrack);
 
     public const int BenchmarkSize = (4096 * 2 * 2 * 2) + 1;

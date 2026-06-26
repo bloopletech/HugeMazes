@@ -7,7 +7,7 @@ namespace DeveMazeGeneratorCore;
 
 public static class Renderer
 {
-    public static IImage Render(IMaze maze, IStore destination, RenderColours colours)
+    public static IImage Render(IStore destination, IMaze maze, RenderColours colours)
     {
         var image = new LongImage(destination, maze.Size);
 
@@ -25,9 +25,9 @@ public static class Renderer
         return image;
     }
 
-    public static IImage RenderPlain(IMaze maze, IMazePath path, IStore destination, RenderColours colours)
+    public static IImage RenderPlain(IStore destination, IMaze maze, IMazePath path, RenderColours colours)
     {
-        var image = Render(maze, destination, colours);
+        var image = Render(destination, maze, colours);
 
         foreach(var point in path) image[point.X, point.Y] = colours.Path;
         if(colours.Start.HasValue) image[1, 1] = colours.Start.Value;
@@ -36,9 +36,9 @@ public static class Renderer
         return image;
     }
 
-    public static IImage Render(IMaze maze, IMazePath path, IStore destination, RenderColours colours)
+    public static IImage Render(IStore destination, IMaze maze, IMazePath path, RenderColours colours)
     {
-        var image = Render(maze, destination, colours);
+        var image = Render(destination, maze, colours);
 
         var i = 0;
         foreach(var point in path)

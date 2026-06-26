@@ -35,9 +35,9 @@ public class MazesController : ControllerBase
     [HttpGet("Maze/{width}/{height}", Name = "GenerateMaze")]
     public ActionResult GenerateMaze(int width, int height)
     {
-        using var maze = DeveMazeGeneratorCore.Generate(width, height);
+        using var maze = DeveMazeGeneratorCore.Generate(IStore.Create(false), width, height);
         using var imageStream = new MemoryStream();
-        using var image = DeveMazeGeneratorCore.Render(maze, new StreamStore(imageStream));
+        using var image = DeveMazeGeneratorCore.Render(new StreamStore(imageStream), maze);
 
         image.Write();
         var data = imageStream.ToArray();
@@ -49,16 +49,16 @@ public class MazesController : ControllerBase
     public ActionResult GenerateMazeWithPath(int width, int height)
     {
         var w = Stopwatch.StartNew();
-        using var maze = DeveMazeGeneratorCore.Generate(width, height);
+        using var maze = DeveMazeGeneratorCore.Generate(IStore.Create(false), width, height);
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        using var path = DeveMazeGeneratorCore.Solve(maze);
+        using var path = DeveMazeGeneratorCore.Solve(IStore.Create(false), maze);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();
         using var imageStream = new MemoryStream();
-        using var image = DeveMazeGeneratorCore.Render(maze, path, new StreamStore(imageStream));
+        using var image = DeveMazeGeneratorCore.Render(new StreamStore(imageStream), maze, path);
         image.Write();
         var toImageTime = w.Elapsed;
 
@@ -73,16 +73,16 @@ public class MazesController : ControllerBase
     public ActionResult GenerateMazeWithPathSeed(int seed, int width, int height)
     {
         var w = Stopwatch.StartNew();
-        using var maze = DeveMazeGeneratorCore.Generate(width, height, seed);
+        using var maze = DeveMazeGeneratorCore.Generate(IStore.Create(false), width, height, seed);
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        using var path = DeveMazeGeneratorCore.Solve(maze);
+        using var path = DeveMazeGeneratorCore.Solve(IStore.Create(false), maze);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();
         using var memoryStream = new MemoryStream();
-        using var image = DeveMazeGeneratorCore.Render(maze, path, new StreamStore(memoryStream));
+        using var image = DeveMazeGeneratorCore.Render(new StreamStore(memoryStream), maze, path);
         image.Write();
         var toImageTime = w.Elapsed;
 

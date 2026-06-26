@@ -2,7 +2,7 @@
   "profiles": {
     "DeveMazeGeneratorCore.ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "16384"
+      "commandLineArgs": "1024"
     },
     "Docker": {
       "commandName": "Docker"
