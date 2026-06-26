@@ -35,8 +35,10 @@ public static class MazePathSerializer
 
     public static IMazePath Create(IStore store, MazePathType type)
     {
+        var path = Init(type, store.Offset<MazePathHeader>());
+        path.EnsureDiskSpace();
         WriteHeader(store, type);
-        return Init(type, store.Offset<MazePathHeader>());
+        return path;
     }
 
     private static IMazePath Init(MazePathType type, IStore store) => type switch
