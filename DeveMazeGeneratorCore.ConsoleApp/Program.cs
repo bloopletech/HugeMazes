@@ -142,7 +142,7 @@ CLITask GenerateTask()
     return (description.ToString()!, () =>
     {
         Console.WriteLine($"Generating maze...");
-        maze = Generate(OpenWrite(mazeFileName), width, height, seed);
+        maze = Generate(Create(mazeFileName), width, height, seed);
         maze.Write();
         Console.WriteLine($"Saved maze to {mazeFileName}");
     });
@@ -172,7 +172,7 @@ CLITask SolveTask()
     {
         Console.WriteLine($"Solving maze...");
         maze ??= Load(mazeFileName);
-        path = Solve(OpenWrite(pathFileName), maze);
+        path = Solve(Create(pathFileName), maze);
         path.Write();
         Console.WriteLine($"Saved maze path to {pathFileName}");
     });
@@ -204,7 +204,7 @@ CLITask RenderTask()
     {
         Console.WriteLine($"Rendering maze...");
         maze ??= Load(mazeFileName);
-        using var image = Render(OpenWrite(imageFileName), maze);
+        using var image = Render(Create(imageFileName), maze);
         image.Write();
         Console.WriteLine($"Saved maze image to {imageFileName}");
     });
@@ -222,7 +222,7 @@ CLITask RenderPathTask()
         Console.WriteLine($"Rendering maze path...");
         maze ??= Load(mazeFileName);
         path ??= LoadPath(pathFileName);
-        using var image = Render(OpenWrite(imageFileName), maze, path);
+        using var image = Render(Create(imageFileName), maze, path);
         image.Write();
         Console.WriteLine($"Saved maze with path image to {imageFileName}");
     });
@@ -243,5 +243,5 @@ static CLITask BenchmarkDirectionMazePathTask() => (null, () =>
     if(!result) throw new InvalidOperationException("Path is not perfect");
 });
 
-static IMaze Load(string fileName) => MazeSerializer.Read(OpenRead(fileName));
-static IMazePath LoadPath(string fileName) => MazePathSerializer.Read(OpenRead(fileName));
+static IMaze Load(string fileName) => MazeSerializer.Read(Open(fileName));
+static IMazePath LoadPath(string fileName) => MazePathSerializer.Read(Open(fileName));
