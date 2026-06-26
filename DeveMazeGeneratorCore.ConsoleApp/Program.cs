@@ -132,7 +132,7 @@ CLITask GenerateTask()
     return (description.ToString()!, () =>
     {
         Console.WriteLine($"Generating maze...");
-        maze = Generate(width, height, seed, OpenWrite(mazeFileName));
+        maze = Generate(OpenWrite(mazeFileName), width, height, seed);
         maze.Write();
         Console.WriteLine($"Saved maze to {mazeFileName}");
     });
@@ -162,7 +162,7 @@ CLITask SolveTask()
     {
         Console.WriteLine($"Solving maze...");
         maze ??= Load(mazeFileName);
-        path = Solve(maze, OpenWrite(pathFileName));
+        path = Solve(OpenWrite(pathFileName), maze);
         path.Write();
         Console.WriteLine($"Saved maze path to {pathFileName}");
     });
@@ -194,7 +194,7 @@ CLITask RenderTask()
     {
         Console.WriteLine($"Rendering maze...");
         maze ??= Load(mazeFileName);
-        using var image = Render(maze, OpenWrite(imageFileName));
+        using var image = Render(OpenWrite(imageFileName), maze);
         image.Write();
         Console.WriteLine($"Saved maze image to {imageFileName}");
     });
@@ -212,7 +212,7 @@ CLITask RenderPathTask()
         Console.WriteLine($"Rendering maze path...");
         maze ??= Load(mazeFileName);
         path ??= LoadPath(pathFileName);
-        using var image = Render(maze, path, OpenWrite(imageFileName));
+        using var image = Render(OpenWrite(imageFileName), maze, path);
         image.Write();
         Console.WriteLine($"Saved maze with path image to {imageFileName}");
     });
@@ -228,13 +228,10 @@ static CLITask BenchmarkTask() => (null, () =>
 static CLITask BenchmarkDirectionMazePathTask() => (null, () =>
 {
     var maze = BenchmarkBaseline();
-    var path = Solve(maze);
+    var path = Solve(IStore.Create(false), maze);
     var result = IsPerfectPath(maze, path);
     if(!result) throw new InvalidOperationException("Path is not perfect");
 });
-
-static IStore OpenWrite(string path) => new StreamStore(File.Open(path, FileMode.CreateNew));
-static IStore OpenRead(string path) => new StreamStore(File.Open(path, FileMode.Open));
 
 static IMaze Load(string fileName) => MazeSerializer.Read(OpenRead(fileName));
 static IMazePath LoadPath(string fileName) => MazePathSerializer.Read(OpenRead(fileName));

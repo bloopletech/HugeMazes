@@ -33,7 +33,7 @@ public static class MazePathSerializer
         return result;
     }
 
-    public static IMazePath Create(MazePathType type, IStore store)
+    public static IMazePath Create(IStore store, MazePathType type)
     {
         WriteHeader(store, type);
         return Init(type, store.Offset<MazePathHeader>());

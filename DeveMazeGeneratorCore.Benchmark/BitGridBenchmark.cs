@@ -2,6 +2,7 @@
 
 using BenchmarkDotNet.Attributes;
 using DeveMazeGeneratorCore.Generators;
+using DeveMazeGeneratorCore.IO;
 using DeveMazeGeneratorCore.Mazes;
 
 namespace DeveMazeGeneratorCore.Benchmark;
@@ -13,10 +14,10 @@ public class BitGridBenchmark
     public void GenerateBaseline()
     {
         var maze = DeveMazeGeneratorCore.Generate(
+            IStore.Create(false),
             DeveMazeGeneratorCore.BenchmarkSize,
             DeveMazeGeneratorCore.BenchmarkSize,
             DeveMazeGeneratorCore.BenchmarkSeed,
-            null,
             MazeType.BitGridMaze,
             GeneratorType.Backtrack);
         Verifier.IsPerfectMaze(maze);
@@ -26,10 +27,10 @@ public class BitGridBenchmark
     public void GenerateLong()
     {
         var maze = DeveMazeGeneratorCore.Generate(
+            IStore.Create(true),
             DeveMazeGeneratorCore.BenchmarkSize,
             DeveMazeGeneratorCore.BenchmarkSize,
             DeveMazeGeneratorCore.BenchmarkSeed,
-            null,
             MazeType.LongBitGridMaze,
             GeneratorType.Backtrack);
         Verifier.IsPerfectMaze(maze);

@@ -36,7 +36,7 @@ public class MazeSamples
         var solver = ISolver.Create(SolverType.Backtrack, maze, path);
         solver.Solve();
 
-        using var image = Renderer.Render(maze, path, IStore.CreateMemory(), RenderColours.Default);
+        using var image = Renderer.Render(IStore.CreateMemory(), maze, path, RenderColours.Default);
         image.Write();
     }
 }
