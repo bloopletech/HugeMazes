@@ -10,8 +10,8 @@ namespace DeveMazeGeneratorCore;
 
 public static class DeveMazeGeneratorCore
 {
-    public static IStore OpenWrite(string fileName) => new StreamStore(File.Open(fileName, FileMode.CreateNew));
-    public static IStore OpenRead(string fileName) => new StreamStore(File.Open(fileName, FileMode.Open));
+    public static IStore Create(string fileName) => new StreamStore(File.Open(fileName, FileMode.CreateNew));
+    public static IStore Open(string fileName) => new StreamStore(File.Open(fileName, FileMode.Open));
 
     public static IMaze Generate(
         IStore store,
