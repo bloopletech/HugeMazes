@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/DeveMazeGeneratorCore.MonoGame.Blazor/DeveMazeGeneratorCore.MonoGame.Blazor.csproj",
+                "${workspaceFolder}/HugeMazes.MonoGame.Blazor/HugeMazes.MonoGame.Blazor.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/DeveMazeGeneratorCore.MonoGame.Blazor/DeveMazeGeneratorCore.MonoGame.Blazor.csproj",
+                "${workspaceFolder}/HugeMazes.MonoGame.Blazor/HugeMazes.MonoGame.Blazor.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/DeveMazeGeneratorCore.MonoGame.Blazor/DeveMazeGeneratorCore.MonoGame.Blazor.csproj"
+                "${workspaceFolder}/HugeMazes.MonoGame.Blazor/HugeMazes.MonoGame.Blazor.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

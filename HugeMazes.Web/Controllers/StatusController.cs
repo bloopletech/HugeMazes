@@ -1,0 +1,20 @@
+using HugeMazes.Web.Status;
+using Microsoft.AspNetCore.Mvc;
+
+namespace HugeMazes.Web.Controllers;
+
+[Route("[controller]")]
+[ApiController]
+public class StatusController(ILogger<StatusController> logger) : ControllerBase
+{
+    private readonly ILogger<StatusController> _logger = logger;
+
+    [HttpGet]
+    public Task<StatusModel> GetAsync()
+    {
+        _logger.Log(LogLevel.Information, "### Status Controller Get() called");
+
+        var statusModel = StatusObtainer.GetStatus();
+        return Task.FromResult(statusModel);
+    }
+}

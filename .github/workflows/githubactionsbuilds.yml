@@ -64,7 +64,7 @@ jobs:
         fi
     - name: Run Buildx
       run: |
-        docker buildx build -f DeveMazeGeneratorCore.Web/Dockerfile --build-arg BUILD_VERSION=${{steps.tags.outputs.version}} --platform linux/arm64,linux/amd64 ${{steps.tags.outputs.tags}} ${{ (github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && '--push' || '' }} .
+        docker buildx build -f HugeMazes.Web/Dockerfile --build-arg BUILD_VERSION=${{steps.tags.outputs.version}} --platform linux/arm64,linux/amd64 ${{steps.tags.outputs.tags}} ${{ (github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && '--push' || '' }} .
 
 
   build_docker_monogame_blazor:
@@ -114,7 +114,7 @@ jobs:
         fi
     - name: Run Buildx
       run: |
-        docker buildx build -f DeveMazeGeneratorCore.MonoGame.Blazor/Dockerfile --build-arg BUILD_VERSION=${{steps.tags.outputs.version}} --platform linux/arm64,linux/amd64 ${{steps.tags.outputs.tags}} ${{ (github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && '--push' || '' }} .
+        docker buildx build -f HugeMazes.MonoGame.Blazor/Dockerfile --build-arg BUILD_VERSION=${{steps.tags.outputs.version}} --platform linux/arm64,linux/amd64 ${{steps.tags.outputs.tags}} ${{ (github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && '--push' || '' }} .
 
 
   build_linux:
@@ -127,11 +127,11 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Install dependencies
-      run: dotnet restore DeveMazeGeneratorCore.sln
+      run: dotnet restore HugeMazes.sln
     - name: Build
-      run: dotnet build DeveMazeGeneratorCore.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet build HugeMazes.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Test
-      run: dotnet test DeveMazeGeneratorCore.sln -c Release --no-restore --verbosity normal
+      run: dotnet test HugeMazes.sln -c Release --no-restore --verbosity normal
   
   build_linux_consoleapp:
     needs: generate_version_number
@@ -143,21 +143,21 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Publish Untrimmed
-      run: dotnet publish DeveMazeGeneratorCore.ConsoleApp/DeveMazeGeneratorCore.ConsoleApp.csproj -c Release -r linux-x64 -o DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/linux-x64/publishuntrimmed/ /p:PublishSingleFile=true /p:SelfContained=true /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -c Release -r linux-x64 -o HugeMazes.ConsoleApp/bin/Release/net8.0/linux-x64/publishuntrimmed/ /p:PublishSingleFile=true /p:SelfContained=true /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Publish Trimmed
-      run: dotnet publish DeveMazeGeneratorCore.ConsoleApp/DeveMazeGeneratorCore.ConsoleApp.csproj -c Release -r linux-x64 -o DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/linux-x64/publishtrimmed/ /p:PublishSingleFile=true /p:SelfContained=true /p:PublishTrimmed=true /p:TrimMode=full /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -c Release -r linux-x64 -o HugeMazes.ConsoleApp/bin/Release/net8.0/linux-x64/publishtrimmed/ /p:PublishSingleFile=true /p:SelfContained=true /p:PublishTrimmed=true /p:TrimMode=full /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Publish Trimmed AOT
-      run: dotnet publish DeveMazeGeneratorCore.ConsoleApp/DeveMazeGeneratorCore.ConsoleApp.csproj -c Release -r linux-x64 -o DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/linux-x64/publishtrimmedaot/ /p:PublishTrimmed=true /p:TrimMode=full /p:PublishAot=true /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -c Release -r linux-x64 -o HugeMazes.ConsoleApp/bin/Release/net8.0/linux-x64/publishtrimmedaot/ /p:PublishTrimmed=true /p:TrimMode=full /p:PublishAot=true /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Copy output
       shell: bash
       run: |
         mkdir BuildOutputConsole
-        mv ./DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/linux-x64/publishuntrimmed/DeveMazeGenerator.ConsoleApp ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.Untrimmed
-        mv ./DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/linux-x64/publishtrimmed/DeveMazeGenerator.ConsoleApp ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.Trimmed
-        mv ./DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/linux-x64/publishtrimmedaot/DeveMazeGenerator.ConsoleApp ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.TrimmedAot
+        mv ./HugeMazes.ConsoleApp/bin/Release/net8.0/linux-x64/publishuntrimmed/DeveMazeGenerator.ConsoleApp ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.Untrimmed
+        mv ./HugeMazes.ConsoleApp/bin/Release/net8.0/linux-x64/publishtrimmed/DeveMazeGenerator.ConsoleApp ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.Trimmed
+        mv ./HugeMazes.ConsoleApp/bin/Release/net8.0/linux-x64/publishtrimmedaot/DeveMazeGenerator.ConsoleApp ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.TrimmedAot
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCore.ConsoleApp.Linux
+        name: HugeMazes.ConsoleApp.Linux
         path: BuildOutputConsole/*
 
   build_windows_consoleapp:
@@ -170,21 +170,21 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Publish Untrimmed
-      run: dotnet publish DeveMazeGeneratorCore.ConsoleApp/DeveMazeGeneratorCore.ConsoleApp.csproj -c Release -r win-x64 -o DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/win-x64/publishuntrimmed/ /p:PublishSingleFile=true /p:SelfContained=true /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -c Release -r win-x64 -o HugeMazes.ConsoleApp/bin/Release/net8.0/win-x64/publishuntrimmed/ /p:PublishSingleFile=true /p:SelfContained=true /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Publish Trimmed
-      run: dotnet publish DeveMazeGeneratorCore.ConsoleApp/DeveMazeGeneratorCore.ConsoleApp.csproj -c Release -r win-x64 -o DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/win-x64/publishtrimmed/ /p:PublishSingleFile=true /p:SelfContained=true /p:PublishTrimmed=true /p:TrimMode=full /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -c Release -r win-x64 -o HugeMazes.ConsoleApp/bin/Release/net8.0/win-x64/publishtrimmed/ /p:PublishSingleFile=true /p:SelfContained=true /p:PublishTrimmed=true /p:TrimMode=full /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Publish Trimmed AOT
-      run: dotnet publish DeveMazeGeneratorCore.ConsoleApp/DeveMazeGeneratorCore.ConsoleApp.csproj -c Release -r win-x64 -o DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/win-x64/publishtrimmedaot/ /p:PublishTrimmed=true /p:TrimMode=full /p:PublishAot=true /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -c Release -r win-x64 -o HugeMazes.ConsoleApp/bin/Release/net8.0/win-x64/publishtrimmedaot/ /p:PublishTrimmed=true /p:TrimMode=full /p:PublishAot=true /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Copy output
       shell: bash
       run: |
         mkdir BuildOutputConsole
-        mv ./DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/win-x64/publishuntrimmed/DeveMazeGenerator.ConsoleApp.exe ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.Untrimmed.exe
-        mv ./DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/win-x64/publishtrimmed/DeveMazeGenerator.ConsoleApp.exe ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.Trimmed.exe
-        mv ./DeveMazeGeneratorCore.ConsoleApp/bin/Release/net8.0/win-x64/publishtrimmedaot/DeveMazeGenerator.ConsoleApp.exe ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.TrimmedAot.exe
+        mv ./HugeMazes.ConsoleApp/bin/Release/net8.0/win-x64/publishuntrimmed/DeveMazeGenerator.ConsoleApp.exe ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.Untrimmed.exe
+        mv ./HugeMazes.ConsoleApp/bin/Release/net8.0/win-x64/publishtrimmed/DeveMazeGenerator.ConsoleApp.exe ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.Trimmed.exe
+        mv ./HugeMazes.ConsoleApp/bin/Release/net8.0/win-x64/publishtrimmedaot/DeveMazeGenerator.ConsoleApp.exe ./BuildOutputConsole/DeveMazeGenerator.ConsoleApp.TrimmedAot.exe
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCore.ConsoleApp.Windows
+        name: HugeMazes.ConsoleApp.Windows
         path: BuildOutputConsole/*.exe
 
 
@@ -208,64 +208,64 @@ jobs:
         dotnet tool install --global dotnet-sonarscanner
         dotnet tool install --global dotnet-reportgenerator-globaltool
     - name: Install dependencies
-      run: dotnet restore DeveMazeGeneratorCore.sln
+      run: dotnet restore HugeMazes.sln
     - name: SonarQube begin
       if: github.actor != 'dependabot[bot]'
-      run: dotnet-sonarscanner begin /k:"DeveMazeGeneratorCore" /o:"devedse-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login=${{secrets.SONARQUBETOKEN}} /d:sonar.cs.opencover.reportsPaths=".\DeveMazeGeneratorCore.Tests\TestResults\Coverage\coverage.opencover.xml" /d:sonar.coverage.exclusions="DeveMazeGeneratorCore.ConsoleApp/**/*.cs,DeveMazeGeneratorCore.Tests/**/*.cs,DeveMazeGeneratorCore.Web/wwwroot/divisionmaze/**/*.js"
+      run: dotnet-sonarscanner begin /k:"HugeMazes" /o:"devedse-github" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.login=${{secrets.SONARQUBETOKEN}} /d:sonar.cs.opencover.reportsPaths=".\HugeMazes.Tests\TestResults\Coverage\coverage.opencover.xml" /d:sonar.coverage.exclusions="HugeMazes.ConsoleApp/**/*.cs,HugeMazes.Tests/**/*.cs,HugeMazes.Web/wwwroot/divisionmaze/**/*.js"
     - name: Build
-      run: dotnet build DeveMazeGeneratorCore.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet build HugeMazes.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Test
-      run: dotnet test DeveMazeGeneratorCore.sln --verbosity normal --no-build -c Release --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura,opencover
+      run: dotnet test HugeMazes.sln --verbosity normal --no-build -c Release --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura,opencover
     - name: SonarQube end
       if: github.actor != 'dependabot[bot]'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: dotnet-sonarscanner end /d:sonar.login=${{secrets.SONARQUBETOKEN}}
     - name: Pack
-      run: dotnet pack DeveMazeGeneratorCore/DeveMazeGeneratorCore.csproj --verbosity normal --no-build -c Release /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet pack HugeMazes/HugeMazes.csproj --verbosity normal --no-build -c Release /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Run CodeCov
       uses: codecov/codecov-action@v4
       with:
-        directory: ./DeveMazeGeneratorCore.Tests/TestResults
+        directory: ./HugeMazes.Tests/TestResults
         fail_ci_if_error: true # optional (default = false)
         verbose: true # optional (default = false)
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-    - name: Package DeveMazeGeneratorCore
+    - name: Package HugeMazes
       run: |
         # Create output directory
         mkdir -p Scripts/Output
         
         # Remove existing files if they exist
-        rm -f Scripts/Output/DeveMazeGeneratorCore.7z
-        rm -f Scripts/Output/DeveMazeGeneratorCore.zip
+        rm -f Scripts/Output/HugeMazes.7z
+        rm -f Scripts/Output/HugeMazes.zip
         
         # Package the build output
-        cd DeveMazeGeneratorCore/bin/Release
+        cd HugeMazes/bin/Release
         
         # Create zip file (excluding .pdb files)
-        zip -r ../../../Scripts/Output/DeveMazeGeneratorCore.zip . -x "*.pdb"
+        zip -r ../../../Scripts/Output/HugeMazes.zip . -x "*.pdb"
         
         # Create 7z file (excluding .pdb files)
-        7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "../../../Scripts/Output/DeveMazeGeneratorCore.7z" . -x!"*.pdb"
+        7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "../../../Scripts/Output/HugeMazes.7z" . -x!"*.pdb"
       shell: bash
 
 
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCore7z
-        path: ./Scripts/Output/DeveMazeGeneratorCore.7z
+        name: HugeMazes7z
+        path: ./Scripts/Output/HugeMazes.7z
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCoreZip
-        path: ./Scripts/Output/DeveMazeGeneratorCore.zip
+        name: HugeMazesZip
+        path: ./Scripts/Output/HugeMazes.zip
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCoreNuGet
+        name: HugeMazesNuGet
         path: |
-          ./DeveMazeGeneratorCore/bin/Release/*.nupkg
-          ./DeveMazeGeneratorCore/bin/Release/*.snupkg
+          ./HugeMazes/bin/Release/*.nupkg
+          ./HugeMazes/bin/Release/*.snupkg
 
   build_linux_monogame_desktopgl:
     needs: generate_version_number
@@ -277,30 +277,30 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Install dependencies
-      run: dotnet restore DeveMazeGeneratorCore.sln
+      run: dotnet restore HugeMazes.sln
     - name: Build
-      run: dotnet build DeveMazeGeneratorCore.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet build HugeMazes.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Test
-      run: dotnet test DeveMazeGeneratorCore.sln --no-restore --verbosity normal
+      run: dotnet test HugeMazes.sln --no-restore --verbosity normal
     - name: Publish
-      run: dotnet publish ./DeveMazeGeneratorCore.MonoGame.DesktopGL/DeveMazeGeneratorCore.MonoGame.DesktopGL.csproj -r linux-x64 -c Release /p:PublishSingleFile=true /p:SelfContained=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet publish ./HugeMazes.MonoGame.DesktopGL/HugeMazes.MonoGame.DesktopGL.csproj -r linux-x64 -c Release /p:PublishSingleFile=true /p:SelfContained=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Copy files that are missing for some reason
       run: |
         # not needed on linux as it seems
-        ls -R DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/linux-x64
-        ls -R DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/linux-x64/publish
+        ls -R HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/linux-x64
+        ls -R HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/linux-x64/publish
       shell: bash
     - name: targz output
       run: |
         export GZIP=-9
-        tar cvzf DeveMazeGeneratorCore.MonoGame.DesktopGL_linux-x64.tar.gz -C DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/linux-x64/publish .
+        tar cvzf HugeMazes.MonoGame.DesktopGL_linux-x64.tar.gz -C HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/linux-x64/publish .
     - name: 7zip output
       run: |
-        7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "DeveMazeGeneratorCore.MonoGame.DesktopGL_linux-x64.7z" "./DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/linux-x64/publish/*" '-x!*.pdb'
+        7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "HugeMazes.MonoGame.DesktopGL_linux-x64.7z" "./HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/linux-x64/publish/*" '-x!*.pdb'
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCore.MonoGame.DesktopGL_linux-x64
-        path: DeveMazeGeneratorCore.MonoGame.DesktopGL_linux-x64.tar.gz
+        name: HugeMazes.MonoGame.DesktopGL_linux-x64
+        path: HugeMazes.MonoGame.DesktopGL_linux-x64.tar.gz
 
   # AppIcon is missing when building windows application on linux
   # So don't use this build
@@ -315,36 +315,36 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Install dependencies
-      run: dotnet restore DeveMazeGeneratorCore.sln
+      run: dotnet restore HugeMazes.sln
     - name: Build
-      run: dotnet build DeveMazeGeneratorCore.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet build HugeMazes.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Test
-      run: dotnet test DeveMazeGeneratorCore.sln --no-restore --verbosity normal
+      run: dotnet test HugeMazes.sln --no-restore --verbosity normal
     - name: Publish
-      run: dotnet publish ./DeveMazeGeneratorCore.MonoGame.DesktopGL/DeveMazeGeneratorCore.MonoGame.DesktopGL.csproj -r win-x64 -c Release /p:PublishSingleFile=true /p:SelfContained=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet publish ./HugeMazes.MonoGame.DesktopGL/HugeMazes.MonoGame.DesktopGL.csproj -r win-x64 -c Release /p:PublishSingleFile=true /p:SelfContained=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Copy files that are missing for some reason
       run: |
         # not needed on linux as it seems
-        ls -R DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64
-        cp DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/SDL2.dll DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish/
-        cp -R DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/Content/. DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish/Content/
-        ls -R DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish
+        ls -R HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64
+        cp HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/SDL2.dll HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish/
+        cp -R HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/Content/. HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish/Content/
+        ls -R HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish
       shell: bash
     - name: targz output
       run: |
         export GZIP=-9
-        tar cvzf DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64_onlinux.tar.gz -C DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish .
+        tar cvzf HugeMazes.MonoGame.DesktopGL_win-x64_onlinux.tar.gz -C HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish .
     - name: 7zip output
       run: |
-        7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64_onlinux.7z" "./DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish/*" '-x!*.pdb'
+        7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "HugeMazes.MonoGame.DesktopGL_win-x64_onlinux.7z" "./HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish/*" '-x!*.pdb'
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64_onlinuxtargz
-        path: DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64_onlinux.tar.gz
+        name: HugeMazes.MonoGame.DesktopGL_win-x64_onlinuxtargz
+        path: HugeMazes.MonoGame.DesktopGL_win-x64_onlinux.tar.gz
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64_onlinux
-        path: DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64_onlinux.7z
+        name: HugeMazes.MonoGame.DesktopGL_win-x64_onlinux
+        path: HugeMazes.MonoGame.DesktopGL_win-x64_onlinux.7z
 
   build_windows_monogame_desktopgl:
     needs: generate_version_number
@@ -356,27 +356,27 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Install dependencies
-      run: dotnet restore DeveMazeGeneratorCore.sln
+      run: dotnet restore HugeMazes.sln
     - name: Build
-      run: dotnet build DeveMazeGeneratorCore.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet build HugeMazes.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Test
-      run: dotnet test DeveMazeGeneratorCore.sln --no-restore --verbosity normal
+      run: dotnet test HugeMazes.sln --no-restore --verbosity normal
     - name: Publish
-      run: dotnet publish ./DeveMazeGeneratorCore.MonoGame.DesktopGL/DeveMazeGeneratorCore.MonoGame.DesktopGL.csproj -r win-x64 -c Release /p:PublishSingleFile=true /p:SelfContained=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet publish ./HugeMazes.MonoGame.DesktopGL/HugeMazes.MonoGame.DesktopGL.csproj -r win-x64 -c Release /p:PublishSingleFile=true /p:SelfContained=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Copy files that are missing for some reason
       run: |
-        ls -R DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64
-        cp DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/SDL2.dll DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish/
-        cp -R DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/Content/. DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish/Content/
-        ls -R DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/Publish
+        ls -R HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64
+        cp HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/SDL2.dll HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish/
+        cp -R HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/Content/. HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/publish/Content/
+        ls -R HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/Publish
       shell: bash
     - name: 7zip output
       run: |
-        7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64.7z" "./DeveMazeGeneratorCore.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/Publish/*" '-x!*.pdb'
+        7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "HugeMazes.MonoGame.DesktopGL_win-x64.7z" "./HugeMazes.MonoGame.DesktopGL/bin/Release/net8.0/win-x64/Publish/*" '-x!*.pdb'
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64
-        path: DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64.7z
+        name: HugeMazes.MonoGame.DesktopGL_win-x64
+        path: HugeMazes.MonoGame.DesktopGL_win-x64.7z
 
   build_windows_monogame_windowsdx:
     needs: generate_version_number
@@ -388,26 +388,26 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Install dependencies
-      run: dotnet restore DeveMazeGeneratorCore.sln
+      run: dotnet restore HugeMazes.sln
     - name: Build
-      run: dotnet build DeveMazeGeneratorCore.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet build HugeMazes.sln -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Test
-      run: dotnet test DeveMazeGeneratorCore.sln --no-restore --verbosity normal
+      run: dotnet test HugeMazes.sln --no-restore --verbosity normal
     - name: Publish
-      run: dotnet publish ./DeveMazeGeneratorCore.MonoGame.WindowsDX\DeveMazeGeneratorCore.MonoGame.WindowsDX.csproj -r win-x64 -c Release /p:PublishSingleFile=true /p:SelfContained=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+      run: dotnet publish ./HugeMazes.MonoGame.WindowsDX\HugeMazes.MonoGame.WindowsDX.csproj -r win-x64 -c Release /p:PublishSingleFile=true /p:SelfContained=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishTrimmed=false /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
     - name: Copy files that are missing for some reason
       run: |
-        ls -R DeveMazeGeneratorCore.MonoGame.WindowsDX/bin/Release/net8.0-windows/win-x64
-        cp -R DeveMazeGeneratorCore.MonoGame.WindowsDX/bin/Release/net8.0-windows/win-x64/Content/. DeveMazeGeneratorCore.MonoGame.WindowsDX/bin/Release/net8.0-windows/win-x64/publish/Content/
-        ls -R DeveMazeGeneratorCore.MonoGame.WindowsDX/bin/Release/net8.0-windows/win-x64/Publish
+        ls -R HugeMazes.MonoGame.WindowsDX/bin/Release/net8.0-windows/win-x64
+        cp -R HugeMazes.MonoGame.WindowsDX/bin/Release/net8.0-windows/win-x64/Content/. HugeMazes.MonoGame.WindowsDX/bin/Release/net8.0-windows/win-x64/publish/Content/
+        ls -R HugeMazes.MonoGame.WindowsDX/bin/Release/net8.0-windows/win-x64/Publish
       shell: bash
     - name: 7zip output
       run: |
-        7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "DeveMazeGeneratorCore.MonoGame.WindowsDX_win-x64.7z" "./DeveMazeGeneratorCore.MonoGame.WindowsDX/bin/Release/net8.0-windows/win-x64/Publish/*" '-x!*.pdb'
+        7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "HugeMazes.MonoGame.WindowsDX_win-x64.7z" "./HugeMazes.MonoGame.WindowsDX/bin/Release/net8.0-windows/win-x64/Publish/*" '-x!*.pdb'
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCore.MonoGame.WindowsDX_win-x64
-        path: DeveMazeGeneratorCore.MonoGame.WindowsDX_win-x64.7z
+        name: HugeMazes.MonoGame.WindowsDX_win-x64
+        path: HugeMazes.MonoGame.WindowsDX_win-x64.7z
 
 
   build_windows_Android:
@@ -427,30 +427,30 @@ jobs:
     - name: Set Android version
       uses: damienaicheh/update-android-version-manifest-action@v1.0.0
       with:
-        android-manifest-path: ./DeveMazeGeneratorCore.MonoGame.Android/AndroidManifest.xml
+        android-manifest-path: ./HugeMazes.MonoGame.Android/AndroidManifest.xml
         version-name: 1.0.${{needs.generate_version_number.outputs.build_number}}
         version-code: ${{needs.generate_version_number.outputs.build_number}}
         print-file: true
     - name: Restore NuGet packages
       run: |
-        nuget restore DeveMazeGeneratorCore/DeveMazeGeneratorCore.csproj
-        nuget restore DeveMazeGeneratorCore.MonoGame.Core/DeveMazeGeneratorCore.MonoGame.Core.csproj
-        nuget restore DeveMazeGeneratorCore.MonoGame.Android/DeveMazeGeneratorCore.MonoGame.Android.csproj
+        nuget restore HugeMazes/HugeMazes.csproj
+        nuget restore HugeMazes.MonoGame.Core/HugeMazes.MonoGame.Core.csproj
+        nuget restore HugeMazes.MonoGame.Android/HugeMazes.MonoGame.Android.csproj
     - name: Build Android
       run: |
-        #dotnet build DeveMazeGeneratorCore.MonoGame.Android/DeveMazeGeneratorCore.MonoGame.Android.csproj -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
-        #msbuild /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}} /p:AndroidBuildApplicationPackage=true /p:Configuration=Release /p:AndroidPackageFormat=aab /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=DevedseCert /p:AndroidSigningKeyPass=${{secrets.ANDROIDKEYSTOREPASSWORD}} /p:AndroidSigningKeyStore=DevedseCert.keystore /p:AndroidSigningStorePass=${{secrets.ANDROIDKEYSTOREPASSWORD}} DeveMazeGeneratorCore.MonoGame.Android\DeveMazeGeneratorCore.MonoGame.Android.csproj
-        msbuild /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}} /p:AndroidBuildApplicationPackage=true /p:Configuration=Release /p:AndroidPackageFormat=aab ${{ github.actor != 'dependabot[bot]' && format('/p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=DevedseCert /p:AndroidSigningKeyPass={0} /p:AndroidSigningKeyStore=DevedseCert.keystore /p:AndroidSigningStorePass={0}', secrets.ANDROIDKEYSTOREPASSWORD) || '' }} DeveMazeGeneratorCore.MonoGame.Android\DeveMazeGeneratorCore.MonoGame.Android.csproj
+        #dotnet build HugeMazes.MonoGame.Android/HugeMazes.MonoGame.Android.csproj -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+        #msbuild /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}} /p:AndroidBuildApplicationPackage=true /p:Configuration=Release /p:AndroidPackageFormat=aab /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=DevedseCert /p:AndroidSigningKeyPass=${{secrets.ANDROIDKEYSTOREPASSWORD}} /p:AndroidSigningKeyStore=DevedseCert.keystore /p:AndroidSigningStorePass=${{secrets.ANDROIDKEYSTOREPASSWORD}} HugeMazes.MonoGame.Android\HugeMazes.MonoGame.Android.csproj
+        msbuild /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}} /p:AndroidBuildApplicationPackage=true /p:Configuration=Release /p:AndroidPackageFormat=aab ${{ github.actor != 'dependabot[bot]' && format('/p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=DevedseCert /p:AndroidSigningKeyPass={0} /p:AndroidSigningKeyStore=DevedseCert.keystore /p:AndroidSigningStorePass={0}', secrets.ANDROIDKEYSTOREPASSWORD) || '' }} HugeMazes.MonoGame.Android\HugeMazes.MonoGame.Android.csproj
     - name: dotnet test
-      run: dotnet test DeveMazeGeneratorCore.Tests/DeveMazeGeneratorCore.Tests.csproj -c Release --verbosity normal
+      run: dotnet test HugeMazes.Tests/HugeMazes.Tests.csproj -c Release --verbosity normal
     # - name: Package sources
     #   run: |
-    #     7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "./Scripts/Output/DeveMazeGeneratorCore.MonoGame.Android.7z" "DeveMazeGeneratorCore.MonoGame.Android\*" '-x!*.pdb'
+    #     7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "./Scripts/Output/HugeMazes.MonoGame.Android.7z" "HugeMazes.MonoGame.Android\*" '-x!*.pdb'
     #   shell: powershell
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCore.MonoGame.Android_aab
-        path: ./DeveMazeGeneratorCore.MonoGame.Android/bin/Release/net8.0-android/devemazegeneratorcoremonogame_android.devemazegeneratorcoremonogame_android-Signed.aab
+        name: HugeMazes.MonoGame.Android_aab
+        path: ./HugeMazes.MonoGame.Android/bin/Release/net8.0-android/devemazegeneratorcoremonogame_android.devemazegeneratorcoremonogame_android-Signed.aab
 
 
   build_windows_AndroidForFireStick:
@@ -470,30 +470,30 @@ jobs:
     - name: Set Android version
       uses: damienaicheh/update-android-version-manifest-action@v1.0.0
       with:
-        android-manifest-path: ./DeveMazeGeneratorCore.MonoGame.Android/AndroidManifest.xml
+        android-manifest-path: ./HugeMazes.MonoGame.Android/AndroidManifest.xml
         version-name: 1.0.${{needs.generate_version_number.outputs.build_number}}
         version-code: ${{needs.generate_version_number.outputs.build_number}}
         print-file: true
     - name: Restore NuGet packages
       run: |
-        nuget restore DeveMazeGeneratorCore/DeveMazeGeneratorCore.csproj
-        nuget restore DeveMazeGeneratorCore.MonoGame.Core/DeveMazeGeneratorCore.MonoGame.Core.csproj
-        nuget restore DeveMazeGeneratorCore.MonoGame.Android/DeveMazeGeneratorCore.MonoGame.Android.csproj
+        nuget restore HugeMazes/HugeMazes.csproj
+        nuget restore HugeMazes.MonoGame.Core/HugeMazes.MonoGame.Core.csproj
+        nuget restore HugeMazes.MonoGame.Android/HugeMazes.MonoGame.Android.csproj
     - name: Build Android
       run: |
-        #dotnet build DeveMazeGeneratorCore.MonoGame.Android/DeveMazeGeneratorCore.MonoGame.Android.csproj -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
-        #msbuild /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}} /p:AndroidBuildApplicationPackage=true /p:Configuration=Release /p:AndroidPackageFormat=apk /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=DevedseCert /p:AndroidSigningKeyPass=${{secrets.ANDROIDKEYSTOREPASSWORD}} /p:AndroidSigningKeyStore=DevedseCert.keystore /p:AndroidSigningStorePass=${{secrets.ANDROIDKEYSTOREPASSWORD}} DeveMazeGeneratorCore.MonoGame.Android\DeveMazeGeneratorCore.MonoGame.Android.csproj
-        msbuild /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}} /p:AndroidBuildApplicationPackage=true /p:Configuration=Release /p:AndroidPackageFormat=apk ${{ github.actor != 'dependabot[bot]' && format('/p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=DevedseCert /p:AndroidSigningKeyPass={0} /p:AndroidSigningKeyStore=DevedseCert.keystore /p:AndroidSigningStorePass={0}', secrets.ANDROIDKEYSTOREPASSWORD) || '' }} DeveMazeGeneratorCore.MonoGame.Android\DeveMazeGeneratorCore.MonoGame.Android.csproj
+        #dotnet build HugeMazes.MonoGame.Android/HugeMazes.MonoGame.Android.csproj -c Release --no-restore /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}}
+        #msbuild /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}} /p:AndroidBuildApplicationPackage=true /p:Configuration=Release /p:AndroidPackageFormat=apk /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=DevedseCert /p:AndroidSigningKeyPass=${{secrets.ANDROIDKEYSTOREPASSWORD}} /p:AndroidSigningKeyStore=DevedseCert.keystore /p:AndroidSigningStorePass=${{secrets.ANDROIDKEYSTOREPASSWORD}} HugeMazes.MonoGame.Android\HugeMazes.MonoGame.Android.csproj
+        msbuild /p:Version=1.0.${{needs.generate_version_number.outputs.build_number}} /p:AndroidBuildApplicationPackage=true /p:Configuration=Release /p:AndroidPackageFormat=apk ${{ github.actor != 'dependabot[bot]' && format('/p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=DevedseCert /p:AndroidSigningKeyPass={0} /p:AndroidSigningKeyStore=DevedseCert.keystore /p:AndroidSigningStorePass={0}', secrets.ANDROIDKEYSTOREPASSWORD) || '' }} HugeMazes.MonoGame.Android\HugeMazes.MonoGame.Android.csproj
     - name: dotnet test
-      run: dotnet test DeveMazeGeneratorCore.Tests/DeveMazeGeneratorCore.Tests.csproj -c Release --verbosity normal
+      run: dotnet test HugeMazes.Tests/HugeMazes.Tests.csproj -c Release --verbosity normal
     # - name: Package sources
     #   run: |
-    #     7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "./Scripts/Output/DeveMazeGeneratorCore.MonoGame.Android.7z" "DeveMazeGeneratorCore.MonoGame.Android\*" '-x!*.pdb'
+    #     7z a -t7z -m0=LZMA2 -mmt=on -mx9 -md=1536m -mfb=273 -ms=on -mqs=on -sccUTF-8 "./Scripts/Output/HugeMazes.MonoGame.Android.7z" "HugeMazes.MonoGame.Android\*" '-x!*.pdb'
     #   shell: powershell
     - uses: actions/upload-artifact@v4
       with:
-        name: DeveMazeGeneratorCore.MonoGame.Android_apk
-        path: ./DeveMazeGeneratorCore.MonoGame.Android/bin/Release/net8.0-android/devemazegeneratorcoremonogame_android.devemazegeneratorcoremonogame_android-Signed.apk
+        name: HugeMazes.MonoGame.Android_apk
+        path: ./HugeMazes.MonoGame.Android/bin/Release/net8.0-android/devemazegeneratorcoremonogame_android.devemazegeneratorcoremonogame_android-Signed.apk
 
 
   release_github:
@@ -541,22 +541,22 @@ jobs:
       with:
         tag_name: 1.0.${{needs.generate_version_number.outputs.build_number}}
         files: |
-          ./artifacts/DeveMazeGeneratorCore7z/DeveMazeGeneratorCore.7z
-          ./artifacts/DeveMazeGeneratorCoreZip/DeveMazeGeneratorCore.zip
-          ./artifacts/DeveMazeGeneratorCoreNuGet/*.nupkg
-          ./artifacts/DeveMazeGeneratorCoreNuGet/*.snupkg
-          ./artifacts/DeveMazeGeneratorCore.MonoGame.DesktopGL_linux-x64/DeveMazeGeneratorCore.MonoGame.DesktopGL_linux-x64.tar.gz
-          ./artifacts/DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64_onlinux/DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64_onlinux.7z
-          ./artifacts/DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64/DeveMazeGeneratorCore.MonoGame.DesktopGL_win-x64.7z
-          ./artifacts/DeveMazeGeneratorCore.MonoGame.WindowsDX_win-x64/DeveMazeGeneratorCore.MonoGame.WindowsDX_win-x64.7z
-          ./artifacts/DeveMazeGeneratorCore.MonoGame.Android_aab/devemazegeneratorcoremonogame_android.devemazegeneratorcoremonogame_android-Signed.aab
-          ./artifacts/DeveMazeGeneratorCore.MonoGame.Android_apk/devemazegeneratorcoremonogame_android.devemazegeneratorcoremonogame_android-Signed.apk
-          ./artifacts/DeveMazeGeneratorCore.ConsoleApp.Windows/DeveMazeGenerator.ConsoleApp.Untrimmed.exe
-          ./artifacts/DeveMazeGeneratorCore.ConsoleApp.Windows/DeveMazeGenerator.ConsoleApp.Trimmed.exe
-          ./artifacts/DeveMazeGeneratorCore.ConsoleApp.Windows/DeveMazeGenerator.ConsoleApp.TrimmedAot.exe
-          ./artifacts/DeveMazeGeneratorCore.ConsoleApp.Linux/DeveMazeGenerator.ConsoleApp.Untrimmed
-          ./artifacts/DeveMazeGeneratorCore.ConsoleApp.Linux/DeveMazeGenerator.ConsoleApp.Trimmed
-          ./artifacts/DeveMazeGeneratorCore.ConsoleApp.Linux/DeveMazeGenerator.ConsoleApp.TrimmedAot
+          ./artifacts/HugeMazes7z/HugeMazes.7z
+          ./artifacts/HugeMazesZip/HugeMazes.zip
+          ./artifacts/HugeMazesNuGet/*.nupkg
+          ./artifacts/HugeMazesNuGet/*.snupkg
+          ./artifacts/HugeMazes.MonoGame.DesktopGL_linux-x64/HugeMazes.MonoGame.DesktopGL_linux-x64.tar.gz
+          ./artifacts/HugeMazes.MonoGame.DesktopGL_win-x64_onlinux/HugeMazes.MonoGame.DesktopGL_win-x64_onlinux.7z
+          ./artifacts/HugeMazes.MonoGame.DesktopGL_win-x64/HugeMazes.MonoGame.DesktopGL_win-x64.7z
+          ./artifacts/HugeMazes.MonoGame.WindowsDX_win-x64/HugeMazes.MonoGame.WindowsDX_win-x64.7z
+          ./artifacts/HugeMazes.MonoGame.Android_aab/devemazegeneratorcoremonogame_android.devemazegeneratorcoremonogame_android-Signed.aab
+          ./artifacts/HugeMazes.MonoGame.Android_apk/devemazegeneratorcoremonogame_android.devemazegeneratorcoremonogame_android-Signed.apk
+          ./artifacts/HugeMazes.ConsoleApp.Windows/DeveMazeGenerator.ConsoleApp.Untrimmed.exe
+          ./artifacts/HugeMazes.ConsoleApp.Windows/DeveMazeGenerator.ConsoleApp.Trimmed.exe
+          ./artifacts/HugeMazes.ConsoleApp.Windows/DeveMazeGenerator.ConsoleApp.TrimmedAot.exe
+          ./artifacts/HugeMazes.ConsoleApp.Linux/DeveMazeGenerator.ConsoleApp.Untrimmed
+          ./artifacts/HugeMazes.ConsoleApp.Linux/DeveMazeGenerator.ConsoleApp.Trimmed
+          ./artifacts/HugeMazes.ConsoleApp.Linux/DeveMazeGenerator.ConsoleApp.TrimmedAot
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -569,10 +569,10 @@ jobs:
     - name: Download all artifacts
       uses: actions/download-artifact@v4
       with:
-        name: DeveMazeGeneratorCoreNuGet
-        path: ./artifacts/DeveMazeGeneratorCoreNuGet/
+        name: HugeMazesNuGet
+        path: ./artifacts/HugeMazesNuGet/
     - name: Push NuGet
-      run: dotnet nuget push ./artifacts/DeveMazeGeneratorCoreNuGet/DeveMazeGeneratorCore.1.0.${{needs.generate_version_number.outputs.build_number}}.nupkg -k ${{ secrets.NUGETTOKEN }} -s https://api.nuget.org/v3/index.json
+      run: dotnet nuget push ./artifacts/HugeMazesNuGet/HugeMazes.1.0.${{needs.generate_version_number.outputs.build_number}}.nupkg -k ${{ secrets.NUGETTOKEN }} -s https://api.nuget.org/v3/index.json
 
   codeqlanalyze:
     runs-on: windows-latest
