@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="HugeMazes.Benchmark/HugeMazes.Benchmark.csproj" />
+  <Project Path="HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj" />
+  <Project Path="HugeMazes.Tests/HugeMazes.Tests.csproj" />
+  <Project Path="HugeMazes.Web/HugeMazes.Web.csproj" />
+  <Project Path="HugeMazes/HugeMazes.csproj" />
+</Solution>
