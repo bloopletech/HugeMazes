@@ -36,11 +36,3 @@ updates:
       interval: "daily"
       time: "01:00"
       timezone: "Europe/Amsterdam"
-
-  # Maintain dependencies for Docker
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "daily"
-      time: "01:00"
-      timezone: "Europe/Amsterdam"

@@ -3,9 +3,6 @@
     "HugeMazes.CLI": {
       "commandName": "Project",
       "commandLineArgs": "1024"
-    },
-    "Docker": {
-      "commandName": "Docker"
     }
   }
 }
