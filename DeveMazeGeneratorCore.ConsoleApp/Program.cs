@@ -86,6 +86,8 @@ CLITask CreateTask(string task)
 }
 
 static CLITask HelpTask() => new("help", () => Console.Write("""
+    Generates random mazes, solves those mazes, and draws those mazes and maze paths as images.
+
     Provide list of tasks to perform as command line arguments.
     Available tasks:
 
