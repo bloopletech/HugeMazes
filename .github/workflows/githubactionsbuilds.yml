@@ -89,11 +89,6 @@ jobs:
     - name: Download all artifacts
       uses: actions/download-artifact@v8
 
-    - name: Display structure of downloaded files
-      run: |
-        cd ./
-        ls -R
-
     - name: Release
       env:
         APP_VERSION: ${{needs.extract-version.outputs.APP_VERSION}}
