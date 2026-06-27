@@ -2,9 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <UserSecretsId>b2ab0a5d-fd6f-4ba2-a298-e6f45dde67bc</UserSecretsId>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>..</DockerfileContext>
-    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <SelfContained>true</SelfContained>
