@@ -101,4 +101,6 @@ jobs:
       with:
         prerelease: true
         tag_name: v${{ env.APP_VERSION }}
-        files: "*"
+        files: |
+          build-linux/*
+          build-windows/*
