@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "HugeMazes.ConsoleApp": {
+      "commandName": "Project",
+      "commandLineArgs": "1024"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

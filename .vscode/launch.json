@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "DeveMazeGeneratorCore.MonoGame.Blazor",
+            "name": "HugeMazes.MonoGame.Blazor",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/DeveMazeGeneratorCore.MonoGame.Blazor/bin/Debug/net6.0/DeveMazeGeneratorCore.MonoGame.Blazor.dll",
+            "program": "${workspaceFolder}/HugeMazes.MonoGame.Blazor/bin/Debug/net6.0/HugeMazes.MonoGame.Blazor.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/DeveMazeGeneratorCore.MonoGame.Blazor",
+            "cwd": "${workspaceFolder}/HugeMazes.MonoGame.Blazor",
             "stopAtEntry": false,
             "serverReadyAction": {
                 "action": "openExternally",
@@ -25,13 +25,13 @@
             }
         },
         {
-            "name": "DeveMazeGeneratorCore.ConsoleApp",
+            "name": "HugeMazes.ConsoleApp",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/DeveMazeGeneratorCore.ConsoleApp/bin/Debug/net6.0/DeveMazeGenerator.ConsoleApp.dll",
+            "program": "${workspaceFolder}/HugeMazes.ConsoleApp/bin/Debug/net6.0/DeveMazeGenerator.ConsoleApp.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/DeveMazeGeneratorCore.ConsoleApp",
+            "cwd": "${workspaceFolder}/HugeMazes.ConsoleApp",
             "console": "internalConsole",
             "stopAtEntry": false
         },
@@ -44,7 +44,7 @@
             "name": "Launch and Debug Standalone Blazor WebAssembly App",
             "type": "blazorwasm",
             "request": "launch",
-            "cwd": "${workspaceFolder}/DeveMazeGeneratorCore.MonoGame.Blazor"
+            "cwd": "${workspaceFolder}/HugeMazes.MonoGame.Blazor"
         },
         {
             // Use IntelliSense to find out which attributes exist for C# debugging
@@ -55,9 +55,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/DeveMazeGeneratorCore.ConsoleApp/bin/Debug/net6.0/DeveMazeGenerator.ConsoleApp.dll",
+            "program": "${workspaceFolder}/HugeMazes.ConsoleApp/bin/Debug/net6.0/DeveMazeGenerator.ConsoleApp.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/DeveMazeGeneratorCore.ConsoleApp",
+            "cwd": "${workspaceFolder}/HugeMazes.ConsoleApp",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false

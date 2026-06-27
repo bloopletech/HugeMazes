@@ -399,14 +399,14 @@ FodyWeavers.xsd
 *.sln.iml
 
 # My stuff
-/Scripts/Docker/DeveMazeGeneratorCoreWebPublish
+/Scripts/Docker/HugeMazesWebPublish
 /Scripts/Output
 
 # Generated 3MF files and temporary artifacts
-DeveMazeGeneratorCore.Coaster3MF/3D/
-DeveMazeGeneratorCore.Coaster3MF/[Content_Types].xml
-DeveMazeGeneratorCore.Coaster3MF/_rels/
+HugeMazes.Coaster3MF/3D/
+HugeMazes.Coaster3MF/[Content_Types].xml
+HugeMazes.Coaster3MF/_rels/
 
 # Generated output files from testing
-DeveMazeGeneratorCore.Coaster3MF/maze_coaster_*.3mf
-DeveMazeGeneratorCore.Coaster3MF/maze_coaster_*.png
+HugeMazes.Coaster3MF/maze_coaster_*.3mf
+HugeMazes.Coaster3MF/maze_coaster_*.png
