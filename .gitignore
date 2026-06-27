@@ -397,16 +397,3 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-
-# My stuff
-/Scripts/Docker/HugeMazesWebPublish
-/Scripts/Output
-
-# Generated 3MF files and temporary artifacts
-HugeMazes.Coaster3MF/3D/
-HugeMazes.Coaster3MF/[Content_Types].xml
-HugeMazes.Coaster3MF/_rels/
-
-# Generated output files from testing
-HugeMazes.Coaster3MF/maze_coaster_*.3mf
-HugeMazes.Coaster3MF/maze_coaster_*.png
