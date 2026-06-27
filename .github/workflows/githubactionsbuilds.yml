@@ -14,7 +14,7 @@ jobs:
     
     - name: Extract App Version
       id: extract-app-version
-      run: $version = (Select-Xml -Path HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -XPath '//Version[1]/text()[1]').Node.InnerText; "APP_VERSION=$version" >> "$env:GITHUB_OUTPUT"
+      run: $version = (Select-Xml -Path HugeMazes.CLI/HugeMazes.CLI.csproj -XPath '//Version[1]/text()[1]').Node.InnerText; "APP_VERSION=$version" >> "$env:GITHUB_OUTPUT"
 
   build-linux-x64:
     runs-on: ubuntu-latest
@@ -37,14 +37,14 @@ jobs:
           ${{ runner.os }}-nuget
 
     - name: Build
-      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -r linux-x64
+      run: dotnet publish HugeMazes.CLI/HugeMazes.CLI.csproj -r linux-x64
 
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
         name: build-linux-x64
         path: |
-          HugeMazes.ConsoleApp/bin/Release/linux-x64/publish/*
+          HugeMazes.CLI/bin/Release/linux-x64/publish/*
 
   build-linux-arm64:
     runs-on: ubuntu-24.04-arm
@@ -67,14 +67,14 @@ jobs:
           ${{ runner.os }}-nuget
 
     - name: Build
-      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -r linux-arm64
+      run: dotnet publish HugeMazes.CLI/HugeMazes.CLI.csproj -r linux-arm64
 
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
         name: build-linux-arm64
         path: |
-          HugeMazes.ConsoleApp/bin/Release/linux-arm64/publish/*
+          HugeMazes.CLI/bin/Release/linux-arm64/publish/*
 
   build-windows-x64:
     runs-on: windows-latest
@@ -97,14 +97,14 @@ jobs:
           ${{ runner.os }}-nuget
 
     - name: Build
-      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -r win-x64
+      run: dotnet publish HugeMazes.CLI/HugeMazes.CLI.csproj -r win-x64
 
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
         name: build-windows-x64
         path: |
-          HugeMazes.ConsoleApp/bin/Release/win-x64/publish/*
+          HugeMazes.CLI/bin/Release/win-x64/publish/*
 
   build-windows-arm64:
     runs-on: windows-11-arm
@@ -127,14 +127,14 @@ jobs:
           ${{ runner.os }}-nuget
 
     - name: Build
-      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -r win-arm64
+      run: dotnet publish HugeMazes.CLI/HugeMazes.CLI.csproj -r win-arm64
 
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
         name: build-windows-arm64
         path: |
-          HugeMazes.ConsoleApp/bin/Release/win-arm64/publish/*
+          HugeMazes.CLI/bin/Release/win-arm64/publish/*
 
   release-github:
     needs: [
