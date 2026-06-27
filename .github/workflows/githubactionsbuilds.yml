@@ -5,13 +5,16 @@ on: push
 jobs:
   extract-version:
     runs-on: windows-latest
+    outputs:
+      APP_VERSION: ${{ steps.extract-app-version.outputs.APP_VERSION }}
     steps:
     - run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $env:GITHUB_ENV
 
     - uses: actions/checkout@v6
     
     - name: Extract App Version
-      run: $version = (Select-Xml -Path HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -XPath '//Version[1]/text()[1]').Node.InnerText; "APP_VERSION=$version" >> "$env:GITHUB_ENV"
+      id: extract-app-version
+      run: $version = (Select-Xml -Path HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -XPath '//Version[1]/text()[1]').Node.InnerText; "APP_VERSION=$version" >> "$env:GITHUB_OUTPUT"
 
   build-linux:
     runs-on: ubuntu-latest
@@ -39,7 +42,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
-        name: build
+        name: build-linux
         path: |
           HugeMazes.ConsoleApp/bin/Release/linux-x64/publish/*
 
@@ -69,7 +72,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
-        name: build
+        name: build-windows
         path: |
           HugeMazes.ConsoleApp/bin/Release/win-x64/publish/*
 
@@ -83,6 +86,9 @@ jobs:
       contents: write
     if: github.ref == 'refs/heads/master'
     steps:
+    - env:
+      APP_VERSION: ${{needs.extract-version.outputs.APP_VERSION}}
+
     - name: Download all artifacts
       uses: actions/download-artifact@v8
 
@@ -96,6 +102,4 @@ jobs:
       with:
         prerelease: true
         tag_name: v${{ env.APP_VERSION }}
-        files: |
-          HugeMazes.ConsoleApp/bin/Release/linux-x64/publish/*
-          HugeMazes.ConsoleApp/bin/Release/win-x64/publish/*
+        files: *
