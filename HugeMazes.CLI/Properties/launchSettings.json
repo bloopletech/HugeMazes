@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "HugeMazes.ConsoleApp": {
+    "HugeMazes.CLI": {
       "commandName": "Project",
       "commandLineArgs": "1024"
     },
