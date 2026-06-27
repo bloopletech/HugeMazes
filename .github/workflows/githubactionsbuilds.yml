@@ -86,9 +86,6 @@ jobs:
       contents: write
     if: github.ref == 'refs/heads/master'
     steps:
-    - env:
-      APP_VERSION: ${{needs.extract-version.outputs.APP_VERSION}}
-
     - name: Download all artifacts
       uses: actions/download-artifact@v8
 
@@ -98,6 +95,8 @@ jobs:
         ls -R
 
     - name: Release
+      env:
+        APP_VERSION: ${{needs.extract-version.outputs.APP_VERSION}}
       uses: softprops/action-gh-release@v3
       with:
         prerelease: true
