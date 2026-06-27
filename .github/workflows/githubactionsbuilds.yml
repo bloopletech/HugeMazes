@@ -16,7 +16,7 @@ jobs:
       id: extract-app-version
       run: $version = (Select-Xml -Path HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -XPath '//Version[1]/text()[1]').Node.InnerText; "APP_VERSION=$version" >> "$env:GITHUB_OUTPUT"
 
-  build-linux:
+  build-linux-x64:
     runs-on: ubuntu-latest
     steps:
     - run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $env:GITHUB_ENV
@@ -42,11 +42,41 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
-        name: build-linux
+        name: build-linux-x64
         path: |
           HugeMazes.ConsoleApp/bin/Release/linux-x64/publish/*
 
-  build-windows:
+  build-linux-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+    - run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $env:GITHUB_ENV
+
+    - uses: actions/checkout@v6
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: global.json
+
+    - uses: actions/cache@v5
+      with:
+        path: ~/.nuget/packages
+        # Look to see if there is a cache hit for the corresponding requirements file
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget
+
+    - name: Build
+      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -r linux-arm64
+
+    - name: Upload
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-linux-arm64
+        path: |
+          HugeMazes.ConsoleApp/bin/Release/linux-arm64/publish/*
+
+  build-windows-x64:
     runs-on: windows-latest
     steps:
     - run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $env:GITHUB_ENV
@@ -72,15 +102,48 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v7
       with:
-        name: build-windows
+        name: build-windows-x64
         path: |
           HugeMazes.ConsoleApp/bin/Release/win-x64/publish/*
+
+  build-windows-arm64:
+    runs-on: windows-11-arm
+    steps:
+    - run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $env:GITHUB_ENV
+
+    - uses: actions/checkout@v6
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        global-json-file: global.json
+
+    - uses: actions/cache@v5
+      with:
+        path: ~/.nuget/packages
+        # Look to see if there is a cache hit for the corresponding requirements file
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget
+
+    - name: Build
+      run: dotnet publish HugeMazes.ConsoleApp/HugeMazes.ConsoleApp.csproj -r win-arm64
+
+    - name: Upload
+      uses: actions/upload-artifact@v7
+      with:
+        name: build-windows-arm64
+        path: |
+          HugeMazes.ConsoleApp/bin/Release/win-arm64/publish/*
 
   release-github:
     needs: [
       extract-version,
-      build-linux,
-      build-windows]
+      build-linux-x64,
+      build-linux-arm64,
+      build-windows-x64,
+      build-windows-arm64
+    ]
     runs-on: windows-latest
     permissions:
       contents: write
@@ -88,6 +151,13 @@ jobs:
     steps:
     - name: Download all artifacts
       uses: actions/download-artifact@v8
+
+    - name: Append platform specifiers
+      run: |
+      (Get-ChildItem -File build-linux-x64) | Rename-Item -NewName {$_.BaseName + "-linux-x64" + $_.Extension}
+      (Get-ChildItem -File build-linux-arm64) | Rename-Item -NewName {$_.BaseName + "-linux-arm64" + $_.Extension}
+      (Get-ChildItem -File build-windows-x64) | Rename-Item -NewName {$_.BaseName + "-windows-x64" + $_.Extension}
+      (Get-ChildItem -File build-windows-arm64) | Rename-Item -NewName {$_.BaseName + "-windows-arm64" + $_.Extension}
 
     - name: Release
       env:
@@ -97,5 +167,7 @@ jobs:
         prerelease: true
         tag_name: v${{ env.APP_VERSION }}
         files: |
-          build-linux/*
-          build-windows/*
+          build-linux-x64/*
+          build-linux-arm64/*
+          build-windows-x64/*
+          build-windows-arm64/*
