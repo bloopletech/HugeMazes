@@ -154,10 +154,10 @@ jobs:
 
     - name: Append platform specifiers
       run: |
-      (Get-ChildItem -File build-linux-x64) | Rename-Item -NewName {$_.BaseName + "-linux-x64" + $_.Extension}
-      (Get-ChildItem -File build-linux-arm64) | Rename-Item -NewName {$_.BaseName + "-linux-arm64" + $_.Extension}
-      (Get-ChildItem -File build-windows-x64) | Rename-Item -NewName {$_.BaseName + "-windows-x64" + $_.Extension}
-      (Get-ChildItem -File build-windows-arm64) | Rename-Item -NewName {$_.BaseName + "-windows-arm64" + $_.Extension}
+        (Get-ChildItem -File build-linux-x64) | Rename-Item -NewName {$_.BaseName + "-linux-x64" + $_.Extension}
+        (Get-ChildItem -File build-linux-arm64) | Rename-Item -NewName {$_.BaseName + "-linux-arm64" + $_.Extension}
+        (Get-ChildItem -File build-windows-x64) | Rename-Item -NewName {$_.BaseName + "-windows-x64" + $_.Extension}
+        (Get-ChildItem -File build-windows-arm64) | Rename-Item -NewName {$_.BaseName + "-windows-arm64" + $_.Extension}
 
     - name: Release
       env:
