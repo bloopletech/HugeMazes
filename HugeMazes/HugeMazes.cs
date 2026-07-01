@@ -13,6 +13,9 @@ public static class HugeMazes
     public static IStore Create(string fileName) => new StreamStore(File.Open(fileName, FileMode.CreateNew));
     public static IStore Open(string fileName) => new StreamStore(File.Open(fileName, FileMode.Open));
 
+    public static IMaze Load(IStore store) => MazeSerializer.Read(store);
+    public static IMazePath LoadPath(IStore store) => MazePathSerializer.Read(store);
+
     public static IMaze Generate(
         IStore store,
         int width,
