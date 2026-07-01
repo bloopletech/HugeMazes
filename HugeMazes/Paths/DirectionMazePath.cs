@@ -75,7 +75,7 @@ public class DirectionMazePath : Storable, IMazePath
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public MazePoint Get(long index)
         {
-            if(index < 0 || index >= Count) ExceptionExtensions.ThrowOutOfRangeException(index);
+            if((ulong)index >= (ulong)Count) ExceptionExtensions.ThrowOutOfRangeException(index);
             if(index == 0) return start;
             if(index == Count - 1) return end;
 
