@@ -1,7 +1,6 @@
-using System.Diagnostics;
+using HugeMazes.CLI;
 using HugeMazes.ConsoleApp;
 using HugeMazes.Extensions;
-using HugeMazes.Generators;
 using HugeMazes.IO;
 using HugeMazes.Mazes;
 using HugeMazes.Paths;
@@ -14,28 +13,20 @@ using CLITask = (object? Description, System.Action Action);
 var skipReuse = true;
 IStore.LongOverride = true;
 
-var options = new Options(args);
-
-if(!options.HasNext()) options = new(["help"]);
-if(options.HasNextInt())
-{
-    var width = options.Next();
-    var height = options.HasNext() ? options.Next() : width;
-    options = new(["generate", width, height, "verify", "solve", "verify-path", "render", "render-path"]);
-}
-
+using var measurer = new Measurer("program");
+var options = ParseOptions();
 string? mazeFileName = null;
 IMaze? maze = null;
 string? pathFileName = null;
 IMazePath? path = null;
 
-Console.WriteLine($"Invoked with: {string.Join(' ', args)}");
+Console.WriteLine($"Arguments: {string.Join(' ', args)}");
 Console.WriteLine($"Resolves to: {options}");
 
 var tasks = new List<BoundCLITask>();
 while(options.HasNext()) tasks.Add(CreateTask(options.Next()));
 
-Console.WriteLine("Running tasks:");
+Console.WriteLine("Tasks:");
 foreach(var (Name, Arguments, _) in tasks) Console.WriteLine($"{Name} {Arguments}");
 Console.WriteLine();
 
@@ -43,21 +34,17 @@ try
 {
     foreach(var (Name, Arguments, Action) in tasks)
     {
-        Console.WriteLine($"{Name} {Arguments}");
-        var duration = Measure(() =>
-        {
-            Action();
+        using var _ = new Measurer(Name);
 
-            if(skipReuse)
-            {
-                maze?.Dispose();
-                maze = null;
-                path?.Dispose();
-                path = null;
-            }
-        });
-        Console.WriteLine($"{Name} took {duration}ms");
-        Console.WriteLine();
+        Action();
+
+        if(skipReuse)
+        {
+            maze?.Dispose();
+            maze = null;
+            path?.Dispose();
+            path = null;
+        }
     }
 }
 catch(InsufficientDiskSpaceException ex)
@@ -75,11 +62,17 @@ finally
     path?.Dispose();
 }
 
-long Measure(Action action)
+Options ParseOptions()
 {
-    var start = Stopwatch.GetTimestamp();
-    action();
-    return (long)Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+    var options = new Options(args);
+    if(!options.HasNext()) return new(["help"]);
+    if(options.HasNextInt())
+    {
+        var width = options.Next();
+        var height = options.HasNext() ? options.Next() : width;
+        return new(["generate", width, height, "verify", "solve", "verify-path", "render", "render-path"]);
+    }
+    return options;
 }
 
 BoundCLITask CreateTask(string task)
@@ -158,7 +151,6 @@ CLITask GenerateTask()
 
     return (description, () =>
     {
-        Console.WriteLine($"Generating maze...");
         maze = Generate(Create(mazeFileName), width, height, seed);
         maze.Write();
         Console.WriteLine($"Saved maze to {mazeFileName}");
@@ -172,7 +164,6 @@ CLITask VerifyTask()
 
     return (description, () =>
     {
-        Console.WriteLine($"Verifying maze...");
         maze ??= Load(mazeFileName);
         var result = IsPerfectMaze(maze);
         Console.WriteLine($"Is our maze perfect?: {result}");
@@ -187,7 +178,6 @@ CLITask SolveTask()
 
     return (description, () =>
     {
-        Console.WriteLine($"Solving maze...");
         maze ??= Load(mazeFileName);
         path = Solve(Create(pathFileName), maze);
         path.Write();
@@ -203,7 +193,6 @@ CLITask VerifyPathTask()
 
     return (description, () =>
     {
-        Console.WriteLine($"Verifying maze path...");
         maze ??= Load(mazeFileName);
         path ??= LoadPath(pathFileName);
         var result = IsPerfectPath(maze, path);
@@ -219,7 +208,6 @@ CLITask RenderTask()
 
     return (description, () =>
     {
-        Console.WriteLine($"Rendering maze...");
         maze ??= Load(mazeFileName);
         using var image = Render(Create(imageFileName), maze);
         image.Write();
@@ -236,7 +224,6 @@ CLITask RenderPathTask()
 
     return (description, () =>
     {
-        Console.WriteLine($"Rendering maze path...");
         maze ??= Load(mazeFileName);
         path ??= LoadPath(pathFileName);
         using var image = Render(Create(imageFileName), maze, path);
