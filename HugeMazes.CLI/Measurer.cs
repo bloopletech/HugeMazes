@@ -34,4 +34,11 @@ public class Measurer : IDisposable
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
+
+    public static Measurer Measure(string name) => new(name);
+
+    public static void Measure(string name, Action callback)
+    {
+        using(Measure(name)) callback();
+    }
 }

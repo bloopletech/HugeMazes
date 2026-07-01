@@ -10,8 +10,7 @@ using static HugeMazes.Verifier;
 using BoundCLITask = (string Name, string Arguments, System.Action Action);
 using CLITask = (object? Description, System.Action Action);
 
-var skipReuse = true;
-IStore.LongOverride = true;
+//IStore.LongOverride = true;
 
 using var measurer = new Measurer("program");
 var options = ParseOptions();
@@ -32,20 +31,7 @@ Console.WriteLine();
 
 try
 {
-    foreach(var (Name, Arguments, Action) in tasks)
-    {
-        using var _ = new Measurer(Name);
-
-        Action();
-
-        if(skipReuse)
-        {
-            maze?.Dispose();
-            maze = null;
-            path?.Dispose();
-            path = null;
-        }
-    }
+    foreach(var (Name, Arguments, Action) in tasks) Measurer.Measure(Name, Action);
 }
 catch(InsufficientDiskSpaceException ex)
 {
@@ -87,7 +73,6 @@ BoundCLITask CreateTask(string task)
         "render" => RenderTask(),
         "render-path" => RenderPathTask(),
         "benchmark" => BenchmarkTask(),
-        "benchmark-direction-maze-path" => BenchmarkDirectionMazePathTask(),
         _ => throw new InvalidOperationException($"Unknown task: {task}"),
     };
     return (task, result.Description?.ToString() ?? "", result.Action);
@@ -164,7 +149,7 @@ CLITask VerifyTask()
 
     return (description, () =>
     {
-        maze ??= Load(mazeFileName);
+        maze ??= Load(Open(mazeFileName));
         var result = IsPerfectMaze(maze);
         Console.WriteLine($"Is our maze perfect?: {result}");
     });
@@ -178,7 +163,7 @@ CLITask SolveTask()
 
     return (description, () =>
     {
-        maze ??= Load(mazeFileName);
+        maze ??= Load(Open(mazeFileName));
         path = Solve(Create(pathFileName), maze);
         path.Write();
         Console.WriteLine($"Saved maze path to {pathFileName}");
@@ -193,8 +178,8 @@ CLITask VerifyPathTask()
 
     return (description, () =>
     {
-        maze ??= Load(mazeFileName);
-        path ??= LoadPath(pathFileName);
+        maze ??= Load(Open(mazeFileName));
+        path ??= LoadPath(Open(pathFileName));
         var result = IsPerfectPath(maze, path);
         Console.WriteLine($"Is our maze path perfect?: {result}");
     });
@@ -208,7 +193,7 @@ CLITask RenderTask()
 
     return (description, () =>
     {
-        maze ??= Load(mazeFileName);
+        maze ??= Load(Open(mazeFileName));
         using var image = Render(Create(imageFileName), maze);
         image.Write();
         Console.WriteLine($"Saved maze image to {imageFileName}");
@@ -224,8 +209,8 @@ CLITask RenderPathTask()
 
     return (description, () =>
     {
-        maze ??= Load(mazeFileName);
-        path ??= LoadPath(pathFileName);
+        maze ??= Load(Open(mazeFileName));
+        path ??= LoadPath(Open(pathFileName));
         using var image = Render(Create(imageFileName), maze, path);
         image.Write();
         Console.WriteLine($"Saved maze with path image to {imageFileName}");
@@ -238,14 +223,3 @@ static CLITask BenchmarkTask() => (null, () =>
     var result = IsPerfectMaze(maze);
     if(!result) throw new InvalidOperationException("Maze is not perfect");
 });
-
-static CLITask BenchmarkDirectionMazePathTask() => (null, () =>
-{
-    var maze = BenchmarkBaseline();
-    var path = Solve(IStore.Create(false), maze);
-    var result = IsPerfectPath(maze, path);
-    if(!result) throw new InvalidOperationException("Path is not perfect");
-});
-
-static IMaze Load(string fileName) => MazeSerializer.Read(Open(fileName));
-static IMazePath LoadPath(string fileName) => MazePathSerializer.Read(Open(fileName));
