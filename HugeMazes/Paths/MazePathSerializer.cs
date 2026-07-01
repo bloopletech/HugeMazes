@@ -6,15 +6,19 @@ namespace HugeMazes.Paths;
 
 public static class MazePathSerializer
 {
-    public static readonly long Magic = BitConverter.ToInt64(Encoding.ASCII.GetBytes("HUGEPATH"));
+    public static readonly long MagicHuman = BitConverter.ToInt64(Encoding.ASCII.GetBytes("HGMZPATH"));
+    public const long MagicBinary = 6457225418376450318; // Just a randomly generated number
     public const ushort Version = 1;
 
     private static MazePathType ReadHeader(IStore store)
     {
         var header = store.Read<MazePathHeader>(0);
-        var (magic, version, type) = header;
+        var (magicHuman, magicBinary, version, type) = header;
 
-        if(magic != Magic) throw new InvalidDataException("Magic header not present");
+        if(magicHuman != MagicHuman || magicBinary != MagicBinary)
+        {
+            throw new InvalidDataException("Invalid magic header present");
+        }
         if(version != Version) throw new InvalidDataException($"Path version is {version} but we only understand version {Version}");
 
         return type;
@@ -22,7 +26,7 @@ public static class MazePathSerializer
 
     private static void WriteHeader(IStore store, MazePathType type)
     {
-        store.Write(0, new MazePathHeader(Magic, Version, type));
+        store.Write(0, new MazePathHeader(MagicHuman, MagicBinary, Version, type));
     }
 
     public static IMazePath Read(IStore store)

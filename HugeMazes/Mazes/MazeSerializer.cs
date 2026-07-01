@@ -6,15 +6,19 @@ namespace HugeMazes.Mazes;
 
 public class MazeSerializer
 {
-    public static readonly long Magic = BitConverter.ToInt64(Encoding.ASCII.GetBytes("HUGEMAZE"));
+    public static readonly long MagicHuman = BitConverter.ToInt64(Encoding.ASCII.GetBytes("HGMZMAZE"));
+    public const long MagicBinary = 8722170413477670132; // Just a randomly generated number
     public const ushort Version = 1;
 
     private static MazeType ReadHeader(IStore store)
     {
         var header = store.Read<MazeHeader>(0);
-        var (magic, version, type) = header;
+        var (magicHuman, magicBinary, version, type) = header;
 
-        if(magic != Magic) throw new InvalidDataException("Magic header not present");
+        if(magicHuman != MagicHuman || magicBinary != MagicBinary)
+        {
+            throw new InvalidDataException("Invalid magic header present");
+        }
         if(version != Version) throw new InvalidDataException($"Maze version is {version} but we only understand version {Version}");
 
         return type;
@@ -22,7 +26,7 @@ public class MazeSerializer
 
     private static void WriteHeader(IStore store, MazeType type)
     {
-        store.Write(0, new MazeHeader(Magic, Version, type));
+        store.Write(0, new MazeHeader(MagicHuman, MagicBinary, Version, type));
     }
 
     public static IMaze Read(IStore store)
