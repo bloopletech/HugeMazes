@@ -39,8 +39,8 @@ public class BitGrid : Storable, IBitGrid
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int Index(int x, int y)
     {
-        if(x < 0 || x >= size.Width) ExceptionExtensions.ThrowOutOfRangeException(x);
-        if(y < 0 || y >= size.Height) ExceptionExtensions.ThrowOutOfRangeException(y);
+        if((uint)x >= (uint)size.Width) ExceptionExtensions.ThrowOutOfRangeException(x);
+        if((uint)y >= (uint)size.Height) ExceptionExtensions.ThrowOutOfRangeException(y);
         return x + (y * size.Width);
     }
 

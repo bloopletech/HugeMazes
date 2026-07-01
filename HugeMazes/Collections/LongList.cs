@@ -47,7 +47,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (int, int) Index(long index)
     {
-        if(index < 0 || (ulong)index >= (ulong)Count) ExceptionExtensions.ThrowOutOfRangeException(index);
+        if((ulong)index >= (ulong)Count) ExceptionExtensions.ThrowOutOfRangeException(index);
         var (chunkIndex, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
         return ((int)chunkIndex, (int)chunkOffset);
     }

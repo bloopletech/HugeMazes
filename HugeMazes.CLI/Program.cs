@@ -1,15 +1,15 @@
 using System.Diagnostics;
 using HugeMazes.ConsoleApp;
 using HugeMazes.Extensions;
+using HugeMazes.Generators;
 using HugeMazes.IO;
 using HugeMazes.Mazes;
 using HugeMazes.Paths;
 using NeoSmart.PrettySize;
 using static HugeMazes.HugeMazes;
 using static HugeMazes.Verifier;
-
-using CLITask = (object? Description, System.Action Action);
 using BoundCLITask = (string Name, string Arguments, System.Action Action);
+using CLITask = (object? Description, System.Action Action);
 
 var skipReuse = true;
 IStore.LongOverride = true;
