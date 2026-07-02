@@ -10,23 +10,23 @@ namespace HugeMazes.Collections;
 // Based on https://github.com/dotnet/runtime/blob/081d220c0a773ffb7c6bea6b48727833576a65ef/src/libraries/System.Private.CoreLib/src/System/Collections/BitArray.cs
 public class LongBitArray : Storable, ILongBitArray
 {
-    private const int ChunkByteSize = (256 * 1024 * 1024) - 1;
-    private const int ChunkSize = ChunkByteSize * 8; // sizeof(byte) * 8
+    private const int ChunkSize = 0x40000000; // (2 ^ 30)
 
-    private Chunk[] chunks;
+    private Chunk[] chunks = null!;
+    private long length;
 
     public LongBitArray(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        chunks = InitChunks(0);
+        InitChunks(0);
     }
 
     public LongBitArray(IStore store, long bitLength, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        chunks = InitChunks(bitLength);
+        InitChunks(bitLength);
     }
 
     public override long Extent => chunks[^1].EndOffset;
-    public long Length => chunks[^1].End;
+    public long Length => length;
     public bool IsReadOnly => false;
     public bool IsFixedSize => true;
 
@@ -49,7 +49,7 @@ public class LongBitArray : Storable, ILongBitArray
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (int, int) Index(long index)
     {
-        if((ulong)index >= (ulong)Length) ExceptionExtensions.ThrowOutOfRangeException(index);
+        if((ulong)index >= (ulong)length) ExceptionExtensions.ThrowOutOfRangeException(index);
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, ChunkSize);
         return ((int)chunk, (int)chunkOffset);
     }
@@ -70,9 +70,13 @@ public class LongBitArray : Storable, ILongBitArray
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public bool Peek() => this[Length - 1];
+    public bool Peek() => this[length - 1];
 
-    private Chunk[] InitChunks(long bitLength) => [.. Chunk.Produce(this, bitLength, ChunkSize, sizeof(long))];
+    private void InitChunks(long bitLength)
+    {
+        chunks = [..Chunk.Produce(this, bitLength, ChunkSize, sizeof(long))];
+        length = chunks[^1].End;
+    }
 
     public void EvictOldest()
     {
@@ -82,13 +86,13 @@ public class LongBitArray : Storable, ILongBitArray
 
     public override void Read()
     {
-        chunks = InitChunks(store.ReadInt64(0));
+        InitChunks(store.ReadInt64(0));
     }
 
     public override void Write()
     {
         store.SetLength(Extent);
-        store.Write(0, Length);
+        store.Write(0, length);
 
         foreach(var chunk in chunks) chunk.Evict();
     }
@@ -147,6 +151,9 @@ public class LongBitArray : Storable, ILongBitArray
 
         public static IEnumerable<Chunk> Produce(LongBitArray owner, long count, int chunkSize, long offset)
         {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, System.Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(count.DivCeil(chunkSize), System.Array.MaxLength);
+
             if(count == 0)
             {
                 yield return new(owner, 0, 0, offset);
