@@ -19,4 +19,9 @@ public static class MathExtensions
             return (int)(BitOperations.RoundUpToPowerOf2((uint)number) >> 1);
         }
     }
+
+    extension(long number)
+    {
+        public long DivCeil(long other) => (number + other - 1) / other;
+    }
 }
