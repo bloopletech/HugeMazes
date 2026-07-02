@@ -232,6 +232,10 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
         public static IEnumerable<Chunk> Produce(LongList<T> owner, long count, int chunkSize, long offset)
         {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(count.DivCeil(chunkSize), Array.MaxLength);
+            var _ = checked((count * ItemSize) + offset);
+
             if(count == 0)
             {
                 yield return new(owner, 0, 0, offset);

@@ -12,20 +12,21 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
     private static readonly int ChunkSize = CalculateChunkSize(MaxChunkByteSize);
 
-    private Chunk[] chunks;
+    private Chunk[] chunks = null!;
+    private long length;
 
     public LongArray(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        chunks = InitChunks(0);
+        InitChunks(0);
     }
 
     public LongArray(IStore store, long length, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        chunks = InitChunks(length);
+        InitChunks(length);
     }
 
     public override long Extent => chunks[^1].EndOffset;
-    public long Length => chunks[^1].End;
+    public long Length => length;
     public bool IsReadOnly => false;
     public bool IsFixedSize => true;
 
@@ -48,7 +49,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (int, int) Index(long index)
     {
-        if((ulong)index >= (ulong)Length) ExceptionExtensions.ThrowOutOfRangeException(index);
+        if((ulong)index >= (ulong)length) ExceptionExtensions.ThrowOutOfRangeException(index);
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
         return ((int)chunk, (int)chunkOffset);
     }
@@ -81,9 +82,13 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         return -1;
     }
 
-    public T Peek() => this[Length - 1];
+    public T Peek() => this[length - 1];
 
-    private Chunk[] InitChunks(long count) => [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
+    private void InitChunks(long count)
+    {
+        chunks = [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
+        length = chunks[^1].End;
+    }
 
     public void EvictOldest()
     {
@@ -93,13 +98,13 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
     public override void Read()
     {
-        chunks = InitChunks(store.ReadInt64(0));
+        InitChunks(store.ReadInt64(0));
     }
 
     public override void Write()
     {
         store.SetLength(Extent);
-        store.Write(0, Length);
+        store.Write(0, length);
 
         foreach(var chunk in chunks) chunk.Evict();
     }
@@ -158,6 +163,10 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
         public static IEnumerable<Chunk> Produce(LongArray<T> owner, long count, int chunkSize, long offset)
         {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, System.Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(count.DivCeil(chunkSize), System.Array.MaxLength);
+            var _ = checked((count * ItemSize) + offset);
+
             if(count == 0)
             {
                 yield return new(owner, 0, 0, offset);
