@@ -49,6 +49,7 @@ public class MazeSerializer
     {
         MazeType.BitGridMaze => new BitGridMaze(store),
         MazeType.LongBitGridMaze => new LongBitGridMaze(store),
+        MazeType.JaggedBitGridMaze => new JaggedBitGridMaze(store),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
@@ -56,6 +57,7 @@ public class MazeSerializer
     {
         MazeType.BitGridMaze => new BitGridMaze(store, size),
         MazeType.LongBitGridMaze => new LongBitGridMaze(store, size),
+        MazeType.JaggedBitGridMaze => new JaggedBitGridMaze(store, size),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
