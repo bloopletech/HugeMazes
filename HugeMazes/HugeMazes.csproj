@@ -25,7 +25,6 @@
     <!-- <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>-->
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <OptimizationPreference>Speed</OptimizationPreference>
   </PropertyGroup>
 
   <ItemGroup>
