@@ -17,13 +17,13 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
     public LongArray(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        InitChunks();
+        InitChunks(false);
     }
 
     public LongArray(IStore store, long length, bool leaveOpen = false) : base(store, leaveOpen)
     {
         this.length = length;
-        InitChunks();
+        InitChunks(false);
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -37,13 +37,13 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         get
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            return chunks[chunkIndex].ReadArray[chunkOffset];
+            return chunks[chunkIndex].Array[chunkOffset];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            chunks[chunkIndex].WriteArray[chunkOffset] = value;
+            chunks[chunkIndex].Array[chunkOffset] = value;
         }
     }
 
@@ -58,16 +58,16 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        foreach(var chunk in chunks) Array.Clear(chunk.WriteArray);
+        foreach(var chunk in chunks) Array.Clear(chunk.Array);
     }
 
-    public bool Contains(T item) => chunks.Any(c => c.ReadArray.Contains(item));
+    public bool Contains(T item) => chunks.Any(c => c.Array.Contains(item));
 
     public IEnumerator<T> GetEnumerator()
     {
         foreach(var chunk in chunks)
         {
-            foreach(var item in chunk.ReadArray) yield return item;
+            foreach(var item in chunk.Array) yield return item;
         }
     }
 
@@ -77,7 +77,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     {
         foreach(var chunk in chunks)
         {
-            var index = chunk.ReadArray.IndexOf(item);
+            var index = chunk.Array.IndexOf(item);
             if(index >= 0) return chunk.Start + index;
         }
         return -1;
@@ -85,9 +85,9 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
     public T Peek() => this[length - 1];
 
-    private void InitChunks()
+    private void InitChunks(bool read)
     {
-        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long))];
+        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long), read)];
     }
 
     public void EvictOldest()
@@ -99,7 +99,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     public override void Read()
     {
         length = store.ReadInt64(0);
-        InitChunks();
+        InitChunks(true);
     }
 
     public override void Write()
@@ -127,24 +127,24 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         return result;
     }
 
-    private class Chunk(LongArray<T> owner, long start, int count, long offset)
+    private class Chunk(LongArray<T> owner, long start, int count, long offset, bool read)
     {
         private T[]? array;
-        public T[] ReadArray => array ??= Load(true);
-        public T[] WriteArray => array ??= Load(false);
+        public T[] Array => array ??= Load();
 
         public long LastUsedAt { get; private set; }
 
         public long Start => start;
         public long EndOffset => offset + (ItemSize * count);
 
-        private T[] Load(bool read)
+        private T[] Load()
         {
             LastUsedAt = Environment.TickCount64;
             owner.EvictOldest();
 
             var array = new T[count];
             if(read) owner.Store.Read(offset, array);
+            else read = true;
             return array;
         }
 
@@ -157,23 +157,23 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
             LastUsedAt = 0;
         }
 
-        public static IEnumerable<Chunk> Produce(LongArray<T> owner, long count, int chunkSize, long offset)
+        public static IEnumerable<Chunk> Produce(LongArray<T> owner, long count, int chunkSize, long offset, bool read)
         {
             if(count == 0)
             {
-                yield return new(owner, 0, 0, offset);
+                yield return new(owner, 0, 0, offset, read);
                 yield break;
             }
 
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)System.Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)System.Array.MaxLength);
             var _ = checked((ItemSize * count) + offset);
 
             var chunkByteSize = ItemSize * chunkSize;
             for(long start = 0, i = 0; start < count; i++)
             {
                 var stride = (int)Math.Min(chunkSize, count - start);
-                yield return new(owner, start, stride, (i * chunkByteSize) + offset);
+                yield return new(owner, start, stride, (i * chunkByteSize) + offset, read);
                 start += stride;
             }
         }
