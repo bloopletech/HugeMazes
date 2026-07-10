@@ -8,7 +8,7 @@ using HugeMazes.Mazes;
 namespace HugeMazes.Benchmark;
 
 //[Config(typeof(DebugBuildConfig))]
-[DryJob]
+[Use<DryJobs>]
 public class BitGridBenchmark : BaseBenchmark
 {
     [Benchmark(Baseline = true)]

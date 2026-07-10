@@ -9,8 +9,11 @@ namespace HugeMazes.Mazes;
 
 public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
 {
+    private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
+
     private Chunk[] chunks = null!;
     private MazeSize size;
+    private int keepChunks;
 
     public JaggedBitGrid(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
@@ -57,11 +60,18 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
     private void InitChunks(bool read)
     {
         chunks = [..Chunk.Produce(this, size.Height, size.Width, MazeSize.SizeOf, read)];
+        keepChunks = 0;
+        foreach(var chunk in chunks)
+        {
+            if(keepChunks + chunk.Length > MaxChunkByteSize) break;
+            keepChunks += chunk.Length;
+        }
+        keepChunks = Math.Max(keepChunks, 3);
     }
 
     public void EvictOldest()
     {
-        var toEvict = chunks.OrderByDescending(c => c.LastUsedAt).Skip(3);
+        var toEvict = chunks.OrderByDescending(c => c.LastUsedAt).Skip(keepChunks);
         foreach(var c in toEvict) c.Evict();
     }
 
@@ -99,7 +109,8 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
 
         public long LastUsedAt { get; private set; }
 
-        public long EndOffset => offset + count.DivCeil(8);
+        public int Length => count.DivCeil(8);
+        public long EndOffset => offset + Length;
 
         public BitArray Load()
         {
