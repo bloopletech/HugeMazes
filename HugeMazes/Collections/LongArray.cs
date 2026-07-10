@@ -37,13 +37,13 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         get
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            return chunks[chunkIndex].Array()[chunkOffset];
+            return chunks[chunkIndex].ReadArray[chunkOffset];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            chunks[chunkIndex].Array(false)[chunkOffset] = value;
+            chunks[chunkIndex].WriteArray[chunkOffset] = value;
         }
     }
 
@@ -58,16 +58,16 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        foreach(var chunk in chunks) Array.Clear(chunk.Array(false));
+        foreach(var chunk in chunks) Array.Clear(chunk.WriteArray);
     }
 
-    public bool Contains(T item) => chunks.Any(c => c.Array().Contains(item));
+    public bool Contains(T item) => chunks.Any(c => c.ReadArray.Contains(item));
 
     public IEnumerator<T> GetEnumerator()
     {
         foreach(var chunk in chunks)
         {
-            foreach(var item in chunk.Array()) yield return item;
+            foreach(var item in chunk.ReadArray) yield return item;
         }
     }
 
@@ -77,7 +77,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     {
         foreach(var chunk in chunks)
         {
-            var index = chunk.Array().IndexOf(item);
+            var index = chunk.ReadArray.IndexOf(item);
             if(index >= 0) return chunk.Start + index;
         }
         return -1;
@@ -130,9 +130,8 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     private class Chunk(LongArray<T> owner, long start, int count, long offset)
     {
         private T[]? array;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T[] Array(bool read = true) => array ??= Load(read);
+        public T[] ReadArray => array ??= Load(true);
+        public T[] WriteArray => array ??= Load(false);
 
         public long LastUsedAt { get; private set; }
 
@@ -160,8 +159,8 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
         public static IEnumerable<Chunk> Produce(LongArray<T> owner, long count, int chunkSize, long offset)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, System.Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(count.DivCeil(chunkSize), System.Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(count.DivCeil(chunkSize), Array.MaxLength);
             var _ = checked((count * ItemSize) + offset);
 
             if(count == 0)
