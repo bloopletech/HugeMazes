@@ -16,13 +16,13 @@ public class LongBitArray : Storable, ILongBitArray
 
     public LongBitArray(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        InitChunks();
+        InitChunks(false);
     }
 
     public LongBitArray(IStore store, long length, bool leaveOpen = false) : base(store, leaveOpen)
     {
         this.length = length;
-        InitChunks();
+        InitChunks(false);
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -36,13 +36,13 @@ public class LongBitArray : Storable, ILongBitArray
         get
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            return chunks[chunkIndex].ReadArray[chunkOffset];
+            return chunks[chunkIndex].Array[chunkOffset];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            chunks[chunkIndex].WriteArray[chunkOffset] = value;
+            chunks[chunkIndex].Array[chunkOffset] = value;
         }
     }
 
@@ -57,14 +57,14 @@ public class LongBitArray : Storable, ILongBitArray
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        foreach(var chunk in chunks) chunk.WriteArray.SetAll(false);
+        foreach(var chunk in chunks) chunk.Array.SetAll(false);
     }
 
     public IEnumerator<bool> GetEnumerator()
     {
         foreach(var chunk in chunks)
         {
-            for(var i = 0; i < chunk.ReadArray.Length; i++) yield return chunk.ReadArray[i];
+            for(var i = 0; i < chunk.Array.Length; i++) yield return chunk.Array[i];
         }
     }
 
@@ -72,9 +72,9 @@ public class LongBitArray : Storable, ILongBitArray
 
     public bool Peek() => this[length - 1];
 
-    private void InitChunks()
+    private void InitChunks(bool read)
     {
-        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long))];
+        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long), read)];
     }
 
     public void EvictOldest()
@@ -86,7 +86,7 @@ public class LongBitArray : Storable, ILongBitArray
     public override void Read()
     {
         length = store.ReadInt64(0);
-        InitChunks();
+        InitChunks(true);
     }
 
     public override void Write()
@@ -107,23 +107,23 @@ public class LongBitArray : Storable, ILongBitArray
         return result;
     }
 
-    private class Chunk(LongBitArray owner, int count, long offset)
+    private class Chunk(LongBitArray owner, int count, long offset, bool read)
     {
         private BitArray? array;
-        public BitArray ReadArray => array ??= Load(true);
-        public BitArray WriteArray => array ??= Load(false);
+        public BitArray Array => array ??= Load();
 
         public long LastUsedAt { get; private set; }
 
         public long EndOffset => offset + count.DivCeil(8);
 
-        private BitArray Load(bool read)
+        private BitArray Load()
         {
             LastUsedAt = Environment.TickCount64;
             owner.EvictOldest();
 
             var array = new BitArray(count);
             if(read) owner.Store.ReadExactly(offset, CollectionsMarshal.AsBytes(array));
+            else read = true;
             return array;
         }
 
@@ -136,22 +136,22 @@ public class LongBitArray : Storable, ILongBitArray
             LastUsedAt = 0;
         }
 
-        public static IEnumerable<Chunk> Produce(LongBitArray owner, long count, int chunkSize, long offset)
+        public static IEnumerable<Chunk> Produce(LongBitArray owner, long count, int chunkSize, long offset, bool read)
         {
             if(count == 0)
             {
-                yield return new(owner, 0, offset);
+                yield return new(owner, 0, offset, read);
                 yield break;
             }
 
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)System.Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)System.Array.MaxLength);
 
             var chunkByteSize = chunkSize.DivCeil(8);
             for(long start = 0, i = 0; start < count; i++)
             {
                 var stride = (int)Math.Min(chunkSize, count - start);
-                var chunk = new Chunk(owner, stride, (i * chunkByteSize) + offset);
+                var chunk = new Chunk(owner, stride, (i * chunkByteSize) + offset, read);
                 var _ = checked(chunk.EndOffset);
                 yield return chunk;
                 start += stride;
