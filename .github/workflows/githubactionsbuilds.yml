@@ -1,9 +1,18 @@
 name: GitHubActionsBuilds
 
-on: push
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
+  should-build:
+    if: github.event.head_commit.message == 'Bump version'
+    runs-on: windows-latest
+
   extract-version:
+    needs: should-build
     runs-on: windows-latest
     outputs:
       APP_VERSION: ${{ steps.extract-app-version.outputs.APP_VERSION }}
@@ -17,6 +26,7 @@ jobs:
       run: $version = (Select-Xml -Path HugeMazes.CLI/HugeMazes.CLI.csproj -XPath '//Version[1]/text()[1]').Node.InnerText; "APP_VERSION=$version" >> "$env:GITHUB_OUTPUT"
 
   build-linux-x64:
+    needs: should-build
     runs-on: ubuntu-latest
     steps:
     - run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $env:GITHUB_ENV
@@ -47,6 +57,7 @@ jobs:
           HugeMazes.CLI/bin/Release/linux-x64/publish/*
 
   build-linux-arm64:
+    needs: should-build
     runs-on: ubuntu-24.04-arm
     steps:
     - run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $env:GITHUB_ENV
@@ -77,6 +88,7 @@ jobs:
           HugeMazes.CLI/bin/Release/linux-arm64/publish/*
 
   build-windows-x64:
+    needs: should-build
     runs-on: windows-latest
     steps:
     - run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $env:GITHUB_ENV
@@ -107,6 +119,7 @@ jobs:
           HugeMazes.CLI/bin/Release/win-x64/publish/*
 
   build-windows-arm64:
+    needs: should-build
     runs-on: windows-11-arm
     steps:
     - run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $env:GITHUB_ENV
@@ -147,7 +160,6 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
-    if: github.ref == 'refs/heads/master'
     steps:
     - name: Download all artifacts
       uses: actions/download-artifact@v8
