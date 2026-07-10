@@ -21,10 +21,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
     }
 
     public override long Extent => chunks[^1].EndOffset;
-
     public long Count => chunks[^1].End;
-    public int IntCount => (int)Math.Min(Count, int.MaxValue);
-
     public bool IsReadOnly => false;
     public bool IsFixedSize => false;
 
@@ -202,10 +199,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
         public long Start => start;
         public int Count => list?.Count ?? count;
         public long End => start + Count;
-
-        public long Offset => offset;
-        public int Length => ItemSize * Count;
-        public long EndOffset => offset + Length;
+        public long EndOffset => offset + (ItemSize * Count);
 
         private List<T> Load()
         {

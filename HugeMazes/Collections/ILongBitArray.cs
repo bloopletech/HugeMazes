@@ -1,9 +1,8 @@
-using System.Collections;
 using HugeMazes.IO;
 
 namespace HugeMazes.Collections;
 
-public interface ILongBitArray : IEnumerable
+public interface ILongBitArray : IEnumerable<bool>
 {
     long Length { get; }
     bool this[long index] { get; set; }
