@@ -31,22 +31,22 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
     public bool this[int x, int y]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => chunks[y].Array()[x];
+        get => chunks[y].ReadArray[x];
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => chunks[y].Array(false)[x] = value;
+        set => chunks[y].WriteArray[x] = value;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        foreach(var chunk in chunks) chunk.Array().SetAll(false);
+        foreach(var chunk in chunks) chunk.WriteArray.SetAll(false);
     }
 
     public IEnumerator<bool> GetEnumerator()
     {
         foreach(var chunk in chunks)
         {
-            for(var i = 0; i < size.Width; i++) yield return chunk.Array()[i];
+            for(var i = 0; i < size.Width; i++) yield return chunk.ReadArray[i];
         }
     }
 
@@ -102,9 +102,8 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
     private class Chunk(JaggedBitGrid owner, int count, long offset)
     {
         private BitArray? array;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray Array(bool read = true) => array ??= Load(read);
+        public BitArray ReadArray => array ??= Load(true);
+        public BitArray WriteArray => array ??= Load(false);
 
         public long LastUsedAt { get; private set; }
 
@@ -131,8 +130,8 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
 
         public static IEnumerable<Chunk> Produce(JaggedBitGrid owner, int chunkCount, int chunkSize, long offset)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkCount, System.Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, System.Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkCount, Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, Array.MaxLength);
 
             if(chunkCount == 0)
             {
