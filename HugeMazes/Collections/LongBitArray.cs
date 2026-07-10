@@ -37,13 +37,13 @@ public class LongBitArray : Storable, ILongBitArray
         get
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            return chunks[chunkIndex].Array()[chunkOffset];
+            return chunks[chunkIndex].ReadArray[chunkOffset];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            chunks[chunkIndex].Array(false)[chunkOffset] = value;
+            chunks[chunkIndex].WriteArray[chunkOffset] = value;
         }
     }
 
@@ -58,14 +58,14 @@ public class LongBitArray : Storable, ILongBitArray
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        foreach(var chunk in chunks) chunk.Array(false).SetAll(false);
+        foreach(var chunk in chunks) chunk.WriteArray.SetAll(false);
     }
 
     public IEnumerator<bool> GetEnumerator()
     {
         foreach(var chunk in chunks)
         {
-            for(var i =  0; i < chunk.Array().Length; i++) yield return chunk.Array()[i];
+            for(var i =  0; i < chunk.ReadArray.Length; i++) yield return chunk.ReadArray[i];
         }
     }
 
@@ -119,9 +119,8 @@ public class LongBitArray : Storable, ILongBitArray
     private class Chunk(LongBitArray owner, int count, long offset)
     {
         private BitArray? array;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BitArray Array(bool read = true) => array ??= Load(read);
+        public BitArray ReadArray => array ??= Load(true);
+        public BitArray WriteArray => array ??= Load(false);
 
         public long LastUsedAt { get; private set; }
 
@@ -148,8 +147,8 @@ public class LongBitArray : Storable, ILongBitArray
 
         public static IEnumerable<Chunk> Produce(LongBitArray owner, long count, int chunkSize, long offset)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, System.Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(count.DivCeil(chunkSize), System.Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(count.DivCeil(chunkSize), Array.MaxLength);
 
             if(count == 0)
             {
