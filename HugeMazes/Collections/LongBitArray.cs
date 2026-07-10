@@ -17,12 +17,13 @@ public class LongBitArray : Storable, ILongBitArray
 
     public LongBitArray(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        InitChunks(0);
+        InitChunks();
     }
 
-    public LongBitArray(IStore store, long bitLength, bool leaveOpen = false) : base(store, leaveOpen)
+    public LongBitArray(IStore store, long length, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        InitChunks(bitLength);
+        this.length = length;
+        InitChunks();
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -36,13 +37,13 @@ public class LongBitArray : Storable, ILongBitArray
         get
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            return chunks[chunkIndex].Array[chunkOffset];
+            return chunks[chunkIndex].Array()[chunkOffset];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            chunks[chunkIndex].Array[chunkOffset] = value;
+            chunks[chunkIndex].Array(false)[chunkOffset] = value;
         }
     }
 
@@ -57,14 +58,14 @@ public class LongBitArray : Storable, ILongBitArray
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        foreach(var chunk in chunks) chunk.Array.SetAll(false);
+        foreach(var chunk in chunks) chunk.Array(false).SetAll(false);
     }
 
     public IEnumerator<bool> GetEnumerator()
     {
         foreach(var chunk in chunks)
         {
-            for(var i = 0; i < chunk.Count; i++) yield return chunk.Array[i];
+            for(var i =  0; i < chunk.Array().Length; i++) yield return chunk.Array()[i];
         }
     }
 
@@ -72,10 +73,9 @@ public class LongBitArray : Storable, ILongBitArray
 
     public bool Peek() => this[length - 1];
 
-    private void InitChunks(long bitLength)
+    private void InitChunks()
     {
-        chunks = [..Chunk.Produce(this, bitLength, ChunkSize, sizeof(long))];
-        length = chunks[^1].End;
+        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long))];
     }
 
     public void EvictOldest()
@@ -86,7 +86,8 @@ public class LongBitArray : Storable, ILongBitArray
 
     public override void Read()
     {
-        InitChunks(store.ReadInt64(0));
+        length = store.ReadInt64(0);
+        InitChunks();
     }
 
     public override void Write()
@@ -115,28 +116,24 @@ public class LongBitArray : Storable, ILongBitArray
         return (int)(((uint)bitLength + 7u) >> 3);
     }
 
-    private class Chunk(LongBitArray owner, long start, int count, long offset)
+    private class Chunk(LongBitArray owner, int count, long offset)
     {
         private BitArray? array;
-        public BitArray Array => array ??= Load();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public BitArray Array(bool read = true) => array ??= Load(read);
 
         public long LastUsedAt { get; private set; }
 
-        public long Start => start;
-        public long Count => count;
-        public long End => start + count;
+        public long EndOffset => offset + GetByteArrayLengthFromBitLength(count);
 
-        public long Offset => offset;
-        public int Length => GetByteArrayLengthFromBitLength(count);
-        public long EndOffset => offset + Length;
-        
-        public BitArray Load()
+        private BitArray Load(bool read)
         {
             LastUsedAt = Environment.TickCount64;
             owner.EvictOldest();
 
             var array = new BitArray(count);
-            if(owner.Store.Length >= EndOffset) owner.Store.ReadExactly(offset, CollectionsMarshal.AsBytes(array));
+            if(read) owner.Store.ReadExactly(offset, CollectionsMarshal.AsBytes(array));
             return array;
         }
 
@@ -156,7 +153,7 @@ public class LongBitArray : Storable, ILongBitArray
 
             if(count == 0)
             {
-                yield return new(owner, 0, 0, offset);
+                yield return new(owner, 0, offset);
                 yield break;
             }
 
@@ -164,7 +161,7 @@ public class LongBitArray : Storable, ILongBitArray
             for(long start = 0, i = 0; start < count; i++)
             {
                 var stride = (int)Math.Min(chunkSize, count - start);
-                yield return new(owner, start, stride, (i * chunkByteSize) + offset);
+                yield return new(owner, stride, (i * chunkByteSize) + offset);
                 start += stride;
             }
         }

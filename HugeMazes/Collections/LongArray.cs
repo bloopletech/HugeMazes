@@ -17,12 +17,13 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
     public LongArray(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        InitChunks(0);
+        InitChunks();
     }
 
     public LongArray(IStore store, long length, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        InitChunks(length);
+        this.length = length;
+        InitChunks();
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -36,13 +37,13 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         get
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            return chunks[chunkIndex].Array[chunkOffset];
+            return chunks[chunkIndex].Array()[chunkOffset];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             var (chunkIndex, chunkOffset) = Index(index);
-            chunks[chunkIndex].Array[chunkOffset] = value;
+            chunks[chunkIndex].Array(false)[chunkOffset] = value;
         }
     }
 
@@ -57,16 +58,16 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        foreach(var chunk in chunks) Array.Clear(chunk.Array);
+        foreach(var chunk in chunks) Array.Clear(chunk.Array(false));
     }
 
-    public bool Contains(T item) => chunks.Any(c => c.Array.Contains(item));
+    public bool Contains(T item) => chunks.Any(c => c.Array().Contains(item));
 
     public IEnumerator<T> GetEnumerator()
     {
         foreach(var chunk in chunks)
         {
-            foreach(var item in chunk.Array) yield return item;
+            foreach(var item in chunk.Array()) yield return item;
         }
     }
 
@@ -76,7 +77,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     {
         foreach(var chunk in chunks)
         {
-            var index = chunk.Array.IndexOf(item);
+            var index = chunk.Array().IndexOf(item);
             if(index >= 0) return chunk.Start + index;
         }
         return -1;
@@ -84,10 +85,9 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
     public T Peek() => this[length - 1];
 
-    private void InitChunks(long count)
+    private void InitChunks()
     {
-        chunks = [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
-        length = chunks[^1].End;
+        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long))];
     }
 
     public void EvictOldest()
@@ -98,14 +98,14 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
     public override void Read()
     {
-        InitChunks(store.ReadInt64(0));
+        length = store.ReadInt64(0);
+        InitChunks();
     }
 
     public override void Write()
     {
         store.SetLength(Extent);
         store.Write(0, length);
-
         foreach(var chunk in chunks) chunk.Evict();
     }
 
@@ -130,25 +130,22 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     private class Chunk(LongArray<T> owner, long start, int count, long offset)
     {
         private T[]? array;
-        public T[] Array => array ??= Load();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T[] Array(bool read = true) => array ??= Load(read);
 
         public long LastUsedAt { get; private set; }
 
         public long Start => start;
-        public long Count => count;
-        public long End => start + count;
-
-        public long Offset => offset;
-        public int Length => ItemSize * count;
-        public long EndOffset => offset + Length;
+        public long EndOffset => offset + (ItemSize * count);
         
-        private T[] Load()
+        private T[] Load(bool read)
         {
             LastUsedAt = Environment.TickCount64;
             owner.EvictOldest();
 
             var array = new T[count];
-            if(owner.Store.Length >= EndOffset) owner.Store.Read(Offset, array);
+            if(read) owner.Store.Read(offset, array);
             return array;
         }
 
@@ -156,7 +153,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         {
             if(array == null) return;
 
-            owner.Store.Write(Offset, array);
+            owner.Store.Write(offset, array);
             array = null;
             LastUsedAt = 0;
         }
