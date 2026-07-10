@@ -2,6 +2,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using HugeMazes.Extensions;
 using HugeMazes.IO;
 using HugeMazes.Structures;
 
@@ -92,13 +93,6 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
         return result;
     }
 
-    /// <summary>Determines the number of <see cref="byte"/>s required to store <paramref name="bitLength"/> bits.</summary>
-    private static int GetByteArrayLengthFromBitLength(int bitLength)
-    {
-        Debug.Assert(bitLength >= 0);
-        return (int)(((uint)bitLength + 7u) >> 3);
-    }
-
     private class Chunk(JaggedBitGrid owner, int count, long offset)
     {
         private BitArray? array;
@@ -107,7 +101,7 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
 
         public long LastUsedAt { get; private set; }
 
-        public long EndOffset => offset + GetByteArrayLengthFromBitLength(count);
+        public long EndOffset => offset + count.DivCeil(8);
 
         public BitArray Load(bool read)
         {
@@ -130,16 +124,18 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
 
         public static IEnumerable<Chunk> Produce(JaggedBitGrid owner, int chunkCount, int chunkSize, long offset)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkCount, Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, Array.MaxLength);
-
             if(chunkCount == 0)
             {
-                yield return new(owner, chunkSize, offset);
+                yield return new(owner, 0, offset);
                 yield break;
             }
 
-            long chunkByteSize = GetByteArrayLengthFromBitLength(chunkSize);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkCount, (uint)Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)Array.MaxLength);
+
+            long chunkByteSize = chunkSize.DivCeil(8);
+            var _ = checked((chunkCount * chunkByteSize) + offset);
+
             for(var i = 0; i < chunkCount; i++)
             {
                 yield return new(owner, chunkSize, (i * chunkByteSize) + offset);

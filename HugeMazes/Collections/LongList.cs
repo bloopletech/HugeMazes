@@ -167,7 +167,6 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
     {
         store.SetLength(Extent);
         store.Write(0, Count);
-
         foreach(var chunk in chunks) chunk.Evict();
     }
 
@@ -226,9 +225,9 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
         public static IEnumerable<Chunk> Produce(LongList<T> owner, long count, int chunkSize, long offset)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(count.DivCeil(chunkSize), Array.MaxLength);
-            var _ = checked((count * ItemSize) + offset);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)Array.MaxLength);
+            var _ = checked((ItemSize * count) + offset);
 
             if(count == 0)
             {
@@ -236,7 +235,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
                 yield break;
             }
 
-            var chunkByteSize = chunkSize * ItemSize;
+            var chunkByteSize = ItemSize * chunkSize;
             for(long start = 0, i = 0; start < count; i++)
             {
                 var stride = (int)Math.Min(chunkSize, count - start);
