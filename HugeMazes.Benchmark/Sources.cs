@@ -15,3 +15,11 @@ public abstract class FullJobSource
 public abstract class FastJobSource
 {
 }
+
+
+//[DryJob(RuntimeMoniker.Net11_0)]
+[DryJob]
+[DryJob(RuntimeMoniker.NativeAot11_0)]
+public abstract class DryJobs
+{
+}

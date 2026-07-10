@@ -15,7 +15,7 @@ namespace HugeMazes.Benchmark;
 //[ConcurrencyVisualizerProfiler]
 //[NativeMemoryProfiler]
 //[ThreadingDiagnoser]
-[DisassemblyDiagnoser(10, printSource: true, exportHtml: true, exportCombinedDisassemblyReport: true)]
+//[DisassemblyDiagnoser(10, printSource: true, exportHtml: true, exportCombinedDisassemblyReport: true)]
 [ExceptionDiagnoser]
 [HtmlExporter]
 [MinColumn, MaxColumn]
@@ -27,7 +27,6 @@ public abstract class BaseBenchmark
         public Config()
         {
             SummaryStyle = SummaryStyle.Default.WithMaxParameterColumnWidth(200);
-            WithOptions(ConfigOptions.JoinSummary);
         }
     }
 }
