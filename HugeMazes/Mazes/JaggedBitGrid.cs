@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using HugeMazes.Extensions;
@@ -15,13 +14,13 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
 
     public JaggedBitGrid(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        InitChunks();
+        InitChunks(false);
     }
 
     public JaggedBitGrid(IStore store, MazeSize size, bool leaveOpen = false) : base(store, leaveOpen)
     {
         this.size = size;
-        InitChunks();
+        InitChunks(false);
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -32,22 +31,22 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
     public bool this[int x, int y]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => chunks[y].ReadArray[x];
+        get => chunks[y].Array[x];
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => chunks[y].WriteArray[x] = value;
+        set => chunks[y].Array[x] = value;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        foreach(var chunk in chunks) chunk.WriteArray.SetAll(false);
+        foreach(var chunk in chunks) chunk.Array.SetAll(false);
     }
 
     public IEnumerator<bool> GetEnumerator()
     {
         foreach(var chunk in chunks)
         {
-            for(var i = 0; i < size.Width; i++) yield return chunk.ReadArray[i];
+            for(var i = 0; i < size.Width; i++) yield return chunk.Array[i];
         }
     }
 
@@ -55,9 +54,9 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
 
     public bool Peek() => this[size.Width - 1, size.Height - 1];
 
-    private void InitChunks()
+    private void InitChunks(bool read)
     {
-        chunks = [..Chunk.Produce(this, size.Height, size.Width, MazeSize.SizeOf)];
+        chunks = [..Chunk.Produce(this, size.Height, size.Width, MazeSize.SizeOf, read)];
     }
 
     public void EvictOldest()
@@ -69,7 +68,7 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
     public override void Read()
     {
         size = store.Read<MazeSize>(0);
-        InitChunks();
+        InitChunks(true);
     }
 
     public override void Write()
@@ -93,23 +92,23 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
         return result;
     }
 
-    private class Chunk(JaggedBitGrid owner, int count, long offset)
+    private class Chunk(JaggedBitGrid owner, int count, long offset, bool read)
     {
         private BitArray? array;
-        public BitArray ReadArray => array ??= Load(true);
-        public BitArray WriteArray => array ??= Load(false);
+        public BitArray Array => array ??= Load();
 
         public long LastUsedAt { get; private set; }
 
         public long EndOffset => offset + count.DivCeil(8);
 
-        public BitArray Load(bool read)
+        public BitArray Load()
         {
             LastUsedAt = Environment.TickCount64;
             owner.EvictOldest();
 
             var array = new BitArray(count);
             if(read) owner.Store.ReadExactly(offset, CollectionsMarshal.AsBytes(array));
+            else read = true;
             return array;
         }
 
@@ -122,23 +121,23 @@ public class JaggedBitGrid : Storable, IBitGrid, IEnumerable
             LastUsedAt = 0;
         }
 
-        public static IEnumerable<Chunk> Produce(JaggedBitGrid owner, int chunkCount, int chunkSize, long offset)
+        public static IEnumerable<Chunk> Produce(JaggedBitGrid owner, int chunkCount, int chunkSize, long offset, bool read)
         {
             if(chunkCount == 0)
             {
-                yield return new(owner, 0, offset);
+                yield return new(owner, 0, offset, read);
                 yield break;
             }
 
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkCount, (uint)Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkCount, (uint)System.Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)System.Array.MaxLength);
 
             long chunkByteSize = chunkSize.DivCeil(8);
             var _ = checked((chunkCount * chunkByteSize) + offset);
 
             for(var i = 0; i < chunkCount; i++)
             {
-                yield return new(owner, chunkSize, (i * chunkByteSize) + offset);
+                yield return new(owner, chunkSize, (i * chunkByteSize) + offset, read);
             }
         }
     }
