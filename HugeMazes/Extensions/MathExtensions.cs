@@ -18,6 +18,8 @@ public static class MathExtensions
         {
             return (int)(BitOperations.RoundUpToPowerOf2((uint)number) >> 1);
         }
+
+        public int DivCeil(int other) => (number + other - 1) / other;
     }
 
     extension(long number)

@@ -137,7 +137,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
         public long Start => start;
         public long EndOffset => offset + (ItemSize * count);
-        
+
         private T[] Load(bool read)
         {
             LastUsedAt = Environment.TickCount64;
@@ -159,17 +159,17 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
         public static IEnumerable<Chunk> Produce(LongArray<T> owner, long count, int chunkSize, long offset)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(count.DivCeil(chunkSize), Array.MaxLength);
-            var _ = checked((count * ItemSize) + offset);
-
             if(count == 0)
             {
                 yield return new(owner, 0, 0, offset);
                 yield break;
             }
 
-            var chunkByteSize = chunkSize * ItemSize;
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)Array.MaxLength);
+            var _ = checked((ItemSize * count) + offset);
+
+            var chunkByteSize = ItemSize * chunkSize;
             for(long start = 0, i = 0; start < count; i++)
             {
                 var stride = (int)Math.Min(chunkSize, count - start);

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using HugeMazes.Extensions;
@@ -65,7 +64,7 @@ public class LongBitArray : Storable, ILongBitArray
     {
         foreach(var chunk in chunks)
         {
-            for(var i =  0; i < chunk.ReadArray.Length; i++) yield return chunk.ReadArray[i];
+            for(var i = 0; i < chunk.ReadArray.Length; i++) yield return chunk.ReadArray[i];
         }
     }
 
@@ -94,7 +93,6 @@ public class LongBitArray : Storable, ILongBitArray
     {
         store.SetLength(Extent);
         store.Write(0, length);
-
         foreach(var chunk in chunks) chunk.Evict();
     }
 
@@ -109,13 +107,6 @@ public class LongBitArray : Storable, ILongBitArray
         return result;
     }
 
-    /// <summary>Determines the number of <see cref="byte"/>s required to store <paramref name="bitLength"/> bits.</summary>
-    private static int GetByteArrayLengthFromBitLength(int bitLength)
-    {
-        Debug.Assert(bitLength >= 0);
-        return (int)(((uint)bitLength + 7u) >> 3);
-    }
-
     private class Chunk(LongBitArray owner, int count, long offset)
     {
         private BitArray? array;
@@ -124,7 +115,7 @@ public class LongBitArray : Storable, ILongBitArray
 
         public long LastUsedAt { get; private set; }
 
-        public long EndOffset => offset + GetByteArrayLengthFromBitLength(count);
+        public long EndOffset => offset + count.DivCeil(8);
 
         private BitArray Load(bool read)
         {
@@ -147,20 +138,22 @@ public class LongBitArray : Storable, ILongBitArray
 
         public static IEnumerable<Chunk> Produce(LongBitArray owner, long count, int chunkSize, long offset)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(chunkSize, Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(count.DivCeil(chunkSize), Array.MaxLength);
-
             if(count == 0)
             {
                 yield return new(owner, 0, offset);
                 yield break;
             }
 
-            var chunkByteSize = GetByteArrayLengthFromBitLength(chunkSize);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)Array.MaxLength);
+
+            var chunkByteSize = chunkSize.DivCeil(8);
             for(long start = 0, i = 0; start < count; i++)
             {
                 var stride = (int)Math.Min(chunkSize, count - start);
-                yield return new(owner, stride, (i * chunkByteSize) + offset);
+                var chunk = new Chunk(owner, stride, (i * chunkByteSize) + offset);
+                var _ = checked(chunk.EndOffset);
+                yield return chunk;
                 start += stride;
             }
         }
