@@ -17,8 +17,7 @@ public abstract class FastJobSource
 }
 
 
-//[DryJob(RuntimeMoniker.Net11_0)]
-[DryJob]
+[DryJob(RuntimeMoniker.Net11_0)]
 [DryJob(RuntimeMoniker.NativeAot11_0)]
 public abstract class DryJobs
 {

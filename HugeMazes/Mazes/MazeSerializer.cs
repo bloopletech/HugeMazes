@@ -58,9 +58,4 @@ public class MazeSerializer
         MazeType.LongBitGridMaze => new LongBitGridMaze(store, size),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
-
-    public static MazeType DetermineMazeType(MazeSize size)
-    {
-        return size.Area > int.MaxValue ? MazeType.LongBitGridMaze : MazeType.BitGridMaze;
-    }
 }
