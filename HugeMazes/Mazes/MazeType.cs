@@ -4,6 +4,5 @@ public enum MazeType : ushort
 {
     Unknown,
     BitGridMaze,
-    LongBitGridMaze,
-    JaggedBitGridMaze
+    LongBitGridMaze
 }
