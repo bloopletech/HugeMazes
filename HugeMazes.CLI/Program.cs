@@ -1,6 +1,7 @@
 using HugeMazes.CLI;
 using HugeMazes.ConsoleApp;
 using HugeMazes.Extensions;
+using HugeMazes.Generators;
 using HugeMazes.IO;
 using HugeMazes.Mazes;
 using HugeMazes.Paths;
@@ -219,7 +220,11 @@ CLITask RenderPathTask()
 
 static CLITask BenchmarkTask() => (null, () =>
 {
-    var maze = BenchmarkBaseline();
-    var result = IsPerfectMaze(maze);
-    if(!result) throw new InvalidOperationException("Maze is not perfect");
+    Generate(
+        IStore.Create(false),
+        BenchmarkSize,
+        BenchmarkSize,
+        BenchmarkSeed,
+        MazeType.LongBitGridMaze,
+        GeneratorType.Backtrack);
 });
