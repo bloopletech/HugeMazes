@@ -131,8 +131,8 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
     public T Pop()
     {
-        var item = this[Count - 1];
-        RemoveAt(Count - 1);
+        var item = chunks[^1].List.Pop();
+        ShrinkIfNeeded();
         return item;
     }
 
