@@ -34,16 +34,4 @@ public class BitGridBenchmark : BaseBenchmark
             MazeType.LongBitGridMaze,
             GeneratorType.Backtrack);
     }
-
-    [Benchmark]
-    public void GenerateJagged()
-    {
-        HugeMazes.Generate(
-            IStore.Create(false),
-            HugeMazes.BenchmarkSize,
-            HugeMazes.BenchmarkSize,
-            HugeMazes.BenchmarkSeed,
-            MazeType.JaggedBitGridMaze,
-            GeneratorType.Backtrack);
-    }
 }
