@@ -14,39 +14,36 @@ public class BitGridBenchmark : BaseBenchmark
     [Benchmark(Baseline = true)]
     public void GenerateBaseline()
     {
-        var maze = HugeMazes.Generate(
+        HugeMazes.Generate(
             IStore.Create(false),
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSeed,
             MazeType.BitGridMaze,
             GeneratorType.Backtrack);
-        Verifier.IsPerfectMaze(maze);
     }
 
     [Benchmark]
     public void GenerateLong()
     {
-        var maze = HugeMazes.Generate(
+        HugeMazes.Generate(
             IStore.Create(false),
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSeed,
             MazeType.LongBitGridMaze,
             GeneratorType.Backtrack);
-        Verifier.IsPerfectMaze(maze);
     }
 
     [Benchmark]
     public void GenerateJagged()
     {
-        var maze = HugeMazes.Generate(
+        HugeMazes.Generate(
             IStore.Create(false),
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSeed,
             MazeType.JaggedBitGridMaze,
             GeneratorType.Backtrack);
-        Verifier.IsPerfectMaze(maze);
     }
 }
