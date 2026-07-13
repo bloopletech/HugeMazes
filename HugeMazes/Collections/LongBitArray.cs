@@ -47,9 +47,8 @@ public class LongBitArray : Storable, ILongBitArray
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private (int, int) Index(long index)
+    private static (int, int) Index(long index)
     {
-        if((ulong)index >= (ulong)length) ExceptionExtensions.ThrowOutOfRangeException(index);
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, ChunkSize);
         return ((int)chunk, (int)chunkOffset);
     }
