@@ -30,21 +30,20 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            var (chunkIndex, chunkOffset) = Index(index);
+            var (chunkIndex, chunkOffset) = LongList<T>.Index(index);
             return chunks[chunkIndex].List[chunkOffset];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            var (chunkIndex, chunkOffset) = Index(index);
+            var (chunkIndex, chunkOffset) = LongList<T>.Index(index);
             chunks[chunkIndex].List[chunkOffset] = value;
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private (int, int) Index(long index)
+    private static (int, int) Index(long index)
     {
-        if((ulong)index >= (ulong)Count) ExceptionExtensions.ThrowOutOfRangeException(index);
         var (chunkIndex, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
         return ((int)chunkIndex, (int)chunkOffset);
     }
@@ -98,7 +97,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
     {
         GrowIfNeeded();
 
-        var (chunkIndex, chunkOffset) = Index(index);
+        var (chunkIndex, chunkOffset) = LongList<T>.Index(index);
 
         for(var i = chunks.Count - 1; i > chunkIndex; i--)
         {
@@ -118,7 +117,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
     public void RemoveAt(long index)
     {
-        var (chunkIndex, chunkOffset) = Index(index);
+        var (chunkIndex, chunkOffset) = LongList<T>.Index(index);
 
         chunks[chunkIndex].List.RemoveAt(chunkOffset);
 
