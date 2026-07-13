@@ -93,6 +93,6 @@ public static class HugeMazes
         MazeType.LongBitGridMaze,
         GeneratorType.Backtrack);
 
-    public const int BenchmarkSize = (4096 * 2 * 2) + 1;
+    public const int BenchmarkSize = (16384 * 2) + 1;
     public const int BenchmarkSeed = 1337;
 }
