@@ -11,8 +11,9 @@ public abstract class FullJobSource
 {
 }
 
-[SimpleJob(iterationCount: 1)]
-public abstract class FastJobSource
+[SimpleJob(RuntimeMoniker.Net11_0, iterationCount: 1)]
+[SimpleJob(RuntimeMoniker.NativeAot11_0, iterationCount: 1)]
+public abstract class SimpleJobs
 {
 }
 
