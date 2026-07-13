@@ -36,21 +36,20 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            var (chunkIndex, chunkOffset) = Index(index);
+            var (chunkIndex, chunkOffset) = LongArray<T>.Index(index);
             return chunks[chunkIndex].Array[chunkOffset];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            var (chunkIndex, chunkOffset) = Index(index);
+            var (chunkIndex, chunkOffset) = LongArray<T>.Index(index);
             chunks[chunkIndex].Array[chunkOffset] = value;
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private (int, int) Index(long index)
+    private static (int, int) Index(long index)
     {
-        if((ulong)index >= (ulong)length) ExceptionExtensions.ThrowOutOfRangeException(index);
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
         return ((int)chunk, (int)chunkOffset);
     }
