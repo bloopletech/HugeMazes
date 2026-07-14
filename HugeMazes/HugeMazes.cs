@@ -1,5 +1,6 @@
 using HugeMazes.Extensions;
 using HugeMazes.Generators;
+using HugeMazes.Images;
 using HugeMazes.IO;
 using HugeMazes.Mazes;
 using HugeMazes.Paths;
@@ -52,9 +53,9 @@ public static class HugeMazes
         IStore store,
         IMaze maze,
         //ImageType imageType = ImageType.LongImage,
-        RenderColours? colours = null)
+        RenderPalette? colours = null)
     {
-        colours ??= RenderColours.Default;
+        colours ??= RenderPalette.Default;
         return Renderer.Render(store, maze, colours.Value);
     }
 
@@ -63,10 +64,11 @@ public static class HugeMazes
         IMaze maze,
         IMazePath path,
         //ImageType imageType = ImageType.LongImage,
-        RenderColours? colours = null)
+        RenderPalette? colours = null,
+        bool plain = true)
     {
-        colours ??= RenderColours.Default;
-        return Renderer.Render(store, maze, path, colours.Value);
+        colours ??= RenderPalette.Default;
+        return Renderer.Render(store, maze, path, colours.Value, plain);
     }
 
     public static IMaze BenchmarkBaseline() => Generate(
