@@ -1,4 +1,4 @@
-namespace HugeMazes.ConsoleApp;
+namespace HugeMazes.CLI;
 
 public class Options(string[] args)
 {
@@ -12,6 +12,9 @@ public class Options(string[] args)
 
     public bool HasNextInt() => HasNext() && int.TryParse(Peek(), System.Globalization.NumberStyles.None, null, out _);
     public int NextInt() => int.Parse(Next(), System.Globalization.NumberStyles.None);
+
+    public bool HasNextBool() => HasNext() && bool.TryParse(Peek(), out _);
+    public bool NextBool() => bool.Parse(Next());
 
     public bool HasNextFileName() => HasNext() && Peek().Contains('.');
     public string NextFileName(string fallback) => HasNextFileName() ? Next() : fallback;

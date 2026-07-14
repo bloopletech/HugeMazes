@@ -1,5 +1,4 @@
 using HugeMazes.CLI;
-using HugeMazes.ConsoleApp;
 using HugeMazes.Extensions;
 using HugeMazes.Generators;
 using HugeMazes.IO;
@@ -101,11 +100,12 @@ static CLITask HelpTask() => (null, () => Console.Write("""
 
     render <mazeFileName> [imageFileName]
         Draw given maze and save image to imageFileName
-        If no image filename provided, defaults to <mazeFileName basename>.ppm
+        If no image filename provided, defaults to <mazeFileName basename>.tiff
 
-    render-path <mazeFileName> <pathFileName> [imageFileName]
+    render-path <mazeFileName> <pathFileName> [imageFileName] [shaded]
         Draw given maze, then draw given maze path on top, and then save image to imageFileName
-        If no image filename provided, defaults to <mazeFileName basename>.path.ppm
+        If no image filename provided, defaults to <mazeFileName basename>.path.tiff
+        If shaded is the value true then the path will be rendered in varying shades of colour
 
     You can chain together tasks, and in that case, you don't have to repeat the same filenames.
     Example:
@@ -120,10 +120,10 @@ static CLITask HelpTask() => (null, () => Console.Write("""
     interesting.path
         The solution to the maze
 
-    interesting.ppm
+    interesting.tiff
         The maze rendered as an image
 
-    interesting.path.ppm
+    interesting.path.tiff
         The maze and solution rendered as an image
     """));
 
@@ -189,7 +189,7 @@ CLITask VerifyPathTask()
 CLITask RenderTask()
 {
     mazeFileName ??= options.Next();
-    var imageFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".ppm"));
+    var imageFileName = options.NextFileName(Path.ChangeExtension(mazeFileName, ".tiff"));
     var description = new { mazeFileName, imageFileName };
 
     return (description, () =>
@@ -205,14 +205,15 @@ CLITask RenderPathTask()
 {
     mazeFileName ??= options.Next();
     pathFileName ??= options.Next();
-    var imageFileName = options.NextFileName(Path.ChangeExtension(pathFileName, ".path.ppm"));
-    var description = new { mazeFileName, pathFileName, imageFileName };
+    var imageFileName = options.NextFileName(Path.ChangeExtension(pathFileName, ".path.tiff"));
+    var shaded = options.HasNextBool() && options.NextBool();
+    var description = new { mazeFileName, pathFileName, imageFileName, shaded };
 
     return (description, () =>
     {
         maze ??= Load(Open(mazeFileName));
         path ??= LoadPath(Open(pathFileName));
-        using var image = Render(Create(imageFileName), maze, path);
+        using var image = Render(Create(imageFileName), maze, path, plain: !shaded);
         image.Write();
         Console.WriteLine($"Saved maze with path image to {imageFileName}");
     });

@@ -1,13 +1,16 @@
 using HugeMazes.IO;
 using HugeMazes.Structures;
 
-namespace HugeMazes;
+namespace HugeMazes.Images;
 
 public interface IImage : IStorable
 {
     MazeSize Size { get; }
     int Height { get; }
     int Width { get; }
-    Colour this[int x, int y] { get; set; }
-    IEnumerable<(int, int)> ByPixel();
+}
+
+public interface IImage<T> : IImage where T : struct
+{
+    T this[int x, int y] { get; set; }
 }
