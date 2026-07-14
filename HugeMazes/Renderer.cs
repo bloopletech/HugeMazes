@@ -1,3 +1,4 @@
+using HugeMazes.Images;
 using HugeMazes.IO;
 using HugeMazes.Mazes;
 using HugeMazes.Paths;
@@ -7,131 +8,73 @@ namespace HugeMazes;
 
 public static class Renderer
 {
-    public static IImage Render(IStore destination, IMaze maze, RenderColours colours)
+    public static IIndexedImage Render(IStore destination, IMaze maze, RenderPalette palette)
     {
-        var image = new LongImage(destination, maze.Size);
+        var image = new LongIndexedTiffImage(destination, maze.Size, palette.Indexed.Palette);
 
         for(int y = 0; y < image.Height; y++)
         {
             for(int x = 0; x < image.Width; x++)
             {
-                image[x, y] = maze[x, y] ? colours.Background : colours.Wall;
+                image[x, y] = maze[x, y] ? RenderPalette.Index.Background : RenderPalette.Index.Wall;
             }
         }
 
-        if(colours.Start.HasValue) image[1, 1] = colours.Start.Value;
-        if(colours.End.HasValue) image[maze.Width - 2, maze.Height - 2] = colours.End.Value;
+        if(palette.Start.HasValue) image[1, 1] = RenderPalette.Index.Start;
+        if(palette.End.HasValue) image[maze.Width - 2, maze.Height - 2] = RenderPalette.Index.End;
 
         return image;
     }
 
-    public static IImage RenderPlain(IStore destination, IMaze maze, IMazePath path, RenderColours colours)
+    public static IImage<MazeColor> RenderShaded(IStore destination, IMaze maze, RenderPalette palette)
     {
-        var image = Render(destination, maze, colours);
+        var image = new LongTiffImage(destination, maze.Size);
 
-        foreach(var point in path) image[point.X, point.Y] = colours.Path;
-        if(colours.Start.HasValue) image[1, 1] = colours.Start.Value;
-        if(colours.End.HasValue) image[maze.Width - 2, maze.Height - 2] = colours.End.Value;
+        for(int y = 0; y < image.Height; y++)
+        {
+            for(int x = 0; x < image.Width; x++)
+            {
+                image[x, y] = maze[x, y] ? palette.Background : palette.Wall;
+            }
+        }
+
+        if(palette.Start.HasValue) image[1, 1] = palette.Start.Value;
+        if(palette.End.HasValue) image[maze.Width - 2, maze.Height - 2] = palette.End.Value;
 
         return image;
     }
 
-    public static IImage Render(IStore destination, IMaze maze, IMazePath path, RenderColours colours)
+    public static IImage Render(IStore destination, IMaze maze, IMazePath path, RenderPalette palette, bool plain)
     {
-        var image = Render(destination, maze, colours);
+        return plain ? Render(destination, maze, path, palette) : RenderShaded(destination, maze, path, palette);
+    }
+
+    public static IIndexedImage Render(IStore destination, IMaze maze, IMazePath path, RenderPalette palette)
+    {
+        var image = Render(destination, maze, palette);
+
+        foreach(var point in path) image[point.X, point.Y] = RenderPalette.Index.Path;
+        if(palette.Start.HasValue) image[1, 1] = RenderPalette.Index.Start;
+        if(palette.End.HasValue) image[maze.Width - 2, maze.Height - 2] = RenderPalette.Index.End;
+
+        return image;
+    }
+
+    public static IImage<MazeColor> RenderShaded(IStore destination, IMaze maze, IMazePath path, RenderPalette palette)
+    {
+        var image = RenderShaded(destination, maze, palette);
 
         var i = 0;
         foreach(var point in path)
         {
             var shade = (byte)(i / (double)path.Count * 255.0);
-            image[point.X, point.Y] = new Colour(shade, (byte)(255 - shade), 0);
+            image[point.X, point.Y] = new MazeColor(shade, (byte)(255 - shade), 0);
             i++;
         }
 
-        if(colours.Start.HasValue) image[1, 1] = colours.Start.Value;
-        if(colours.End.HasValue) image[maze.Width - 2, maze.Height - 2] = colours.End.Value;
+        if(palette.Start.HasValue) image[1, 1] = palette.Start.Value;
+        if(palette.End.HasValue) image[maze.Width - 2, maze.Height - 2] = palette.End.Value;
 
         return image;
     }
-
-    //public static Image<Argb32> CreatePlainImageSorted(IMaze maze, IPointsMazePath path, RenderColors colors)
-    //{
-    //    var image = Render(maze, colors);
-
-    //    var sortedPoints = path.Points.ToArray();
-
-    //    sortedPoints.Sort((first, second) =>
-    //    {
-    //        if(first.Y == second.Y) return first.X - second.X;
-    //        return first.Y - second.Y;
-    //    });
-
-    //    var pointsIndex = 0;
-
-    //    image.ProcessPixelRows(rows =>
-    //    {
-    //        for(int y = 0; y < rows.Height; y++)
-    //        {
-    //            var row = rows.GetRowSpan(y);
-    //            for(int x = 0; x < row.Length; x++)
-    //            {
-    //                if(pointsIndex >= sortedPoints.Length) return;
-
-    //                ref var point = ref sortedPoints[pointsIndex];
-    //                if(point.X == x && point.Y == y)
-    //                {
-    //                    ref var pixel = ref row[x];
-    //                    pixel = colors.Path;
-    //                    pointsIndex++;
-    //                }
-    //            }
-    //        }
-    //    });
-
-    //    if(colors.Start.HasValue) image[1, 1] = colors.Start.Value;
-    //    if(colors.End.HasValue) image[maze.Width - 2, maze.Height - 2] = colors.End.Value;
-
-    //    return image;
-    //}
-
-    //public static Image<Argb32> CreateImageSorted(IMaze maze, IPointsMazePath path, RenderColors colors)
-    //{
-    //    var image = Render(maze, colors);
-
-    //    var sortedPoints = path.Points.ToArray();
-
-    //    sortedPoints.Sort((first, second) =>
-    //    {
-    //        if(first.Y == second.Y) return first.X - second.X;
-    //        return first.Y - second.Y;
-    //    });
-
-    //    var pointsIndex = 0;
-
-    //    image.ProcessPixelRows(rows =>
-    //    {
-    //        for(int y = 0; y < rows.Height; y++)
-    //        {
-    //            var row = rows.GetRowSpan(y);
-    //            for(int x = 0; x < row.Length; x++)
-    //            {
-    //                if(pointsIndex >= sortedPoints.Length) return;
-
-    //                ref var point = ref sortedPoints[pointsIndex];
-    //                if(point.X == x && point.Y == y)
-    //                {
-    //                    ref var pixel = ref row[x];
-    //                    var shade = (byte)(pointsIndex / (double)sortedPoints.Length * 255.0);
-    //                    pixel = new Argb32(shade, (byte)(255 - shade), 0);
-    //                    pointsIndex++;
-    //                }
-    //            }
-    //        }
-    //    });
-
-    //    if(colors.Start.HasValue) image[1, 1] = colors.Start.Value;
-    //    if(colors.End.HasValue) image[maze.Width - 2, maze.Height - 2] = colors.End.Value;
-
-    //    return image;
-    //}
 }
