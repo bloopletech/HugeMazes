@@ -1,21 +1,23 @@
+using System.Runtime.CompilerServices;
+
 namespace HugeMazes.Extensions;
 
 public static class ListExtensions
 {
     extension<T>(List<T> list)
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Pop()
         {
-            var index = list.Count - 1;
-            var item = list[index];
-            list.RemoveAt(index);
+            var item = list[^1];
+            list.PopIgnore();
             return item;
         }
 
-        public void Push(T item)
-        {
-            list.Add(item);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PopIgnore() => list.RemoveAt(list.Count - 1);
+
+        public void Push(T item) => list.Add(item);
 
         public T Shift()
         {
@@ -25,9 +27,6 @@ public static class ListExtensions
             return item;
         }
 
-        public void Unshift(T item)
-        {
-            list.Insert(0, item);
-        }
+        public void Unshift(T item) => list.Insert(0, item);
     }
 }

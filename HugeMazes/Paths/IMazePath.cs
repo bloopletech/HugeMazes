@@ -12,6 +12,7 @@ public interface IMazePath : IEnumerable<MazePoint>, IStorable
     bool Contains(MazePoint point);
     long IndexOf(MazePoint point);
     MazePoint Pop();
+    void PopIgnore();
     void Push(MazePoint point);
     MazePoint Peek();
 

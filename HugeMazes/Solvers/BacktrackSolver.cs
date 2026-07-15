@@ -56,7 +56,7 @@ public class BacktrackSolver(IMaze maze, IMazePath path) : ISolver
             }
             else
             {
-                path.Pop();
+                path.PopIgnore();
 
                 if(path.Count == 0) break; //No path found
 

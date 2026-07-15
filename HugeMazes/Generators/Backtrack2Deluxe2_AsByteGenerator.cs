@@ -37,7 +37,7 @@ public class Backtrack2Deluxe2_AsByteGenerator(IMaze maze, Random random) : IGen
 
             if(targetCount == 0)
             {
-                stack.Pop();
+                stack.PopIgnore();
             }
             else
             {

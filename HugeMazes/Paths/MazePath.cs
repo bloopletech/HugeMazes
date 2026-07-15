@@ -32,6 +32,7 @@ public class MazePath(IStore store, bool leaveOpen = false) : Storable(store, le
     public bool Remove(MazePoint point) => points.Remove(point);
     public void RemoveAt(long index) => points.RemoveAt(index);
     public MazePoint Pop() => points.Pop();
+    public void PopIgnore() => points.PopIgnore();
     public void Push(MazePoint point) => points.Push(point);
     public MazePoint Shift() => points.Shift();
     public void Unshift(MazePoint point) => points.Unshift(point);
