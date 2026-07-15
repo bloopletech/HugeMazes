@@ -16,6 +16,7 @@ public interface ILongList<T> : IEnumerable<T> where T : struct
     bool Remove(T item);
     void RemoveAt(long index);
     T Pop();
+    void PopIgnore();
     void Push(T item);
     T Shift();
     void Unshift(T item);
