@@ -96,11 +96,16 @@ public class DirectionMazePath(
 
     public MazePoint Pop()
     {
-        if(!HasStart) ExceptionExtensions.ThrowOutOfRangeException(0);
         var prevEnd = end;
+        PopIgnore();
+        return prevEnd;
+    }
+
+    public void PopIgnore()
+    {
+        if(!HasStart) ExceptionExtensions.ThrowOutOfRangeException(0);
         if(directions.Count > 0) end = end.PrevDirection(directions.Pop(), delta);
         else end = start = MazePoint.Empty;
-        return prevEnd;
     }
 
     public void Push(MazePoint point) => Add(point);

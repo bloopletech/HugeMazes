@@ -55,7 +55,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
     private void ShrinkIfNeeded()
     {
-        if(chunks[^1].Count == 0 && chunks.Count > 1) chunks.Pop();
+        if(chunks[^1].Count == 0 && chunks.Count > 1) chunks.PopIgnore();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -129,11 +129,19 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
         ShrinkIfNeeded();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T Pop()
     {
         var item = chunks[^1].List.Pop();
         ShrinkIfNeeded();
         return item;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void PopIgnore()
+    {
+        chunks[^1].List.PopIgnore();
+        ShrinkIfNeeded();
     }
 
     public void Push(T item) => Add(item);

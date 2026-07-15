@@ -64,7 +64,7 @@ public class BacktrackGenerator(IMaze maze, Random random) : IGenerator
             }
             else
             {
-                stack.Pop();
+                stack.PopIgnore();
             }
         }
     }
