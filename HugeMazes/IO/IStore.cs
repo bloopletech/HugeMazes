@@ -57,7 +57,7 @@ public interface IStore : IDisposable
 
     // Stream
     //Stream Stream { get; }
-    long Length { get; }
+    long Length { get; set; }
 
     void EnsureLength();
     void EnsureLength(long size);
@@ -65,7 +65,6 @@ public interface IStore : IDisposable
     void CopyTo(IStore destination);
     void Flush(); // Also BinaryWriter
     long Seek(long offset, SeekOrigin origin);
-    void SetLength(long value);
 
     void ReadExactly(long position, byte[] buffer, int offset, int count);
     int Read(long position, byte[] buffer, int offset, int count); // Also BinaryReader
@@ -93,7 +92,11 @@ public interface IStore : IDisposable
     IStore Offset<T>(bool leaveOpen = false) where T : struct;
     IStore Offset<T>(long offset, bool leaveOpen = false) where T : struct;
 
+    void Move(long sourceStart, int sourceCount, long destinationStart);
+
     public static int SizeOf<T>() where T : struct => Unsafe.SizeOf<T>();
+
+    public const int BufferSize = 81920;
 
     public static StreamStore CreateFile() => new(new TemporaryFileStream());
 
@@ -105,4 +108,5 @@ public interface IStore : IDisposable
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2211")]
     public static bool? LongOverride;
+
 }

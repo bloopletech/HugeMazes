@@ -1,7 +1,10 @@
 using System.Collections;
+using System.IO.Compression;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using HugeMazes.Extensions;
 using HugeMazes.IO;
+using static HugeMazes.Structures.RenderPalette;
 
 namespace HugeMazes.Collections;
 
@@ -103,7 +106,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
     public override void Write()
     {
-        store.SetLength(Extent);
+        store.Length = Extent;
         store.Write(0, length);
         foreach(var chunk in chunks) chunk.Evict();
     }
@@ -127,6 +130,10 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         public long LastUsedAt { get; private set; }
 
         public long Start => start;
+        public int Count => count;
+        public long End => start + count;
+
+        public long Offset => offset;
         public long EndOffset => offset + (ItemSize * count);
 
         private T[] Load()
@@ -170,4 +177,83 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
             }
         }
     }
+
 }
+
+/*
+    private int ChunkFor(long index) => (int)((ulong)index / (ulong)ChunkSize);
+
+    public LongArraySpan AsSpan() => new(this, 0, Length);
+    public LongArraySpan AsSpan(long start) => new(this, start, Length - start);
+    public LongArraySpan AsSpan(long start, long count) => new(this, start, count);
+
+    public class LongArraySpan
+    {
+        private readonly LongArray<T> owner;
+        private readonly long start;
+        private readonly long count;
+
+        public LongArraySpan(LongArray<T> owner, long start, long count)
+        {
+            if((ulong)start >= (ulong)owner.Length) ExceptionExtensions.ThrowOutOfRangeException(start);
+            if((ulong)(start + count) >= (ulong)owner.Length) ExceptionExtensions.ThrowOutOfRangeException(count);
+
+            this.owner = owner;
+            this.start = start;
+            this.count = count;
+        }
+
+        public long Length => count;
+        public bool IsEmpty => count == 0;
+
+        public T this[long index]
+        {
+            get
+            {
+                if((ulong)index >= (ulong)count) ExceptionExtensions.ThrowOutOfRangeException(index);
+                return owner[start + index];
+            }
+
+            set
+            {
+                if((ulong)index >= (ulong)count) ExceptionExtensions.ThrowOutOfRangeException(index);
+                owner[start + index] = value;
+            }
+        }
+
+        public void CopyTo(LongArraySpan destination)
+        {
+
+        }
+
+        private Memory<T>[] ExtractSpans()
+        {
+            var spans = new List<Memory<T>>();
+            var chunk = owner.chunks[owner.ChunkFor(start)];
+            // chunk0 = [0, 1, 2]
+            // chunk1 = [3, 4, 5]
+            // chunk2 = [6, 7, 8]
+            // span(2, 5)
+
+
+            for(long s = start, i = 0; s < count; i++)
+            {
+                var chunkStart = s - chunk.Start;
+                var chunkCount = Math.Min(s + remaining, chunk.End);
+                var stride = (int)Math.Min(chunkSize, count - s);
+                yield return new(owner, start, stride, (i * chunkByteSize) + offset, read);
+                start += stride;
+            }
+        }
+
+        public LongArraySpan Slice(long start)
+        {
+            return new(owner, this.start + start, count - (this.start + start));
+        }
+
+        public LongArraySpan Slice(long start, long count)
+        {
+            return new(owner, this.start + start, count);
+        }
+    }
+*/

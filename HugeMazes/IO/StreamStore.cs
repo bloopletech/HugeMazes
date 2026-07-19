@@ -276,7 +276,11 @@ public sealed class StreamStore(Stream stream) : IStore
         writer.Write(value);
     }
 
-    public long Length => stream.Length;
+    public long Length
+    {
+        get => stream.Length;
+        set => stream.SetLength(value);
+    }
 
     public void EnsureLength() => EnsureLength(Length);
     public void EnsureLength(long length)
@@ -296,13 +300,11 @@ public sealed class StreamStore(Stream stream) : IStore
     // Based on https://github.com/dotnet/runtime/blob/b82454cad0aaaae3db2cf18fbf2cccc36e201ccc/src/libraries/System.Private.CoreLib/src/System/IO/Stream.cs#L51
     public void CopyTo(IStore destination)
     {
-        int bufferSize = 81920;
-
-        long position = 0;
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+        var position = 0L;
+        int bytesRead;
+        var buffer = ArrayPool<byte>.Shared.Rent(IStore.BufferSize);
         try
         {
-            int bytesRead;
             while((bytesRead = Read(position, buffer)) != 0)
             {
                 destination.Write(position, buffer.AsSpan(0, bytesRead));
@@ -318,8 +320,6 @@ public sealed class StreamStore(Stream stream) : IStore
     public void Flush() => stream.Flush(); // Also BinaryWriter
 
     public long Seek(long offset, SeekOrigin origin) => stream.Seek(offset, origin); // Also BinaryWriter
-
-    public void SetLength(long value) => stream.SetLength(value);
 
     public void ReadExactly(long position, byte[] buffer, int offset, int count)
     {
@@ -438,4 +438,18 @@ public sealed class StreamStore(Stream stream) : IStore
     public IStore Offset<T>(bool leaveOpen = false) where T : struct => Offset<T>(0, leaveOpen);
     public IStore Offset<T>(long offset, bool leaveOpen = false) where T : struct =>
         Offset(IStore.SizeOf<T>() + offset, leaveOpen);
+
+    public void Move(long sourceStart, int sourceCount, long destinationStart)
+    {
+        var buffer = ArrayPool<byte>.Shared.Rent(sourceCount);
+        try
+        {
+            ReadExactly(sourceStart, buffer.AsSpan(0, sourceCount));
+            Write(destinationStart, buffer.AsSpan(0, sourceCount));
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
 }
