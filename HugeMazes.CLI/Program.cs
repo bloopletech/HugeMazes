@@ -129,8 +129,8 @@ static CLITask HelpTask() => (null, () => Console.Write("""
 
 CLITask GenerateTask()
 {
-    var width = options.NextInt().MakeUneven();
-    var height = options.NextInt().MakeUneven();
+    var width = options.NextInt().RoundDownOdd();
+    var height = options.NextInt().RoundDownOdd();
     int? seed = options.HasNextInt() ? options.NextInt() : null;
     mazeFileName = options.NextFileName($"{Environment.TickCount}.maze");
     var description = new { width, height, seed, mazeFileName };

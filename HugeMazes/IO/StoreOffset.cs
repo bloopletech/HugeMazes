@@ -97,7 +97,11 @@ public class StoreOffset : IStore
     public void Write7BitEncodedInt64(long position, long value) =>
         store.Write7BitEncodedInt64(offset + position, value);
 
-    public long Length => store.Length - offset;
+    public long Length
+    {
+        get => store.Length - offset;
+        set => store.Length = value + offset;
+    }
 
     public void EnsureLength() => store.EnsureLength();
     public void EnsureLength(long size) => store.EnsureLength(offset + size);
@@ -105,13 +109,11 @@ public class StoreOffset : IStore
     // Based on https://github.com/dotnet/runtime/blob/b82454cad0aaaae3db2cf18fbf2cccc36e201ccc/src/libraries/System.Private.CoreLib/src/System/IO/Stream.cs#L51
     public void CopyTo(IStore destination)
     {
-        int bufferSize = 81920;
-
-        long position = 0;
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+        var position = 0L;
+        int bytesRead;
+        var buffer = ArrayPool<byte>.Shared.Rent(IStore.BufferSize);
         try
         {
-            int bytesRead;
             while((bytesRead = Read(position, buffer)) != 0)
             {
                 destination.Write(position, buffer.AsSpan(0, bytesRead));
@@ -127,8 +129,6 @@ public class StoreOffset : IStore
     public void Flush() => store.Flush(); // Also BinaryWriter
 
     public long Seek(long offset, SeekOrigin origin) => store.Seek(offset, origin); // TODO: Need to subtract the offset or something
-
-    public void SetLength(long value) => store.SetLength(value + offset);
 
     public void ReadExactly(long position, byte[] buffer, int offset, int count) =>
         store.ReadExactly(offset + position, buffer, offset, count);
@@ -185,4 +185,7 @@ public class StoreOffset : IStore
     public IStore Offset<T>(bool leaveOpen = false) where T : struct => Offset<T>(0, leaveOpen);
     public IStore Offset<T>(long offset, bool leaveOpen = false) where T : struct =>
         Offset(IStore.SizeOf<T>() + offset, leaveOpen);
+
+    public void Move(long sourceStart, int sourceCount, long destinationStart) =>
+        store.Move(offset + sourceStart, sourceCount, offset + destinationStart);
 }

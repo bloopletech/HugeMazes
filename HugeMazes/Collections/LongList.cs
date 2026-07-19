@@ -172,7 +172,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
     public override void Write()
     {
-        store.SetLength(Extent);
+        store.Length = Extent;
         store.Write(0, Count);
         foreach(var chunk in chunks) chunk.Evict();
     }

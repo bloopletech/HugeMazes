@@ -7,18 +7,16 @@ using HugeMazes.Structures;
 namespace HugeMazes.Images;
 
 // Based on https://paulbourke.net/dataformats/tiff/
-public class LongIndexedTiffImage(
-    IStore store,
-    MazeSize size,
-    MazeColor[] palette,
-    bool leaveOpen = false) : Storable(store, leaveOpen), IIndexedImage
+public class TiffIndexedImage(IStore store, MazeSize size, MazeColor[] palette) : Storable(store, false), IIndexedImage
 {
     public const int PaletteSize = 256;
-    private const long HeaderSize = 1848;
+    private const long PaletteOffset = 1024;
+    private const long ArrayOffset = 4096;
 
-    private readonly LongArray<byte> array = new(store.Offset(HeaderSize, true), size.Area, true);
+    private readonly LongArray<byte> array = new(store.Offset(ArrayOffset - sizeof(long), true), size.Area, true);
+    private bool written;
 
-    public override long Extent => array.Extent + HeaderSize;
+    public override long Extent => array.Extent + ArrayOffset;
     public MazeSize Size => size;
     public int Width => size.Width;
     public int Height => size.Height;
@@ -47,36 +45,46 @@ public class LongIndexedTiffImage(
 
     public override void Write()
     {
+        if(written) return;
+        written = true;
+
+        var magic = BitConverter.IsLittleEndian ? (byte)0x49 : (byte)0x4D;
         byte[] header = [
-            0x49,
-            0x49,
+            magic,
+            magic,
             ..BitConverter.GetBytes((ushort)0x2B),
             ..BitConverter.GetBytes((ushort)0x08),
             0x00,
             0x00,
             ..BitConverter.GetBytes(16L),
-            ..BitConverter.GetBytes(14L),
+            ..BitConverter.GetBytes(10L),
             ..new TiffTag(TiffTag.TagType.Width, [(uint)size.Width]),
             ..new TiffTag(TiffTag.TagType.Height, [(uint)size.Height]),
-            ..new TiffTag(TiffTag.TagType.BitsPerSample, [0x08, 0x08, 0x08]),
-            ..new TiffTag(TiffTag.TagType.Compression, [0x01]),
+            ..new TiffTag(TiffTag.TagType.BitsPerSample, [0x08]),
+            ..new TiffTag(TiffTag.TagType.Compression, [0x08]),
             ..new TiffTag(TiffTag.TagType.PhotometricInterpolation, [0x03]),
-            ..new TiffTag(TiffTag.TagType.StripOffsets, [(ulong)HeaderSize + sizeof(long)]),
-            ..new TiffTag(TiffTag.TagType.Orientation, [0x01]),
-            ..new TiffTag(TiffTag.TagType.SamplesPerPixel, [0x01]),
+            ..new TiffTag(TiffTag.TagType.StripOffsets, [ArrayOffset]),
             ..new TiffTag(TiffTag.TagType.RowsPerStrip, [(uint)size.Width]),
-            ..new TiffTag(TiffTag.TagType.StripByteCount, [(ulong)size.Area]),
-            ..new TiffTag(TiffTag.TagType.MinimumSampleValue, [0, 0, 0]),
-            ..new TiffTag(TiffTag.TagType.MaximumSampleValue, [0xFF, 0xFF, 0xFF]),
+            ..new TiffTag(TiffTag.TagType.StripByteCount, [(ulong)0]),
             ..new TiffTag(TiffTag.TagType.PlanarConfiguration, [0x01]),
-            //..new TiffTag(TiffTag.TagType.SampleFormat, [(short)0x01, (short)0x01, (short)0x01]),
-            ..new TiffTag(TiffTag.TagType.ColorMap, TiffTag.ValueType.Short, PaletteSize * 3, BitConverter.GetBytes(312L)),
-            ..BitConverter.GetBytes(0L),
-            ..MemoryMarshal.AsBytes(MapPalette()),
+            //XResolution
+            //YResolution
+            //ResolutionUnit
+            ..new TiffTag(
+                TiffTag.TagType.ColorMap,
+                TiffTag.ValueType.Short,
+                PaletteSize * 3,
+                BitConverter.GetBytes(PaletteOffset)),
+            ..BitConverter.GetBytes(0L)
         ];
 
         store.Write(0, header);
+        store.Write(PaletteOffset, MemoryMarshal.AsBytes(MapPalette()));
         array.Write();
+
+        var deflateStore = store.Offset(ArrayOffset, true);
+        new StoreDeflater(deflateStore).Deflate();
+        store.Write(176L, deflateStore.Length);
     }
 
     private ushort[] MapPalette()
@@ -98,17 +106,6 @@ public class LongIndexedTiffImage(
     }
 
     private static ushort Scale(byte value) => (ushort)(value * ushort.MaxValue / (double)byte.MaxValue);
-}
 
-/*
-ag = 320 (140.H)
-Type = SHORT
-N = 3 * (2**BitsPerSample)
-This field defines a Red-Green-Blue color map (often called a lookup table) for
-palette color images. In a palette-color image, a pixel value is used to index into an
-RGB-lookup table. For example, a palette-color pixel having a value of 0 would
-be displayed according to the 0th Red, Green, Blue triplet.
-In a TIFF ColorMap, all the Red values come first, followed by the Green values,
-then the Blue values. In the ColorMap, black is represented by 0,0,0 and white is
-represented by 65535, 65535, 6553
-*/
+
+}
