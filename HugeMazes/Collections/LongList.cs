@@ -30,13 +30,13 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            var (chunkIndex, chunkOffset) = LongList<T>.Index(index);
+            var (chunkIndex, chunkOffset) = Index(index);
             return chunks[chunkIndex].List[chunkOffset];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            var (chunkIndex, chunkOffset) = LongList<T>.Index(index);
+            var (chunkIndex, chunkOffset) = Index(index);
             chunks[chunkIndex].List[chunkOffset] = value;
         }
     }
@@ -97,7 +97,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
     {
         GrowIfNeeded();
 
-        var (chunkIndex, chunkOffset) = LongList<T>.Index(index);
+        var (chunkIndex, chunkOffset) = Index(index);
 
         for(var i = chunks.Count - 1; i > chunkIndex; i--)
         {
@@ -117,7 +117,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
     public void RemoveAt(long index)
     {
-        var (chunkIndex, chunkOffset) = LongList<T>.Index(index);
+        var (chunkIndex, chunkOffset) = Index(index);
 
         chunks[chunkIndex].List.RemoveAt(chunkOffset);
 
