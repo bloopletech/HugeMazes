@@ -36,13 +36,13 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            var (chunkIndex, chunkOffset) = LongArray<T>.Index(index);
+            var (chunkIndex, chunkOffset) = Index(index);
             return chunks[chunkIndex].Array[chunkOffset];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            var (chunkIndex, chunkOffset) = LongArray<T>.Index(index);
+            var (chunkIndex, chunkOffset) = Index(index);
             chunks[chunkIndex].Array[chunkOffset] = value;
         }
     }
