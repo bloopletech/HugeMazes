@@ -10,8 +10,8 @@ namespace HugeMazes.Collections;
 public class LongList<T> : Storable, ILongList<T> where T : struct
 {
     private static readonly int ItemSize = IStore.SizeOf<T>();
-    private const int MaxChunkByteSize = 256 * 1024 * 1024; // Must be power of 2
-    private static readonly int ChunkSize = CalculateChunkSize(MaxChunkByteSize);
+    private const int MaxChunkByteSize = 256 * 1024 * 1024;
+    private static readonly int ChunkSize = (MaxChunkByteSize - 1) / ItemSize;
 
     private List<Chunk> chunks;
 
@@ -185,13 +185,6 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
         store.CopyTo(destination);
         var result = new LongList<T>(destination, leaveOpen);
         result.Read();
-        return result;
-    }
-
-    private static int CalculateChunkSize(int maxChunkByteSize)
-    {
-        var result = (int.MaxValue / ItemSize).RoundDownToPowerOf2();
-        while((result * ItemSize) > maxChunkByteSize) result >>= 1;
         return result;
     }
 
