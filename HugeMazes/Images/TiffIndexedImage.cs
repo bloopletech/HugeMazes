@@ -83,7 +83,7 @@ public class TiffIndexedImage(IStore store, MazeSize size, MazeColor[] palette) 
         array.Write();
 
         var deflateStore = store.Offset(ArrayOffset, true);
-        new StoreDeflater(deflateStore).Deflate();
+        StoreDeflater.Deflate(deflateStore);
         store.Write(176L, deflateStore.Length);
     }
 

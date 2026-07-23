@@ -1,14 +1,13 @@
 using System.Buffers;
 using System.IO.Compression;
-using HugeMazes.IO;
 
-namespace HugeMazes.Images;
+namespace HugeMazes.IO;
 
-public class StoreDeflater(IStore store)
+public static class StoreDeflater
 {
-    public void Deflate()
+    public static void Deflate(IStore store)
     {
-        var mappings = DeflateChunks();
+        var mappings = DeflateChunks(store);
         if(mappings.Length == 0) return;
 
         var destinationOffset = mappings[0].Offset + mappings[0].Length;
@@ -22,7 +21,7 @@ public class StoreDeflater(IStore store)
         store.Length = destinationOffset;
     }
 
-    private Mapping[] DeflateChunks()
+    private static Mapping[] DeflateChunks(IStore store)
     {
         var mappings = new List<Mapping>();
         using var encoder = new ZLibEncoder();
