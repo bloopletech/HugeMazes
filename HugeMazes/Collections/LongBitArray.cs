@@ -90,7 +90,6 @@ public class LongBitArray : Storable, ILongBitArray
 
     public override void Write()
     {
-        store.Length = Extent;
         store.Write(0, length);
         foreach(var chunk in chunks) chunk.Evict();
     }
