@@ -106,7 +106,6 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
     public override void Write()
     {
-        store.Length = Extent;
         store.Write(0, length);
         foreach(var chunk in chunks) chunk.Evict();
     }
