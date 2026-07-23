@@ -28,7 +28,7 @@ public static class Renderer
 
     public static IImage<MazeColor> RenderShaded(IStore destination, IMaze maze, RenderPalette palette)
     {
-        var image = new LongTiffImage(destination, maze.Size);
+        var image = new TiffImage(destination, maze.Size);
 
         for(int y = 0; y < image.Height; y++)
         {

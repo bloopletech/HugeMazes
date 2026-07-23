@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Runtime.InteropServices;
+using HugeMazes.IO;
 
 namespace HugeMazes.Structures;
 
@@ -7,4 +8,5 @@ namespace HugeMazes.Structures;
 public readonly record struct MazeColor(byte R, byte G, byte B)
 {
     public static implicit operator MazeColor(Color color) => new(color.R, color.G, color.B);
+    public static readonly int SizeOf = IStore.SizeOf<MazeColor>();
 }

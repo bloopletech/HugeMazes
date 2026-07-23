@@ -65,7 +65,7 @@ public class TiffIndexedImage(IStore store, MazeSize size, MazeColor[] palette) 
             ..new TiffTag(TiffTag.TagType.PhotometricInterpolation, [0x03]),
             ..new TiffTag(TiffTag.TagType.StripOffsets, [ArrayOffset]),
             ..new TiffTag(TiffTag.TagType.RowsPerStrip, [(uint)size.Width]),
-            ..new TiffTag(TiffTag.TagType.StripByteCount, [(ulong)0]),
+            ..new TiffTag(TiffTag.TagType.StripByteCount, [0L]),
             ..new TiffTag(TiffTag.TagType.PlanarConfiguration, [0x01]),
             //XResolution
             //YResolution
