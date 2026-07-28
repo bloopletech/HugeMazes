@@ -1,4 +1,3 @@
-using System.Text;
 using HugeMazes.IO;
 using HugeMazes.Structures;
 
@@ -30,28 +29,4 @@ public interface IMaze : IStorable
         if(int.IsEvenInteger(Width)) throw new ArgumentException("Value must be an odd number", "maze.Width");
         if(int.IsEvenInteger(Height)) throw new ArgumentException("Value must be an odd number", "maze.Height");
     }
-
-    public string GenerateMapAsString()
-    {
-        var stringBuilder = new StringBuilder();
-        for(int y = 0; y < Height; y++)
-        {
-            for(int x = 0; x < Width; x++)
-            {
-                bool b = this[x, y];
-                if(b)
-                {
-                    stringBuilder.Append(' ');
-                }
-                else
-                {
-                    stringBuilder.Append('0');
-                }
-            }
-            stringBuilder.AppendLine();
-        }
-        return stringBuilder.ToString();
-    }
-
-    public static long MaxExtent(int width, int height) => ((long)width * height) + 256;
 }
