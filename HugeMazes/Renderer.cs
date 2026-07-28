@@ -8,7 +8,7 @@ namespace HugeMazes;
 
 public static class Renderer
 {
-    public static IIndexedImage Render(IStore destination, IMaze maze, RenderPalette palette)
+    public static IImage<byte> Render(IStore destination, IMaze maze, RenderPalette palette)
     {
         var image = new TiffIndexedImage(destination, maze.Size, palette.Indexed.Palette);
 
@@ -49,7 +49,7 @@ public static class Renderer
         return plain ? Render(destination, maze, path, palette) : RenderShaded(destination, maze, path, palette);
     }
 
-    public static IIndexedImage Render(IStore destination, IMaze maze, IMazePath path, RenderPalette palette)
+    public static IImage<byte> Render(IStore destination, IMaze maze, IMazePath path, RenderPalette palette)
     {
         var image = Render(destination, maze, palette);
 

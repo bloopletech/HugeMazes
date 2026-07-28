@@ -8,7 +8,7 @@ using HugeMazes.Structures;
 namespace HugeMazes.Images;
 
 // Based on https://paulbourke.net/dataformats/tiff/
-public class TiffIndexed16Image : Storable, IIndexedImage
+public class TiffIndexed16Image : Storable, IImage<byte>
 {
     public const int PaletteSize = 16;
     private const long HeaderLength = 252;

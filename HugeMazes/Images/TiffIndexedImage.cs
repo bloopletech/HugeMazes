@@ -7,7 +7,7 @@ using HugeMazes.Structures;
 namespace HugeMazes.Images;
 
 // Based on https://paulbourke.net/dataformats/tiff/
-public class TiffIndexedImage(IStore store, MazeSize size, MazeColor[] palette) : Storable(store, false), IIndexedImage
+public class TiffIndexedImage(IStore store, MazeSize size, MazeColor[] palette) : Storable(store, false), IImage<byte>
 {
     public const int PaletteSize = 256;
     private const long PaletteOffset = 1024;
