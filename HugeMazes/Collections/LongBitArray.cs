@@ -84,7 +84,7 @@ public class LongBitArray : Storable, ILongBitArray
 
     public override void Read()
     {
-        length = store.ReadInt64(0);
+        length = store.Read<long>(0);
         InitChunks(true);
     }
 

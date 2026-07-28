@@ -167,7 +167,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
     public override void Read()
     {
-        chunks = InitChunks(store.ReadInt64(0));
+        chunks = InitChunks(store.Read<long>(0));
     }
 
     public override void Write()

@@ -48,55 +48,6 @@ public class StoreOffset : IStore
     public void Close() => Dispose(true);
     //public void Dispose() => store.Dispose();
 
-    public int PeekChar(long position) => store.PeekChar(offset + position);
-    public int Read(long position) => store.Read(offset + position);
-    public byte ReadByte(long position) => store.ReadByte(offset + position);
-    public int Read(long position, char[] buffer, int index, int count) =>
-        store.Read(offset + position, buffer, index, count);
-    public int Read(long position, Span<char> buffer) => store.Read(offset + position, buffer);
-    public int Read7BitEncodedInt(long position) => store.Read7BitEncodedInt(offset + position);
-    public long Read7BitEncodedInt64(long position) => store.Read7BitEncodedInt64(offset + position);
-    public bool ReadBoolean(long position) => store.ReadBoolean(offset + position);
-    public byte[] ReadBytes(long position, int count) => store.ReadBytes(offset + position, count);
-    public char ReadChar(long position) => store.ReadChar(offset + position);
-    public char[] ReadChars(long position, int count) => store.ReadChars(offset + position, count);
-    public decimal ReadDecimal(long position) => store.ReadDecimal(offset + position);
-    public double ReadDouble(long position) => store.ReadDouble(offset + position);
-    public Half ReadHalf(long position) => store.ReadHalf(offset + position);
-    public short ReadInt16(long position) => store.ReadInt16(offset + position);
-    public int ReadInt32(long position) => store.ReadInt32(offset + position);
-    public long ReadInt64(long position) => store.ReadInt64(offset + position);
-    public sbyte ReadSByte(long position) => store.ReadSByte(offset + position);
-    public float ReadSingle(long position) => store.ReadSingle(offset + position);
-    public string ReadString(long position) => store.ReadString(offset + position);
-    public ushort ReadUInt16(long position) => store.ReadUInt16(offset + position);
-    public uint ReadUInt32(long position) => store.ReadUInt32(offset + position);
-    public ulong ReadUInt64(long position) => store.ReadUInt64(offset + position);
-
-    public void Write(long position, bool value) => store.Write(offset + position, value);
-    public void Write(long position, byte value) => store.Write(offset + position, value);
-    public void Write(long position, byte[] buffer) => store.Write(offset + position, buffer);
-    public void Write(long position, char ch) => store.Write(offset + position, ch);
-    public void Write(long position, char[] chars) => store.Write(offset + position, chars);
-    public void Write(long position, char[] chars, int index, int count) =>
-        store.Write(offset + position, chars, index, count);
-    public void Write(long position, decimal value) => store.Write(offset + position, value);
-    public void Write(long position, double value) => store.Write(offset + position, value);
-    public void Write(long position, float value) => store.Write(offset + position, value);
-    public void Write(long position, Half value) => store.Write(offset + position, value);
-    public void Write(long position, int value) => store.Write(offset + position, value);
-    public void Write(long position, long value) => store.Write(offset + position, value);
-    public void Write(long position, ReadOnlySpan<char> chars) => store.Write(offset + position, chars);
-    public void Write(long position, sbyte value) => store.Write(offset + position, value);
-    public void Write(long position, short value) => store.Write(offset + position, value);
-    public void Write(long position, string value) => store.Write(offset + position, value);
-    public void Write(long position, uint value) => store.Write(offset + position, value);
-    public void Write(long position, ulong value) => store.Write(offset + position, value);
-    public void Write(long position, ushort value) => store.Write(offset + position, value);
-    public void Write7BitEncodedInt(long position, int value) => store.Write7BitEncodedInt(offset + position, value);
-    public void Write7BitEncodedInt64(long position, long value) =>
-        store.Write7BitEncodedInt64(offset + position, value);
-
     public long Length
     {
         get => store.Length - offset;
