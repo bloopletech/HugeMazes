@@ -24,7 +24,7 @@ public static class StoreDeflater
     private static Mapping[] DeflateChunks(IStore store)
     {
         var mappings = new List<Mapping>();
-        using var encoder = new ZLibEncoder();
+        using var encoder = new ZLibEncoder(8);
 
         var position = 0L;
         int bytesRead;
@@ -35,37 +35,22 @@ public static class StoreDeflater
         {
             while((bytesRead = store.Read(position, sourceBuffer)) != 0)
             {
-                var start = 0;
-                var end = 0;
+                var status = encoder.Compress(
+                    sourceBuffer.AsSpan(0, bytesRead),
+                    destinationBuffer,
+                    out var bytesConsumed,
+                    out var bytesWritten,
+                    position + bytesRead == store.Length);
 
-                while(start < bytesRead)
-                {
-                    var status = encoder.Compress(
-                        sourceBuffer.AsSpan(start, bytesRead - start),
-                        destinationBuffer.AsSpan(end),
-                        out var bytesConsumed,
-                        out var bytesWritten,
-                        false);
+                if(status != OperationStatus.Done) throw new InvalidOperationException();
+                if(bytesConsumed != bytesRead) throw new InvalidOperationException();
+                if(bytesWritten > sourceBuffer.Length) throw new InvalidOperationException();
 
-                    if(status != OperationStatus.Done) throw new InvalidOperationException();
-
-                    start += bytesConsumed;
-                    end += bytesWritten;
-                }
-
-                if(end > sourceBuffer.Length) throw new InvalidOperationException();
-
-                store.Write(position, destinationBuffer[..end]);
-                mappings.Add(new(position, end));
+                store.Write(position, destinationBuffer[..bytesWritten]);
+                mappings.Add(new(position, bytesWritten));
 
                 position += bytesRead;
             }
-
-            var flushStatus = encoder.Flush(destinationBuffer, out var lastBytesWritten);
-            if(flushStatus != OperationStatus.Done) throw new InvalidOperationException();
-
-            store.Write(position, destinationBuffer[..lastBytesWritten]);
-            mappings.Add(new(position, lastBytesWritten));
         }
         finally
         {
