@@ -77,46 +77,21 @@ public class StoreOffset : IStore
         }
     }
 
-    public void Flush() => store.Flush(); // Also BinaryWriter
-
-    public long Seek(long offset, SeekOrigin origin) => store.Seek(offset, origin); // TODO: Need to subtract the offset or something
-
-    public void ReadExactly(long position, byte[] buffer, int offset, int count) =>
-        store.ReadExactly(offset + position, buffer, offset, count);
-
-    public int Read(long position, byte[] buffer, int offset, int count) =>
-        store.Read(offset + position, buffer, offset, count);
+    public void Flush() => store.Flush();
 
     public int Read(long position, Span<byte> buffer) => store.Read(offset + position, buffer);
 
-    public int ReadByteInt(long position) => store.ReadByteInt(offset + position);
-
     public void ReadExactly(long position, Span<byte> buffer) => store.ReadExactly(offset + position, buffer);
-
-    public void Write(long position, byte[] buffer, int offset, int count) =>
-        store.Write(offset + position, buffer, offset, count);
 
     public void Write(long position, ReadOnlySpan<byte> buffer) => store.Write(offset + position, buffer);
 
-    public void WriteByte(long position, byte value) => store.WriteByte(offset + position, value);
-
     public T Read<T>(long position) where T : struct => store.Read<T>(offset + position);
-
-    //public void Read<T>(long position, T[] array) where T : struct => WithPosition(position, () => Read<T>(array, 0, array.Length));
-
-    public void Read<T>(long position, T[] array, int index, int count) where T : struct =>
-        store.Read(offset + position, array, index, count);
 
     public void Read<T>(long position, Span<T> buffer) where T : struct => store.Read(offset + position, buffer);
 
     public T[] ReadArray<T>(long position) where T : struct => store.ReadArray<T>(offset + position);
 
     public void Write<T>(long position, T value) where T : struct => store.Write<T>(offset + position, value);
-
-    //public void Write<T>(long position, T[] array) where T : struct => WithPosition(position, () => Write(array, 0, array.Length));
-
-    public void Write<T>(long position, T[] array, int index, int count) where T : struct =>
-        store.Write(offset + position, array, index, count);
 
     public void Write<T>(long position, ReadOnlySpan<T> buffer) where T : struct =>
         store.Write(offset + position, buffer);

@@ -52,30 +52,10 @@ public sealed class StreamStore(Stream stream) : IStore
 
     public void Flush() => stream.Flush();
 
-    public long Seek(long offset, SeekOrigin origin) => stream.Seek(offset, origin);
-
-    public void ReadExactly(long position, byte[] buffer, int offset, int count)
-    {
-        stream.Position = position;
-        stream.ReadExactly(buffer, offset, count);
-    }
-
-    public int Read(long position, byte[] buffer, int offset, int count)
-    {
-        stream.Position = position;
-        return stream.Read(buffer, offset, count);
-    }
-
     public int Read(long position, Span<byte> buffer)
     {
         stream.Position = position;
         return stream.Read(buffer);
-    }
-
-    public int ReadByteInt(long position)
-    {
-        stream.Position = position;
-        return stream.ReadByte();
     }
 
     public void ReadExactly(long position, Span<byte> buffer)
@@ -84,22 +64,10 @@ public sealed class StreamStore(Stream stream) : IStore
         stream.ReadExactly(buffer);
     }
 
-    public void Write(long position, byte[] buffer, int offset, int count)
-    {
-        stream.Position = position;
-        stream.Write(buffer, offset, count);
-    }
-
     public void Write(long position, ReadOnlySpan<byte> buffer)
     {
         stream.Position = position;
         stream.Write(buffer);
-    }
-
-    public void WriteByte(long position, byte value)
-    {
-        stream.Position = position;
-        stream.WriteByte(value);
     }
 
     public T Read<T>(long position) where T : struct
@@ -107,16 +75,6 @@ public sealed class StreamStore(Stream stream) : IStore
         Span<T> buffer = new T[1];
         Read(position, buffer);
         return buffer[0];
-    }
-
-    //public void Read<T>(long position, T[] array) where T : struct
-    //{
-    //    Read<T>(position, array, 0, array.Length);
-    //}
-
-    public void Read<T>(long position, T[] array, int index, int count) where T : struct
-    {
-        Read(position, new Span<T>(array, index, count));
     }
 
     public void Read<T>(long position, Span<T> buffer) where T : struct
@@ -136,16 +94,6 @@ public sealed class StreamStore(Stream stream) : IStore
     {
         Span<T> buffer = [value];
         Write(position, buffer);
-    }
-
-    //public void Write<T>(long position, T[] array) where T : struct
-    //{
-    //    Write(position, array, 0, array.Length);
-    //}
-
-    public void Write<T>(long position, T[] array, int index, int count) where T : struct
-    {
-        Write(position, new ReadOnlySpan<T>(array, index, count));
     }
 
     public void Write<T>(long position, ReadOnlySpan<T> buffer) where T : struct

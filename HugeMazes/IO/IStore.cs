@@ -15,26 +15,16 @@ public interface IStore : IDisposable
     void EnsureLength(long size);
 
     void CopyTo(IStore destination);
-    void Flush(); // Also BinaryWriter
-    long Seek(long offset, SeekOrigin origin);
+    void Flush();
 
-    void ReadExactly(long position, byte[] buffer, int offset, int count);
-    int Read(long position, byte[] buffer, int offset, int count); // Also BinaryReader
-    int Read(long position, Span<byte> buffer); // Also BinaryReader
-    int ReadByteInt(long position); // ReadByte in Stream
-    void ReadExactly(long position, Span<byte> buffer); // Also BinaryReader
-    void Write(long position, byte[] buffer, int offset, int count); // Also BinaryWriter
-    void Write(long position, ReadOnlySpan<byte> buffer); // Also BinaryWriter
-    void WriteByte(long position, byte value);
+    int Read(long position, Span<byte> buffer);
+    void ReadExactly(long position, Span<byte> buffer);
+    void Write(long position, ReadOnlySpan<byte> buffer);
 
     T Read<T>(long position) where T : struct;
-    //void Read<T>(long position, T[] array) where T : struct;
-    void Read<T>(long position, T[] array, int index, int count) where T : struct;
     void Read<T>(long position, Span<T> buffer) where T : struct;
     T[] ReadArray<T>(long position) where T : struct;
     void Write<T>(long position, T value) where T : struct;
-    //void Write<T>(long position, T[] array) where T : struct;
-    void Write<T>(long position, T[] array, int index, int count) where T : struct;
     void Write<T>(long position, ReadOnlySpan<T> buffer) where T : struct;
     void WriteArray<T>(long position, ReadOnlySpan<T> buffer) where T : struct;
 
