@@ -50,9 +50,9 @@ public sealed class StreamStore(Stream stream) : IStore
         }
     }
 
-    public void Flush() => stream.Flush(); // Also BinaryWriter
+    public void Flush() => stream.Flush();
 
-    public long Seek(long offset, SeekOrigin origin) => stream.Seek(offset, origin); // Also BinaryWriter
+    public long Seek(long offset, SeekOrigin origin) => stream.Seek(offset, origin);
 
     public void ReadExactly(long position, byte[] buffer, int offset, int count)
     {
@@ -60,37 +60,37 @@ public sealed class StreamStore(Stream stream) : IStore
         stream.ReadExactly(buffer, offset, count);
     }
 
-    public int Read(long position, byte[] buffer, int offset, int count) // Also BinaryReader
+    public int Read(long position, byte[] buffer, int offset, int count)
     {
         stream.Position = position;
         return stream.Read(buffer, offset, count);
     }
 
-    public int Read(long position, Span<byte> buffer) // Also BinaryReader
+    public int Read(long position, Span<byte> buffer)
     {
         stream.Position = position;
         return stream.Read(buffer);
     }
 
-    public int ReadByteInt(long position) // Also BinaryReader
+    public int ReadByteInt(long position)
     {
         stream.Position = position;
         return stream.ReadByte();
     }
 
-    public void ReadExactly(long position, Span<byte> buffer) // Also BinaryReader
+    public void ReadExactly(long position, Span<byte> buffer)
     {
         stream.Position = position;
         stream.ReadExactly(buffer);
     }
 
-    public void Write(long position, byte[] buffer, int offset, int count) // Also BinaryWriter
+    public void Write(long position, byte[] buffer, int offset, int count)
     {
         stream.Position = position;
         stream.Write(buffer, offset, count);
     }
 
-    public void Write(long position, ReadOnlySpan<byte> buffer) // Also BinaryWriter
+    public void Write(long position, ReadOnlySpan<byte> buffer)
     {
         stream.Position = position;
         stream.Write(buffer);
