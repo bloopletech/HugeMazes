@@ -158,10 +158,10 @@ jobs:
 
     - name: Append platform specifiers
       run: |
-        (Get-ChildItem -File build-linux-x64) | Rename-Item -NewName {$_.Basename + '-linux-x64' + $_.Extension}
-        (Get-ChildItem -File build-linux-arm64) | Rename-Item -NewName {$_.Basename + '-linux-arm64' + $_.Extension}
-        (Get-ChildItem -File build-win-x64) | Rename-Item -NewName {$_.Basename + '-win-x64' + $_.Extension}
-        (Get-ChildItem -File build-win-arm64) | Rename-Item -NewName {$_.Basename + '-win-arm64' + $_.Extension}
+        (Get-ChildItem -File build-linux-x64) | Rename-Item -NewName {$_.Name -Replace '^(HugeMazes\.CLI)(.*)$', '$1-linux-x64$2'}
+        (Get-ChildItem -File build-linux-arm64) | Rename-Item -NewName {$_.Name -Replace '^(HugeMazes\.CLI)(.*)$', '$1-linux-arm64$2'}
+        (Get-ChildItem -File build-win-x64) | Rename-Item -NewName {$_.Name -Replace '^(HugeMazes\.CLI)(.*)$', '$1-win-x64$2'}
+        (Get-ChildItem -File build-win-arm64) | Rename-Item -NewName {$_.Name -Replace '^(HugeMazes\.CLI)(.*)$', '$1-win-arm64$2'}
 
     - name: Release
       env:
