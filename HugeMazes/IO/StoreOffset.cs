@@ -61,14 +61,14 @@ public class StoreOffset : IStore
     public void CopyTo(IStore destination)
     {
         var position = 0L;
-        int bytesRead;
+        int read;
         var buffer = ArrayPool<byte>.Shared.Rent(IStore.BufferSize);
         try
         {
-            while((bytesRead = Read(position, buffer)) != 0)
+            while((read = Read(position, buffer)) != 0)
             {
-                destination.Write(position, buffer.AsSpan(0, bytesRead));
-                position += bytesRead;
+                destination.Write(position, buffer.AsSpan(0, read));
+                position += read;
             }
         }
         finally

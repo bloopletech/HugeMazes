@@ -46,7 +46,7 @@ public static class StoreDeflater
                 if(bytesConsumed != bytesRead) throw new InvalidOperationException();
                 if(bytesWritten > sourceBuffer.Length) throw new InvalidOperationException();
 
-                store.Write(position, destinationBuffer[..bytesWritten]);
+                store.Write(position, destinationBuffer.AsSpan()[..bytesWritten]);
                 mappings.Add(new(position, bytesWritten));
 
                 position += bytesRead;
