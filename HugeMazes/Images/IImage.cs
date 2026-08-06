@@ -5,6 +5,7 @@ namespace HugeMazes.Images;
 
 public interface IImage : IStorable
 {
+    Guid MazeId { get; }
     MazeSize Size { get; }
     int Height { get; }
     int Width { get; }

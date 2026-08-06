@@ -9,6 +9,7 @@ namespace HugeMazes.Mazes;
 
 public class BitGridMaze : Storable, IMaze
 {
+    private Guid id;
     private BitArray array;
     private MazeSize size;
 
@@ -17,13 +18,15 @@ public class BitGridMaze : Storable, IMaze
         array = null!;
     }
 
-    public BitGridMaze(IStore store, MazeSize size, bool leaveOpen = false) : base(store, leaveOpen)
+    public BitGridMaze(IStore store, Guid id, MazeSize size, bool leaveOpen = false) : base(store, leaveOpen)
     {
+        this.id = id;
         this.size = size;
         array = new((int)size.Area);
     }
 
     public override long Extent => CollectionsMarshal.AsBytes(array).Length + MazeSize.SizeOf;
+    public Guid Id => id;
     public MazeSize Size => size;
     public int Width => size.Width;
     public int Height => size.Height;
@@ -46,15 +49,15 @@ public class BitGridMaze : Storable, IMaze
 
     public override void Read()
     {
-        size = store.Read<MazeSize>(0);
+        (id, size) = store.Read<Header>(0);
         array = new((int)size.Area);
-        store.ReadExactly(MazeSize.SizeOf, CollectionsMarshal.AsBytes(array));
+        store.ReadExactly(Header.SizeOf, CollectionsMarshal.AsBytes(array));
     }
 
     public override void Write()
     {
-        store.Write(0, size);
-        store.Write(MazeSize.SizeOf, CollectionsMarshal.AsBytes(array));
+        store.Write(0, new Header(id, size));
+        store.Write(Header.SizeOf, CollectionsMarshal.AsBytes(array));
     }
 
     IMaze IMaze.Clone() => Clone();
@@ -68,5 +71,11 @@ public class BitGridMaze : Storable, IMaze
         var result = new BitGridMaze(destination, leaveOpen);
         result.Read();
         return result;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    private record struct Header(Guid Id, MazeSize Size)
+    {
+        public static readonly int SizeOf = IStore.SizeOf<Header>();
     }
 }

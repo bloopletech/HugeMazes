@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using HugeMazes.Collections;
 using HugeMazes.Extensions;
 using HugeMazes.IO;
@@ -11,29 +10,36 @@ namespace HugeMazes.Images;
 public class TiffIndexed16Image : Storable, IImage<byte>
 {
     public const int PaletteSize = 16;
-    private const long HeaderLength = 252;
-    private const long ColorMapCount = PaletteSize * 3;
-    private const long ColorMapLength = ColorMapCount * sizeof(short);
-    private const long ArrayOffset = HeaderLength + ColorMapLength;
+    private const long MazeIdOffset = 272;
+    private const long MazeIdLength = 37;
+    private const long PaletteOffset = MazeIdOffset + MazeIdLength;
+    private const long PaletteCount = PaletteSize * 3;
+    private const long PaletteLength = PaletteCount * sizeof(short);
+    private const long ArrayOffset = PaletteOffset + PaletteLength;
 
     private readonly LongArray<byte> array;
+    private bool written;
+    private readonly Guid mazeId;
     private readonly MazeSize size;
     private readonly MazeColor[] palette;
     private readonly int arrayWidth;
 
     public TiffIndexed16Image(
         IStore store,
+        Guid mazeId,
         MazeSize size,
         MazeColor[] palette,
         bool leaveOpen = false) : base(store, leaveOpen)
     {
+        this.mazeId = mazeId;
         this.size = size;
         this.palette = palette;
         arrayWidth = size.Width.RoundUpEven();
-        array = new(store.Offset(ArrayOffset, true), (arrayWidth * size.Height).DivCeil(2), true);
+        array = new(store.Offset(ArrayOffset - sizeof(long), true), (arrayWidth * size.Height).DivCeil(2), true);
     }
 
     public override long Extent => array.Extent + ArrayOffset;
+    public Guid MazeId => mazeId;
     public MazeSize Size => size;
     public int Width => size.Width;
     public int Height => size.Height;
@@ -79,52 +85,30 @@ public class TiffIndexed16Image : Storable, IImage<byte>
 
     public override void Write()
     {
-        var magic = BitConverter.IsLittleEndian ? (byte)0x49 : (byte)0x4D;
-        byte[] header = [
-            magic,
-            magic,
-            ..BitConverter.GetBytes((ushort)0x2B),
-            ..BitConverter.GetBytes((ushort)0x08),
-            0x00,
-            0x00,
-            ..BitConverter.GetBytes(16L),
-            ..BitConverter.GetBytes(11L),
-            ..new TiffTag(TiffTag.TagType.Width, [(uint)size.Width]),
-            ..new TiffTag(TiffTag.TagType.Height, [(uint)size.Height]),
-            ..new TiffTag(TiffTag.TagType.BitsPerSample, [0x04]),
-            ..new TiffTag(TiffTag.TagType.Compression, [0x01]),
-            ..new TiffTag(TiffTag.TagType.PhotometricInterpolation, [0x03]),
-            ..new TiffTag(TiffTag.TagType.StripOffsets, [(ulong)ArrayOffset + sizeof(long)]),
-            ..new TiffTag(TiffTag.TagType.Orientation, [0x01]),
-            ..new TiffTag(TiffTag.TagType.RowsPerStrip, [uint.MaxValue]),
-            ..new TiffTag(TiffTag.TagType.StripByteCount, [(ulong)array.Length]),
-            ..new TiffTag(TiffTag.TagType.PlanarConfiguration, [0x01]),
-            ..new TiffTag(TiffTag.TagType.ColorMap, TiffTag.ValueType.Short, ColorMapCount, BitConverter.GetBytes(HeaderLength)),
-            ..BitConverter.GetBytes(0L),
-            ..MemoryMarshal.AsBytes(MapPalette()),
-        ];
+        if(written) return;
+        written = true;
 
-        store.Write(0, header);
         array.Write();
+
+        var mazeIdBytes = Tiff.GetAsciiBytes(mazeId.ToString());
+
+        store.Write<byte>(0, [
+            ..Tiff.FixedHeader(12),
+            ..Tiff.Tag(Tiff.TagType.Width, (uint)size.Width),
+            ..Tiff.Tag(Tiff.TagType.Height, (uint)size.Height),
+            ..Tiff.Tag(Tiff.TagType.BitsPerSample, 0x04),
+            ..Tiff.Tag(Tiff.TagType.Compression, 0x01),
+            ..Tiff.Tag(Tiff.TagType.PhotometricInterpolation, 0x03),
+            ..Tiff.Tag(Tiff.TagType.ImageDescription, Tiff.ValueType.Ascii, mazeIdBytes.Length - 1, MazeIdOffset),
+            ..Tiff.Tag(Tiff.TagType.StripOffsets, ArrayOffset),
+            ..Tiff.Tag(Tiff.TagType.Orientation, 0x01),
+            ..Tiff.Tag(Tiff.TagType.RowsPerStrip, uint.MaxValue),
+            ..Tiff.Tag(Tiff.TagType.StripByteCount, (ulong)array.Length),
+            ..Tiff.Tag(Tiff.TagType.PlanarConfiguration, 0x01),
+            ..Tiff.Tag(Tiff.TagType.ColorMap, Tiff.ValueType.Short, PaletteCount, PaletteOffset),
+            ..BitConverter.GetBytes(0L),
+            ..mazeIdBytes,
+            ..Tiff.MapPaletteBytes(palette.Extend(PaletteSize))
+        ]);
     }
-
-    private ushort[] MapPalette()
-    {
-        MazeColor[] extendedPalette = [..palette, ..new MazeColor[PaletteSize - palette.Length]];
-
-        var reds = new ushort[PaletteSize];
-        var greens = new ushort[PaletteSize];
-        var blues = new ushort[PaletteSize];
-
-        for(var i = 0; i < extendedPalette.Length; i++)
-        {
-            reds[i] = Scale(extendedPalette[i].R);
-            greens[i] = Scale(extendedPalette[i].G);
-            blues[i] = Scale(extendedPalette[i].B);
-        }
-
-        return [..reds, ..greens, ..blues];
-    }
-
-    private static ushort Scale(byte value) => (ushort)(value * ushort.MaxValue / (double)byte.MaxValue);
 }

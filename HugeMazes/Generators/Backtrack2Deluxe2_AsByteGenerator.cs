@@ -15,7 +15,7 @@ public class Backtrack2Deluxe2_AsByteGenerator(IMaze maze, Random random) : IGen
         int width = maze.Width - 1;
         int height = maze.Height - 1;
 
-        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong), 2);
+        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong), maze.Id, 2);
         stack.Push(new(1, 1));
         maze[1, 1] = true;
 

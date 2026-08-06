@@ -6,11 +6,24 @@ using HugeMazes.Structures;
 
 namespace HugeMazes.Paths;
 
-public class MazePath(IStore store, bool leaveOpen = false) : Storable(store, leaveOpen), IMazePath
+public class MazePath : Storable, IMazePath
 {
-    private LongList<MazePoint> points = new(store);
+    private Guid mazeId;
+    private LongList<MazePoint> points;
+
+    public MazePath(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
+    {
+        points = null!;
+    }
+
+    public MazePath(IStore store, Guid mazeId, bool leaveOpen = false) : base(store, leaveOpen)
+    {
+        this.mazeId = mazeId;
+        points = new(store.Offset<Guid>(true));
+    }
 
     public override long Extent => points.Extent + MazeSize.SizeOf;
+    public Guid MazeId => mazeId;
 
     public long Count => points.Count;
 
@@ -40,12 +53,14 @@ public class MazePath(IStore store, bool leaveOpen = false) : Storable(store, le
 
     public override void Read()
     {
-        points = new(store);
+        mazeId = store.Read<Guid>(0);
+        points = new(store.Offset<Guid>(true));
         points.Read();
     }
 
     public override void Write()
     {
+        store.Write(0, mazeId);
         points.Write();
     }
 

@@ -50,6 +50,8 @@ public class Verifier
 
     public static bool IsPerfectPath(IMaze maze, IMazePath path)
     {
+        path.ValidateMazeId(maze);
+
         MazePoint last = MazePoint.Empty;
 
         foreach(var point in path)

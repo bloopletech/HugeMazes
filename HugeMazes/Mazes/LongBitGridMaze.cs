@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using HugeMazes.Collections;
 using HugeMazes.Extensions;
 using HugeMazes.IO;
@@ -8,6 +9,7 @@ namespace HugeMazes.Mazes;
 
 public class LongBitGridMaze : Storable, IMaze
 {
+    private Guid id;
     private LongBitArray array;
     private MazeSize size;
 
@@ -16,13 +18,15 @@ public class LongBitGridMaze : Storable, IMaze
         array = null!;
     }
 
-    public LongBitGridMaze(IStore store, MazeSize size, bool leaveOpen = false) : base(store, leaveOpen)
+    public LongBitGridMaze(IStore store, Guid id, MazeSize size, bool leaveOpen = false) : base(store, leaveOpen)
     {
+        this.id = id;
         this.size = size;
-        array = new(store.Offset<MazeSize>(true), size.Area);
+        array = new(store.Offset<Header>(true), size.Area);
     }
 
     public override long Extent => array.Extent + MazeSize.SizeOf;
+    public Guid Id => id;
     public MazeSize Size => size;
     public int Width => size.Width;
     public int Height => size.Height;
@@ -45,15 +49,15 @@ public class LongBitGridMaze : Storable, IMaze
 
     public override void Read()
     {
-        size = store.Read<MazeSize>(0);
-        array = new(store.Offset<MazeSize>(true), size.Area);
+        (id, size) = store.Read<Header>(0);
+        array = new(store.Offset<Header>(true), size.Area);
         array.Read();
     }
 
 
     public override void Write()
     {
-        store.Write(0, size);
+        store.Write(0, new Header(id, size));
         array.Write();
     }
 
@@ -68,5 +72,11 @@ public class LongBitGridMaze : Storable, IMaze
         var result = new LongBitGridMaze(destination, leaveOpen);
         result.Read();
         return result;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    private record struct Header(Guid Id, MazeSize Size)
+    {
+        public static readonly int SizeOf = IStore.SizeOf<Header>();
     }
 }

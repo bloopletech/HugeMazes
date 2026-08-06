@@ -10,6 +10,7 @@ namespace HugeMazes.Mazes;
 /// </summary>
 public interface IMaze : IStorable
 {
+    Guid Id { get; }
     MazeSize Size { get; }
     int Height { get; }
     int Width { get; }

@@ -17,7 +17,7 @@ public class BacktrackGenerator(IMaze maze, Random random) : IGenerator
 
         //var capacityEstimate = Convert.ToInt32(Math.Ceiling(width * height * 0.05));
 
-        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong), 2);
+        using var stack = new DirectionMazePath(IStore.Create(maze.IsLong), maze.Id, 2);
         stack.Push(new(1, 1));
         maze[1, 1] = true;
 

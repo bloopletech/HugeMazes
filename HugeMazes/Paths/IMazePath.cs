@@ -1,10 +1,12 @@
 using HugeMazes.IO;
+using HugeMazes.Mazes;
 using HugeMazes.Structures;
 
 namespace HugeMazes.Paths;
 
 public interface IMazePath : IEnumerable<MazePoint>, IStorable
 {
+    Guid MazeId { get; }
     long Count { get; }
     MazePoint this[long index] { get; }
     void Add(MazePoint point);
@@ -18,4 +20,12 @@ public interface IMazePath : IEnumerable<MazePoint>, IStorable
 
     IMazePath Clone();
     IMazePath Clone(IStore destination, bool leaveOpen = false);
+
+    public void ValidateMazeId(IMaze maze)
+    {
+        if(maze.Id != MazeId)
+        {
+            throw new ArgumentException("MazeId must match maze Id", "path.MazeId");
+        }
+    }
 }

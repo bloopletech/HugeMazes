@@ -25,7 +25,7 @@ public static class HugeMazes
         MazeType mazeType = MazeType.LongBitGridMaze,
         GeneratorType generatorType = GeneratorType.Backtrack)
     {
-        var maze = MazeSerializer.Create(store, mazeType, new(width, height));
+        var maze = MazeSerializer.Create(store, mazeType, Guid.NewGuid(), new(width, height));
         var random = seed.HasValue ? new Random(seed.Value) : new Random();
         var realSeed = random.GetSeed();
 
@@ -41,7 +41,7 @@ public static class HugeMazes
         MazePathType pathType = MazePathType.DirectionMazePath,
         SolverType solverType = SolverType.Backtrack)
     {
-        var path = MazePathSerializer.Create(store, pathType);
+        var path = MazePathSerializer.Create(store, pathType, maze.Id);
 
         var solver = ISolver.Create(solverType, maze, path);
         solver.Solve();
@@ -68,6 +68,7 @@ public static class HugeMazes
         bool plain = true)
     {
         colours ??= RenderPalette.Default;
+        path.ValidateMazeId(maze);
         return Renderer.Render(store, maze, path, colours.Value, plain);
     }
 

@@ -7,17 +7,34 @@ using HugeMazes.Structures;
 
 namespace HugeMazes.Paths;
 
-public class DirectionMazePath(
-    IStore store,
-    int delta = 1,
-    bool leaveOpen = false) : Storable(store, leaveOpen), IMazePath
+public class DirectionMazePath : Storable, IMazePath
 {
-    private LongList<MazeDirection> directions = new(store.Offset<Header>(true));
+    private Guid mazeId;
+    private LongList<MazeDirection> directions;
     private MazePoint start = MazePoint.Empty;
     private MazePoint end = MazePoint.Empty;
+    private int delta;
+
+    public DirectionMazePath(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
+    {
+        directions = null!;
+    }
+
+    public DirectionMazePath(
+        IStore store,
+        Guid mazeId,
+        int delta = 1,
+        bool leaveOpen = false) : base(store, leaveOpen)
+    {
+        this.mazeId = mazeId;
+        this.delta = delta;
+        directions = new(store.Offset<Header>(true));
+    }
+
     private bool HasStart => start != MazePoint.Empty;
 
     public override long Extent => directions.Extent + Header.SizeOf;
+    public Guid MazeId => mazeId;
     public long Count => HasStart ? directions.Count + 1 : 0; // Fencepost
 
     public MazePoint this[long index]
@@ -118,14 +135,14 @@ public class DirectionMazePath(
 
     public override void Read()
     {
-        (start, end, delta) = store.Read<Header>(0);
+        (mazeId, start, end, delta) = store.Read<Header>(0);
         directions = new(store.Offset<Header>(true));
         directions.Read();
     }
 
     public override void Write()
     {
-        store.Write(0, new Header(start, end, delta));
+        store.Write(0, new Header(mazeId, start, end, delta));
         directions.Write();
     }
 
@@ -140,7 +157,7 @@ public class DirectionMazePath(
         return result;
     }
 
-    private record struct Header(MazePoint Start, MazePoint End, int Delta)
+    private record struct Header(Guid MazeId, MazePoint Start, MazePoint End, int Delta)
     {
         public static readonly int SizeOf = IStore.SizeOf<Header>();
     }
