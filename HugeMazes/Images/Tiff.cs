@@ -8,19 +8,16 @@ namespace HugeMazes.Images;
 // Based on https://paulbourke.net/dataformats/tiff/
 public static class Tiff
 {
-    public static byte[] FixedHeader(long tagCount)
-    {
-        var magic = BitConverter.IsLittleEndian ? (byte)0x49 : (byte)0x4D;
-        return [
-            magic,
-            magic,
-            ..BitConverter.GetBytes((ushort)0x2B),
-            ..BitConverter.GetBytes((ushort)0x08),
-            0x00,
-            0x00,
-            ..BitConverter.GetBytes(16L),
-            ..BitConverter.GetBytes(tagCount)];
-    }
+    private static readonly byte Magic = BitConverter.IsLittleEndian ? (byte)0x49 : (byte)0x4D;
+
+    public static byte[] Header => [
+        Magic,
+        Magic,
+        ..BitConverter.GetBytes((ushort)0x2B),
+        ..BitConverter.GetBytes((ushort)0x08),
+        0x00,
+        0x00,
+        ..BitConverter.GetBytes(16L)];
 
     public static byte[] Tag(TagType type, uint value) => Tag(type, [value]);
 
@@ -67,9 +64,9 @@ public static class Tiff
 
     public static byte[] GetAsciiBytes(string value) => [..Encoding.ASCII.GetBytes(value), 0x00];
 
-    public static byte[] MapPaletteBytes(MazeColor[] palette) => [..MemoryMarshal.AsBytes(MapPalette(palette))];
+    public static byte[] GetColorMapBytes(MazeColor[] palette) => [..MemoryMarshal.AsBytes(GetColorMap(palette))];
 
-    public static ushort[] MapPalette(MazeColor[] palette)
+    private static ushort[] GetColorMap(MazeColor[] palette)
     {
         var reds = new ushort[palette.Length];
         var greens = new ushort[palette.Length];

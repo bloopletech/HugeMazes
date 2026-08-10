@@ -93,7 +93,8 @@ public class TiffIndexed16Image : Storable, IImage<byte>
         var mazeIdBytes = Tiff.GetAsciiBytes(mazeId.ToString());
 
         store.Write<byte>(0, [
-            ..Tiff.FixedHeader(12),
+            ..Tiff.Header,
+            ..BitConverter.GetBytes(12L),
             ..Tiff.Tag(Tiff.TagType.Width, (uint)size.Width),
             ..Tiff.Tag(Tiff.TagType.Height, (uint)size.Height),
             ..Tiff.Tag(Tiff.TagType.BitsPerSample, 0x04),
@@ -108,7 +109,7 @@ public class TiffIndexed16Image : Storable, IImage<byte>
             ..Tiff.Tag(Tiff.TagType.ColorMap, Tiff.ValueType.Short, PaletteCount, PaletteOffset),
             ..BitConverter.GetBytes(0L),
             ..mazeIdBytes,
-            ..Tiff.MapPaletteBytes(palette.Extend(PaletteSize))
+            ..Tiff.GetColorMapBytes(palette.Extend(PaletteSize))
         ]);
     }
 }

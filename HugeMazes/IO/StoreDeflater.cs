@@ -5,10 +5,10 @@ namespace HugeMazes.IO;
 
 public static class StoreDeflater
 {
-    public static void Deflate(IStore store)
+    public static long Deflate(IStore store)
     {
         var mappings = DeflateChunks(store);
-        if(mappings.Length == 0) return;
+        if(mappings.Length == 0) return 0;
 
         var destinationOffset = mappings[0].Offset + mappings[0].Length;
 
@@ -19,6 +19,7 @@ public static class StoreDeflater
         }
 
         store.Length = destinationOffset;
+        return destinationOffset;
     }
 
     private static Mapping[] DeflateChunks(IStore store)

@@ -55,13 +55,13 @@ public class TiffIndexedImage(IStore store, Guid mazeId, MazeSize size, MazeColo
 
         array.Write();
 
-        var deflateStore = store.Offset(ArrayOffset, true);
-        StoreDeflater.Deflate(deflateStore);
+        var deflatedLength = StoreDeflater.Deflate(store.Offset(ArrayOffset, true));
 
         var mazeIdBytes = Tiff.GetAsciiBytes(mazeId.ToString());
 
         store.Write<byte>(0, [
-            ..Tiff.FixedHeader(11),
+            ..Tiff.Header,
+            ..BitConverter.GetBytes(11L),
             ..Tiff.Tag(Tiff.TagType.Width, (uint)size.Width),
             ..Tiff.Tag(Tiff.TagType.Height, (uint)size.Height),
             ..Tiff.Tag(Tiff.TagType.BitsPerSample, 0x08),
@@ -70,7 +70,7 @@ public class TiffIndexedImage(IStore store, Guid mazeId, MazeSize size, MazeColo
             ..Tiff.Tag(Tiff.TagType.ImageDescription, Tiff.ValueType.Ascii, mazeIdBytes.Length - 1, MazeIdOffset),
             ..Tiff.Tag(Tiff.TagType.StripOffsets, ArrayOffset),
             ..Tiff.Tag(Tiff.TagType.RowsPerStrip, (uint)size.Width),
-            ..Tiff.Tag(Tiff.TagType.StripByteCount, (ulong)deflateStore.Length),
+            ..Tiff.Tag(Tiff.TagType.StripByteCount, (ulong)deflatedLength),
             ..Tiff.Tag(Tiff.TagType.PlanarConfiguration, 0x01),
             //XResolution
             //YResolution
@@ -78,7 +78,7 @@ public class TiffIndexedImage(IStore store, Guid mazeId, MazeSize size, MazeColo
             ..Tiff.Tag(Tiff.TagType.ColorMap, Tiff.ValueType.Short, PaletteCount, PaletteOffset),
             ..BitConverter.GetBytes(0L),
             ..mazeIdBytes,
-            ..Tiff.MapPaletteBytes(palette.Extend(PaletteSize))
+            ..Tiff.GetColorMapBytes(palette.Extend(PaletteSize))
         ]);
     }
 

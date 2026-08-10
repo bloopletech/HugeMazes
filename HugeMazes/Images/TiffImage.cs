@@ -49,13 +49,13 @@ public class TiffImage(IStore store, Guid mazeId, MazeSize size) : Storable(stor
 
         array.Write();
 
-        var deflateStore = store.Offset(ArrayOffset, true);
-        StoreDeflater.Deflate(deflateStore);
+        var deflatedLength = StoreDeflater.Deflate(store.Offset(ArrayOffset, true));
 
         var mazeIdBytes = Tiff.GetAsciiBytes(mazeId.ToString());
 
         store.Write<byte>(0, [
-            ..Tiff.FixedHeader(14),
+            ..Tiff.Header,
+            ..BitConverter.GetBytes(14L),
             ..Tiff.Tag(Tiff.TagType.Width, (uint)size.Width),
             ..Tiff.Tag(Tiff.TagType.Height, (uint)size.Height),
             ..Tiff.Tag(Tiff.TagType.BitsPerSample, [0x08, 0x08, 0x08]),
@@ -65,7 +65,7 @@ public class TiffImage(IStore store, Guid mazeId, MazeSize size) : Storable(stor
             ..Tiff.Tag(Tiff.TagType.StripOffsets, ArrayOffset),
             ..Tiff.Tag(Tiff.TagType.SamplesPerPixel, 0x03),
             ..Tiff.Tag(Tiff.TagType.RowsPerStrip, (uint)size.Width),
-            ..Tiff.Tag(Tiff.TagType.StripByteCount, (ulong)deflateStore.Length),
+            ..Tiff.Tag(Tiff.TagType.StripByteCount, (ulong)deflatedLength),
             ..Tiff.Tag(Tiff.TagType.MinimumSampleValue, [0, 0, 0]),
             ..Tiff.Tag(Tiff.TagType.MaximumSampleValue, [0xFF, 0xFF, 0xFF]),
             ..Tiff.Tag(Tiff.TagType.PlanarConfiguration, 0x01),
