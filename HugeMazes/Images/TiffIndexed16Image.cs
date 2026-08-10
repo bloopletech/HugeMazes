@@ -10,12 +10,12 @@ namespace HugeMazes.Images;
 public class TiffIndexed16Image : Storable, IImage<byte>
 {
     public const int PaletteSize = 16;
-    private const long MazeIdOffset = 272;
+    private static readonly long MazeIdOffset = Tiff.HeaderLength + Tiff.DirectoryLength(12);
     private const long MazeIdLength = 37;
-    private const long PaletteOffset = MazeIdOffset + MazeIdLength;
+    private static readonly long PaletteOffset = MazeIdOffset + MazeIdLength;
     private const long PaletteCount = PaletteSize * 3;
     private const long PaletteLength = PaletteCount * sizeof(short);
-    private const long ArrayOffset = PaletteOffset + PaletteLength;
+    private static readonly long ArrayOffset = PaletteOffset + PaletteLength;
 
     private readonly LongArray<byte> array;
     private bool written;
@@ -94,20 +94,20 @@ public class TiffIndexed16Image : Storable, IImage<byte>
 
         store.Write<byte>(0, [
             ..Tiff.Header,
-            ..BitConverter.GetBytes(12L),
-            ..Tiff.Tag(Tiff.TagType.Width, (uint)size.Width),
-            ..Tiff.Tag(Tiff.TagType.Height, (uint)size.Height),
-            ..Tiff.Tag(Tiff.TagType.BitsPerSample, 0x04),
-            ..Tiff.Tag(Tiff.TagType.Compression, 0x01),
-            ..Tiff.Tag(Tiff.TagType.PhotometricInterpolation, 0x03),
-            ..Tiff.Tag(Tiff.TagType.ImageDescription, Tiff.ValueType.Ascii, mazeIdBytes.Length - 1, MazeIdOffset),
-            ..Tiff.Tag(Tiff.TagType.StripOffsets, ArrayOffset),
-            ..Tiff.Tag(Tiff.TagType.Orientation, 0x01),
-            ..Tiff.Tag(Tiff.TagType.RowsPerStrip, uint.MaxValue),
-            ..Tiff.Tag(Tiff.TagType.StripByteCount, (ulong)array.Length),
-            ..Tiff.Tag(Tiff.TagType.PlanarConfiguration, 0x01),
-            ..Tiff.Tag(Tiff.TagType.ColorMap, Tiff.ValueType.Short, PaletteCount, PaletteOffset),
-            ..BitConverter.GetBytes(0L),
+            ..Tiff.Directory([
+                Tiff.Tag(Tiff.TagType.Width, (uint)size.Width),
+                Tiff.Tag(Tiff.TagType.Height, (uint)size.Height),
+                Tiff.Tag(Tiff.TagType.BitsPerSample, 0x04),
+                Tiff.Tag(Tiff.TagType.Compression, 0x01),
+                Tiff.Tag(Tiff.TagType.PhotometricInterpolation, 0x03),
+                Tiff.Tag(Tiff.TagType.ImageDescription, Tiff.ValueType.Ascii, mazeIdBytes.Length - 1, MazeIdOffset),
+                Tiff.Tag(Tiff.TagType.StripOffsets, (ulong)ArrayOffset),
+                Tiff.Tag(Tiff.TagType.Orientation, 0x01),
+                Tiff.Tag(Tiff.TagType.RowsPerStrip, uint.MaxValue),
+                Tiff.Tag(Tiff.TagType.StripByteCount, (ulong)array.Length),
+                Tiff.Tag(Tiff.TagType.PlanarConfiguration, 0x01),
+                Tiff.Tag(Tiff.TagType.ColorMap, Tiff.ValueType.Short, PaletteCount, PaletteOffset)
+            ]),
             ..mazeIdBytes,
             ..Tiff.GetColorMapBytes(palette.Extend(PaletteSize))
         ]);

@@ -19,6 +19,15 @@ public static class Tiff
         0x00,
         ..BitConverter.GetBytes(16L)];
 
+    public static readonly long HeaderLength = 16;
+
+    public static byte[] Directory(byte[][] entries) => [
+        ..BitConverter.GetBytes((ulong)entries.Length),
+        ..entries.SelectMany(e => e),
+        ..BitConverter.GetBytes(0L)];
+
+    public static long DirectoryLength(int entryCount) => (entryCount * 20) + 16;
+
     public static byte[] Tag(TagType type, uint value) => Tag(type, [value]);
 
     public static byte[] Tag(TagType type, uint[] values) => GetBytes(

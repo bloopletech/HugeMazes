@@ -8,9 +8,9 @@ namespace HugeMazes.Images;
 // Based on https://paulbourke.net/dataformats/tiff/
 public class TiffImage(IStore store, Guid mazeId, MazeSize size) : Storable(store, false), IImage<MazeColor>
 {
-    private const long MazeIdOffset = 312;
+    private static readonly long MazeIdOffset = Tiff.HeaderLength + Tiff.DirectoryLength(14);
     private const long MazeIdLength = 37;
-    private const long ArrayOffset = MazeIdOffset + MazeIdLength;
+    private static readonly long ArrayOffset = MazeIdOffset + MazeIdLength;
 
     private readonly LongArray<MazeColor> array = new(store.Offset(ArrayOffset - sizeof(long), true), size.Area, true);
     private bool written;
@@ -55,22 +55,22 @@ public class TiffImage(IStore store, Guid mazeId, MazeSize size) : Storable(stor
 
         store.Write<byte>(0, [
             ..Tiff.Header,
-            ..BitConverter.GetBytes(14L),
-            ..Tiff.Tag(Tiff.TagType.Width, (uint)size.Width),
-            ..Tiff.Tag(Tiff.TagType.Height, (uint)size.Height),
-            ..Tiff.Tag(Tiff.TagType.BitsPerSample, [0x08, 0x08, 0x08]),
-            ..Tiff.Tag(Tiff.TagType.Compression, 0x08),
-            ..Tiff.Tag(Tiff.TagType.PhotometricInterpolation, 0x02),
-            ..Tiff.Tag(Tiff.TagType.ImageDescription, Tiff.ValueType.Ascii, mazeIdBytes.Length - 1, MazeIdOffset),
-            ..Tiff.Tag(Tiff.TagType.StripOffsets, ArrayOffset),
-            ..Tiff.Tag(Tiff.TagType.SamplesPerPixel, 0x03),
-            ..Tiff.Tag(Tiff.TagType.RowsPerStrip, (uint)size.Width),
-            ..Tiff.Tag(Tiff.TagType.StripByteCount, (ulong)deflatedLength),
-            ..Tiff.Tag(Tiff.TagType.MinimumSampleValue, [0, 0, 0]),
-            ..Tiff.Tag(Tiff.TagType.MaximumSampleValue, [0xFF, 0xFF, 0xFF]),
-            ..Tiff.Tag(Tiff.TagType.PlanarConfiguration, 0x01),
-            ..Tiff.Tag(Tiff.TagType.SampleFormat, [0x01, 0x01, 0x01]),
-            ..BitConverter.GetBytes(0L),
+            ..Tiff.Directory([
+                Tiff.Tag(Tiff.TagType.Width, (uint)size.Width),
+                Tiff.Tag(Tiff.TagType.Height, (uint)size.Height),
+                Tiff.Tag(Tiff.TagType.BitsPerSample, [0x08, 0x08, 0x08]),
+                Tiff.Tag(Tiff.TagType.Compression, 0x08),
+                Tiff.Tag(Tiff.TagType.PhotometricInterpolation, 0x02),
+                Tiff.Tag(Tiff.TagType.ImageDescription, Tiff.ValueType.Ascii, mazeIdBytes.Length - 1, MazeIdOffset),
+                Tiff.Tag(Tiff.TagType.StripOffsets, (ulong)ArrayOffset),
+                Tiff.Tag(Tiff.TagType.SamplesPerPixel, 0x03),
+                Tiff.Tag(Tiff.TagType.RowsPerStrip, (uint)size.Width),
+                Tiff.Tag(Tiff.TagType.StripByteCount, (ulong)deflatedLength),
+                Tiff.Tag(Tiff.TagType.MinimumSampleValue, [0, 0, 0]),
+                Tiff.Tag(Tiff.TagType.MaximumSampleValue, [0xFF, 0xFF, 0xFF]),
+                Tiff.Tag(Tiff.TagType.PlanarConfiguration, 0x01),
+                Tiff.Tag(Tiff.TagType.SampleFormat, [0x01, 0x01, 0x01])
+            ]),
             ..mazeIdBytes
         ]);
     }
