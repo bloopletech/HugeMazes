@@ -1,7 +1,7 @@
 using System.Reflection;
 using BenchmarkDotNet.Configs;
 
-namespace HugeMazes.Benchmark;
+namespace HugeMazes.Benchmark.Support;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public class UseAttribute<T> : Attribute, IConfigSource
@@ -28,3 +28,12 @@ public class UseAttribute<T> : Attribute, IConfigSource
         return config;
     }
 }
+
+/*
+        if(disableTieredCompilation)
+        {
+            job.Environment.SetEnvironmentVariable(new EnvironmentVariable("DOTNET_TieredCompilation", "0"));
+            job.Environment.SetEnvironmentVariable(new EnvironmentVariable("DOTNET_TC_QuickJit", "0"));
+            job.Environment.SetEnvironmentVariable(new EnvironmentVariable("DOTNET_TC_QuickJitForLoops", "0"));
+        }
+*/

@@ -1,6 +1,5 @@
-#pragma warning disable CA1822 // Mark members as static
-
 using BenchmarkDotNet.Attributes;
+using HugeMazes.Benchmark.Support;
 using HugeMazes.Generators;
 using HugeMazes.IO;
 using HugeMazes.Mazes;

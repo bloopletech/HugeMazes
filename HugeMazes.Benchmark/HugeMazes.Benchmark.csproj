@@ -10,11 +10,9 @@
     <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
     <InvariantGlobalization>true</InvariantGlobalization>
     <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
-  </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="**/ProfilerAgentConfig*.g.cs" />
-  </ItemGroup>
+    <DefineConstants>$(DefineConstants);DISABLE_PROFILER_AGENT_CONFIG</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.16.0-preview.1" />

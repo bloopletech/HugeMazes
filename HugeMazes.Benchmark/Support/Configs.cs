@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Exporters;
 
-namespace HugeMazes.Benchmark;
+namespace HugeMazes.Benchmark.Support;
 
 public class NoExportersDefaultConfig : ManualConfig
 {

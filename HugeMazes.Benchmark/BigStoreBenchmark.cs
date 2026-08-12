@@ -1,5 +1,3 @@
-#pragma warning disable CA1822 // Mark members as static
-
 using BenchmarkDotNet.Attributes;
 using HugeMazes.IO;
 

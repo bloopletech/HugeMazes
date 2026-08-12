@@ -1,6 +1,9 @@
 using System.Diagnostics;
 using BenchmarkDotNet.Running;
-using HugeMazes.Benchmark;
+using HugeMazes.Benchmark.Support;
+using System.Diagnostics.CodeAnalysis;
+
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Benchmarking")]
 
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, NoExportersDefaultConfig.Instance);
 
