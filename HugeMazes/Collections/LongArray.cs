@@ -1,10 +1,7 @@
 using System.Collections;
-using System.IO.Compression;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using HugeMazes.Extensions;
 using HugeMazes.IO;
-using static HugeMazes.Structures.RenderPalette;
 
 namespace HugeMazes.Collections;
 
