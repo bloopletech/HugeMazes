@@ -56,7 +56,7 @@ Options ParseOptions()
     {
         var width = options.Next();
         var height = options.HasNext() ? options.Next() : width;
-        return new(["generate", width, height, "verify", "solve", "verify-path", "render", "render-path"]);
+        return new(["generate", width, height, "render", "solve", "render-path"]);
     }
     return options;
 }
