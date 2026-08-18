@@ -9,7 +9,7 @@ public class GenerateBenchmark : BaseBenchmark
     [Benchmark(Baseline = true)]
     public void Generate()
     {
-        HugeMazes.BenchmarkLongBitGrid();
+        HugeMazes.BenchmarkBaseline();
     }
 
     //[Benchmark]

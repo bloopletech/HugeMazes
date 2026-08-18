@@ -47,14 +47,12 @@ public class MazeSerializer
 
     private static IMaze InitForRead(MazeType type, IStore store) => type switch
     {
-        MazeType.BitGridMaze => new BitGridMaze(store),
         MazeType.LongBitGridMaze => new LongBitGridMaze(store),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
 
     private static IMaze InitForWrite(MazeType type, IStore store, Guid id, MazeSize size) => type switch
     {
-        MazeType.BitGridMaze => new BitGridMaze(store, id, size),
         MazeType.LongBitGridMaze => new LongBitGridMaze(store, id, size),
         _ => throw new InvalidDataException($"Unknown maze type {type}")
     };
