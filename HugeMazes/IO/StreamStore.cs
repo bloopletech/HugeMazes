@@ -107,7 +107,7 @@ public sealed class StreamStore(Stream stream) : IStore
         Write(position + sizeof(int), buffer);
     }
 
-    public IStore Clone() => Clone(IStore.Create(Length));
+    public IStore Clone() => Clone(IStore.Create());
 
     public IStore Clone(IStore destination)
     {

@@ -94,7 +94,7 @@ public class LongBitArray : Storable, ILongBitArray
         foreach(var chunk in chunks) chunk.Evict();
     }
 
-    public ILongBitArray Clone() => Clone(IStore.Create(IsLong));
+    public ILongBitArray Clone() => Clone(IStore.Create());
 
     public ILongBitArray Clone(IStore destination, bool leaveOpen = false)
     {

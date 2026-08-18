@@ -35,7 +35,7 @@ public class MazesController : ControllerBase
     [HttpGet("Maze/{width}/{height}", Name = "GenerateMaze")]
     public ActionResult GenerateMaze(int width, int height)
     {
-        using var maze = HugeMazes.Generate(IStore.Create(false), width, height);
+        using var maze = HugeMazes.Generate(IStore.Create(), width, height);
         using var imageStream = new MemoryStream();
         using var image = HugeMazes.Render(new StreamStore(imageStream), maze);
 
@@ -49,11 +49,11 @@ public class MazesController : ControllerBase
     public ActionResult GenerateMazeWithPath(int width, int height)
     {
         var w = Stopwatch.StartNew();
-        using var maze = HugeMazes.Generate(IStore.Create(false), width, height);
+        using var maze = HugeMazes.Generate(IStore.Create(), width, height);
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        using var path = HugeMazes.Solve(IStore.Create(false), maze);
+        using var path = HugeMazes.Solve(IStore.Create(), maze);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();
@@ -73,11 +73,11 @@ public class MazesController : ControllerBase
     public ActionResult GenerateMazeWithPathSeed(int seed, int width, int height)
     {
         var w = Stopwatch.StartNew();
-        using var maze = HugeMazes.Generate(IStore.Create(false), width, height, seed);
+        using var maze = HugeMazes.Generate(IStore.Create(), width, height, seed);
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
-        using var path = HugeMazes.Solve(IStore.Create(false), maze);
+        using var path = HugeMazes.Solve(IStore.Create(), maze);
         var pathGenerationTime = w.Elapsed;
 
         w.Restart();

@@ -40,15 +40,5 @@ public interface IStore : IDisposable
 
     public const int BufferSize = 81920;
 
-    public static StreamStore CreateFile() => new(new TemporaryFileStream());
-
-    public static StreamStore CreateMemory() => new(new MemoryStream());
-
-    public static IStore Create(bool isLong) => (LongOverride ?? isLong) ? CreateFile() : CreateMemory();
-
-    public static IStore Create(long extent) => Create(extent > int.MaxValue);
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2211")]
-    public static bool? LongOverride;
-
+    public static IStore Create() => new StreamStore(new TemporaryFileStream());
 }

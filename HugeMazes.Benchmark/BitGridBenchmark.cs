@@ -15,7 +15,7 @@ public class BitGridBenchmark : BaseBenchmark
     public void GenerateBaseline()
     {
         HugeMazes.Generate(
-            IStore.Create(false),
+            IStore.Create(),
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSeed,
@@ -27,7 +27,7 @@ public class BitGridBenchmark : BaseBenchmark
     public void GenerateLong()
     {
         HugeMazes.Generate(
-            IStore.Create(false),
+            IStore.Create(),
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSize,
             HugeMazes.BenchmarkSeed,

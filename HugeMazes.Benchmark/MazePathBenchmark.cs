@@ -19,12 +19,12 @@ public class MazePathBenchmark : BaseBenchmark
     [Benchmark(Baseline = true)]
     public void GenerateBaseline()
     {
-        HugeMazes.Solve(IStore.Create(false), maze, MazePathType.MazePath);
+        HugeMazes.Solve(IStore.Create(), maze, MazePathType.MazePath);
     }
 
     [Benchmark]
     public void GenerateDirection()
     {
-        HugeMazes.Solve(IStore.Create(false), maze, MazePathType.DirectionMazePath);
+        HugeMazes.Solve(IStore.Create(), maze, MazePathType.DirectionMazePath);
     }
 }

@@ -17,7 +17,7 @@ public class MazeSamples
     [TestMethod]
     public void GeneratingAMazeWithABlockInTheMiddleWorks()
     {
-        using var maze = new BitGridMaze(IStore.CreateMemory(), Guid.NewGuid(), new MazeSize(129, 129));
+        using var maze = new BitGridMaze(IStore.Create(), Guid.NewGuid(), new MazeSize(129, 129));
 
         for(int y = 33; y < 96; y++)
         {
@@ -32,11 +32,11 @@ public class MazeSamples
         var generator = new BacktrackGenerator(maze, random);
         generator.Generate();
 
-        using var path = new MazePath(IStore.CreateMemory());
+        using var path = new MazePath(IStore.Create());
         var solver = ISolver.Create(SolverType.Backtrack, maze, path);
         solver.Solve();
 
-        using var image = Renderer.Render(IStore.CreateMemory(), maze, path, RenderPalette.Default);
+        using var image = Renderer.Render(IStore.Create(), maze, path, RenderPalette.Default);
         image.Write();
     }
 }

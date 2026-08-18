@@ -146,7 +146,7 @@ public class DirectionMazePath : Storable, IMazePath
         directions.Write();
     }
 
-    public IMazePath Clone() => Clone(IStore.Create(IsLong));
+    public IMazePath Clone() => Clone(IStore.Create());
 
     public IMazePath Clone(IStore destination, bool leaveOpen = false)
     {

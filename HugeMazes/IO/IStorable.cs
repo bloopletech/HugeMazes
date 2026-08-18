@@ -4,7 +4,6 @@ namespace HugeMazes.IO;
 public interface IStorable : IDisposable
 {
     IStore Store { get; }
-	bool IsLong { get; }
     long Extent { get; }
 
     //static abstract T Read(IStore store, bool leaveOpen = false);

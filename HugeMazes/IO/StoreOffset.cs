@@ -99,7 +99,7 @@ public class StoreOffset : IStore
     public void WriteArray<T>(long position, ReadOnlySpan<T> buffer) where T : struct =>
         store.WriteArray<T>(offset + position, buffer);
 
-    public IStore Clone() => Clone(IStore.Create(Length));
+    public IStore Clone() => Clone(IStore.Create());
 
     public IStore Clone(IStore destination)
     {

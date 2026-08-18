@@ -62,7 +62,7 @@ public class LongBitGridMaze : Storable, IMaze
     }
 
     IMaze IMaze.Clone() => Clone();
-    public LongBitGridMaze Clone() => Clone(IStore.Create(IsLong));
+    public LongBitGridMaze Clone() => Clone(IStore.Create());
 
     IMaze IMaze.Clone(IStore destination, bool leaveOpen) => Clone(destination, leaveOpen);
     public LongBitGridMaze Clone(IStore destination, bool leaveOpen = false)

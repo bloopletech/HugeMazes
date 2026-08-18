@@ -7,8 +7,6 @@ public abstract class Storable(IStore store, bool leaveOpen = false) : IStorable
 
     public IStore Store => store;
 
-    public virtual bool IsLong => Extent > int.MaxValue;
-
     public abstract long Extent { get; }
 
     //public static abstract T Read(IStore store, bool leaveOpen = false);

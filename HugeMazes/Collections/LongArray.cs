@@ -107,7 +107,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         foreach(var chunk in chunks) chunk.Evict();
     }
 
-    public ILongArray<T> Clone() => Clone(IStore.Create(IsLong));
+    public ILongArray<T> Clone() => Clone(IStore.Create());
 
     public ILongArray<T> Clone(IStore destination, bool leaveOpen = false)
     {

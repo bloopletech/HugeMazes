@@ -177,7 +177,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
         foreach(var chunk in chunks) chunk.Evict();
     }
 
-    public ILongList<T> Clone() => Clone(IStore.Create(IsLong));
+    public ILongList<T> Clone() => Clone(IStore.Create());
 
     public ILongList<T> Clone(IStore destination, bool leaveOpen = false)
     {

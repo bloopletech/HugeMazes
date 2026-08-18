@@ -61,7 +61,7 @@ public class BitGridMaze : Storable, IMaze
     }
 
     IMaze IMaze.Clone() => Clone();
-    public BitGridMaze Clone() => Clone(IStore.Create(IsLong));
+    public BitGridMaze Clone() => Clone(IStore.Create());
 
     IMaze IMaze.Clone(IStore destination, bool leaveOpen) => Clone(destination, leaveOpen);
     public BitGridMaze Clone(IStore destination, bool leaveOpen = false)

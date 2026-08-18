@@ -12,7 +12,7 @@ public class TheGenerateMethod
         //Arrange
 
         //Act
-        var maze = HugeMazes.Generate(IStore.Create(false), 129, 129);
+        var maze = HugeMazes.Generate(IStore.Create(), 129, 129);
 
         //Assert
         Assert.IsFalse(maze[0, 0]);
@@ -24,7 +24,7 @@ public class TheGenerateMethod
     {
         //Arrange
         //Act
-        var maze = HugeMazes.Generate(IStore.Create(false), 129, 129);
+        var maze = HugeMazes.Generate(IStore.Create(), 129, 129);
 
         Assert.IsTrue(Verifier.IsPerfectMaze(maze));
     }

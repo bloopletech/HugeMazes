@@ -64,7 +64,7 @@ public class MazePath : Storable, IMazePath
         points.Write();
     }
 
-    public IMazePath Clone() => Clone(IStore.Create(IsLong));
+    public IMazePath Clone() => Clone(IStore.Create());
 
     public IMazePath Clone(IStore destination, bool leaveOpen = false)
     {

@@ -222,7 +222,7 @@ CLITask RenderPathTask()
 static CLITask BenchmarkTask() => (null, () =>
 {
     Generate(
-        IStore.Create(false),
+        IStore.Create(),
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,

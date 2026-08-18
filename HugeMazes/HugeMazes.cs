@@ -73,7 +73,7 @@ public static class HugeMazes
     }
 
     public static IMaze BenchmarkBaseline() => Generate(
-        IStore.Create(false),
+        IStore.Create(),
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
@@ -81,7 +81,7 @@ public static class HugeMazes
         GeneratorType.Backtrack);
 
     public static IMaze BenchmarkFast() => Generate(
-        IStore.Create(false),
+        IStore.Create(),
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
@@ -89,7 +89,7 @@ public static class HugeMazes
         GeneratorType.Backtrack2_Deluxe2_AsByte);
 
     public static IMaze BenchmarkLongBitGrid() => Generate(
-        IStore.Create(false),
+        IStore.Create(),
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
