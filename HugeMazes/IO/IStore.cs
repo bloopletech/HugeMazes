@@ -41,4 +41,8 @@ public interface IStore : IDisposable
     public const int BufferSize = 81920;
 
     public static IStore Create() => new StreamStore(new TemporaryFileStream());
+    public static IStore Create(string fileName) => new StreamStore(File.Open(fileName, FileMode.CreateNew));
+    //public static IStore Create(string fileName) => new SafeFileHandleStore(fileName, FileMode.CreateNew);
+    public static IStore Open(string fileName) => new StreamStore(File.Open(fileName, FileMode.Open));
+    //public static IStore Open(string fileName) => new SafeFileHandleStore(fileName, FileMode.Open);
 }

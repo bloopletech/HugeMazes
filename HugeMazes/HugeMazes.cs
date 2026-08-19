@@ -11,10 +11,8 @@ namespace HugeMazes;
 
 public static class HugeMazes
 {
-    public static IStore Create(string fileName) => new StreamStore(File.Open(fileName, FileMode.CreateNew));
-    //public static IStore Create(string fileName) => new SafeFileHandleStore(fileName, FileMode.CreateNew);
-    public static IStore Open(string fileName) => new StreamStore(File.Open(fileName, FileMode.Open));
-    //public static IStore Open(string fileName) => new SafeFileHandleStore(fileName, FileMode.Open);
+    public static IStore Create(string fileName) => IStore.Create(fileName);
+    public static IStore Open(string fileName) => IStore.Open(fileName);
 
     public static IMaze Load(IStore store) => MazeSerializer.Read(store);
     public static IMazePath LoadPath(IStore store) => MazePathSerializer.Read(store);
