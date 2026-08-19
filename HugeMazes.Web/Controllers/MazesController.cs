@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
 using HugeMazes.IO;
-using HugeMazes.Structures;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.Fonts;
 
@@ -35,7 +34,7 @@ public class MazesController : ControllerBase
     [HttpGet("Maze/{width}/{height}", Name = "GenerateMaze")]
     public ActionResult GenerateMaze(int width, int height)
     {
-        using var maze = HugeMazes.Generate(IStore.Create(), width, height);
+        using var maze = HugeMazes.Generate(IStore.Create(), Guid.NewGuid(), width, height);
         using var imageStream = new MemoryStream();
         using var image = HugeMazes.Render(new StreamStore(imageStream), maze);
 
@@ -49,7 +48,7 @@ public class MazesController : ControllerBase
     public ActionResult GenerateMazeWithPath(int width, int height)
     {
         var w = Stopwatch.StartNew();
-        using var maze = HugeMazes.Generate(IStore.Create(), width, height);
+        using var maze = HugeMazes.Generate(IStore.Create(), Guid.NewGuid(), width, height);
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();
@@ -73,7 +72,7 @@ public class MazesController : ControllerBase
     public ActionResult GenerateMazeWithPathSeed(int seed, int width, int height)
     {
         var w = Stopwatch.StartNew();
-        using var maze = HugeMazes.Generate(IStore.Create(), width, height, seed);
+        using var maze = HugeMazes.Generate(IStore.Create(), Guid.NewGuid(), width, height, seed);
         var mazeGenerationTime = w.Elapsed;
 
         w.Restart();

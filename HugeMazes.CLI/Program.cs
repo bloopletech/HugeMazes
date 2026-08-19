@@ -10,8 +10,6 @@ using static HugeMazes.Verifier;
 using BoundCLITask = (string Name, string Arguments, System.Action Action);
 using CLITask = (object? Description, System.Action Action);
 
-//IStore.LongOverride = true;
-
 using var measurer = new Measurer("program");
 var options = ParseOptions();
 string? mazeFileName = null;
@@ -129,15 +127,16 @@ static CLITask HelpTask() => (null, () => Console.Write("""
 
 CLITask GenerateTask()
 {
+    var id = Guid.NewGuid();
     var width = options.NextInt().RoundDownOdd();
     var height = options.NextInt().RoundDownOdd();
     int? seed = options.HasNextInt() ? options.NextInt() : null;
-    mazeFileName = options.NextFileName($"{Environment.TickCount}.maze");
-    var description = new { width, height, seed, mazeFileName };
+    mazeFileName = options.NextFileName($"{id}.maze");
+    var description = new { id, width, height, seed, mazeFileName };
 
     return (description, () =>
     {
-        maze = Generate(Create(mazeFileName), width, height, seed);
+        maze = Generate(Create(mazeFileName), id, width, height, seed);
         maze.Write();
         Console.WriteLine($"Saved maze to {mazeFileName}");
     });
@@ -223,6 +222,7 @@ static CLITask BenchmarkTask() => (null, () =>
 {
     Generate(
         IStore.Create(),
+        Guid.NewGuid(),
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,

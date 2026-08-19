@@ -1,3 +1,4 @@
+using System;
 using HugeMazes.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,7 +13,7 @@ public class TheGenerateMethod
         //Arrange
 
         //Act
-        var maze = HugeMazes.Generate(IStore.Create(), 129, 129);
+        var maze = HugeMazes.Generate(IStore.Create(), Guid.NewGuid(), 129, 129);
 
         //Assert
         Assert.IsFalse(maze[0, 0]);
@@ -24,7 +25,7 @@ public class TheGenerateMethod
     {
         //Arrange
         //Act
-        var maze = HugeMazes.Generate(IStore.Create(), 129, 129);
+        var maze = HugeMazes.Generate(IStore.Create(), Guid.NewGuid(), 129, 129);
 
         Assert.IsTrue(Verifier.IsPerfectMaze(maze));
     }

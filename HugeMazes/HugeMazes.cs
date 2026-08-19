@@ -21,13 +21,14 @@ public static class HugeMazes
 
     public static IMaze Generate(
         IStore store,
+        Guid id,
         int width,
         int height,
         int? seed = null,
         MazeType mazeType = MazeType.LongBitGridMaze,
         GeneratorType generatorType = GeneratorType.Backtrack)
     {
-        var maze = MazeSerializer.Create(store, mazeType, Guid.NewGuid(), new(width, height));
+        var maze = MazeSerializer.Create(store, mazeType, id, new(width, height));
         var random = seed.HasValue ? new Random(seed.Value) : new Random();
         var realSeed = random.GetSeed();
 
@@ -76,6 +77,7 @@ public static class HugeMazes
 
     public static IMaze BenchmarkBaseline() => Generate(
         IStore.Create(),
+        Guid.NewGuid(),
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
@@ -84,6 +86,7 @@ public static class HugeMazes
 
     public static IMaze BenchmarkFast() => Generate(
         IStore.Create(),
+        Guid.NewGuid(),
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
