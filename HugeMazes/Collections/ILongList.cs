@@ -8,6 +8,7 @@ public interface ILongList<T> : IEnumerable<T> where T : struct
     T this[long index] { get; set; }
     bool IsFixedSize { get; }
     bool IsReadOnly { get; }
+    ref T Get(long index);
     void Add(T item);
     void Clear();
     bool Contains(T item);

@@ -42,6 +42,13 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T Get(long index)
+    {
+        var (chunkIndex, chunkOffset) = Index(index);
+        return ref chunks[chunkIndex].AsSpan()[chunkOffset];
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static (int, int) Index(long index)
     {
         var (chunkIndex, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
@@ -220,6 +227,9 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
             list = null;
             LastUsedAt = 0;
         }
+
+        // DO NOT add or remove items from the list while holding the span
+        public Span<T> AsSpan() => CollectionsMarshal.AsSpan(List);
 
         public Chunk Next() => new(owner, End, 0, EndOffset);
 

@@ -48,6 +48,13 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T Get(long index)
+    {
+        var (chunkIndex, chunkOffset) = Index(index);
+        return ref chunks[chunkIndex].Array[chunkOffset];
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static (int, int) Index(long index)
     {
         var (chunk, chunkOffset) = Math.DivRem((ulong)index, (ulong)ChunkSize);
@@ -151,6 +158,8 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
             array = null;
             LastUsedAt = 0;
         }
+
+        public Span<T> AsSpan() => Array.AsSpan();
 
         public static IEnumerable<Chunk> Produce(LongArray<T> owner, long count, int chunkSize, long offset, bool read)
         {

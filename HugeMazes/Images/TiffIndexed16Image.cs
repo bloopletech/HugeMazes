@@ -7,7 +7,12 @@ using HugeMazes.Structures;
 namespace HugeMazes.Images;
 
 // Based on https://paulbourke.net/dataformats/tiff/
-public class TiffIndexed16Image : Storable, IImage<byte>
+public class TiffIndexed16Image(
+    IStore store,
+    Guid mazeId,
+    MazeSize size,
+    MazeColor[] palette,
+    bool leaveOpen = false) : Storable(store, leaveOpen), IImage<byte>
 {
     public const int PaletteSize = 16;
     private static readonly long MazeIdOffset = Tiff.HeaderLength + Tiff.DirectoryLength(12);
@@ -17,26 +22,11 @@ public class TiffIndexed16Image : Storable, IImage<byte>
     private const long PaletteLength = PaletteCount * sizeof(short);
     private static readonly long ArrayOffset = PaletteOffset + PaletteLength;
 
-    private readonly LongArray<byte> array;
+    private readonly LongArray<byte> array = new(
+        store.Offset(ArrayOffset - sizeof(long), true),
+        (size.WidthStride * size.Height).DivCeil(2),
+        true);
     private bool written;
-    private readonly Guid mazeId;
-    private readonly MazeSize size;
-    private readonly MazeColor[] palette;
-    private readonly int arrayWidth;
-
-    public TiffIndexed16Image(
-        IStore store,
-        Guid mazeId,
-        MazeSize size,
-        MazeColor[] palette,
-        bool leaveOpen = false) : base(store, leaveOpen)
-    {
-        this.mazeId = mazeId;
-        this.size = size;
-        this.palette = palette;
-        arrayWidth = size.Width.RoundUpEven();
-        array = new(store.Offset(ArrayOffset - sizeof(long), true), (arrayWidth * size.Height).DivCeil(2), true);
-    }
 
     public override long Extent => array.Extent + ArrayOffset;
     public Guid MazeId => mazeId;
@@ -51,33 +41,24 @@ public class TiffIndexed16Image : Storable, IImage<byte>
         get
         {
             var (index, isHigh) = Index(x, y);
-            var (high, low) = SplitByte(array[index]);
-            return isHigh ? high : low;
+            return (byte)(isHigh ? (array[index] & 0xf0) >> 4 : array[index] & 0x0f);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             var (index, isHigh) = Index(x, y);
-            var (high, low) = SplitByte(array[index]);
-            if(isHigh) high = value;
-            else low = value;
-            array[index] = JoinByte(high, low);
+            ref var segment = ref array.Get(index);
+            segment = (byte)(isHigh ? (value << 4) | (byte)(segment & 0x0f) : (byte)(segment & 0xf0) | value);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (long, bool) Index(int x, int y)
     {
-        var index = x + ((long)y * arrayWidth);
-        return (index / 2, long.IsEvenInteger(index));
+        var index = x + ((long)y * size.WidthStride);
+        return (index >> 1, long.IsEvenInteger(index));
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static (byte, byte) SplitByte(byte value) => ((byte)((value & 0b1111_0000) >> 4), (byte)(value & 0b1111));
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static byte JoinByte(byte high, byte low) => (byte)((high << 4) | low);
 
     public override void Read()
     {
