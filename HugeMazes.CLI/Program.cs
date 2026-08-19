@@ -226,6 +226,6 @@ static CLITask BenchmarkTask() => (null, () =>
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
-        MazeType.LongBitGridMaze,
+        MazeType.Maze,
         GeneratorType.Backtrack);
 });

@@ -7,18 +7,18 @@ using HugeMazes.Structures;
 
 namespace HugeMazes.Mazes;
 
-public class LongBitGridMaze : Storable, IMaze
+public class Maze : Storable, IMaze
 {
     private Guid id;
     private LongBitArray array;
     private MazeSize size;
 
-    public LongBitGridMaze(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
+    public Maze(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
         array = null!;
     }
 
-    public LongBitGridMaze(IStore store, Guid id, MazeSize size, bool leaveOpen = false) : base(store, leaveOpen)
+    public Maze(IStore store, Guid id, MazeSize size, bool leaveOpen = false) : base(store, leaveOpen)
     {
         this.id = id;
         this.size = size;
@@ -62,14 +62,14 @@ public class LongBitGridMaze : Storable, IMaze
     }
 
     IMaze IMaze.Clone() => Clone();
-    public LongBitGridMaze Clone() => Clone(IStore.Create());
+    public Maze Clone() => Clone(IStore.Create());
 
     IMaze IMaze.Clone(IStore destination, bool leaveOpen) => Clone(destination, leaveOpen);
-    public LongBitGridMaze Clone(IStore destination, bool leaveOpen = false)
+    public Maze Clone(IStore destination, bool leaveOpen = false)
     {
         Write();
         store.CopyTo(destination);
-        var result = new LongBitGridMaze(destination, leaveOpen);
+        var result = new Maze(destination, leaveOpen);
         result.Read();
         return result;
     }

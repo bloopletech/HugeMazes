@@ -23,7 +23,7 @@ public static class HugeMazes
         int width,
         int height,
         int? seed = null,
-        MazeType mazeType = MazeType.LongBitGridMaze,
+        MazeType mazeType = MazeType.Maze,
         GeneratorType generatorType = GeneratorType.Backtrack)
     {
         var maze = MazeSerializer.Create(store, mazeType, id, new(width, height));
@@ -79,7 +79,7 @@ public static class HugeMazes
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
-        MazeType.LongBitGridMaze,
+        MazeType.Maze,
         GeneratorType.Backtrack);
 
     public static IMaze BenchmarkFast() => Generate(
@@ -88,7 +88,7 @@ public static class HugeMazes
         BenchmarkSize,
         BenchmarkSize,
         BenchmarkSeed,
-        MazeType.LongBitGridMaze,
+        MazeType.Maze,
         GeneratorType.Backtrack2_Deluxe2_AsByte);
 
     public const int BenchmarkSize = 8192 + 1;
