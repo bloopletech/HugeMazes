@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -138,16 +139,18 @@ public class LongBitArray : Storable, ILongBitArray
 
         public static IEnumerable<Chunk> Produce(LongBitArray owner, long count, int chunkSize, long offset, bool read)
         {
+            Debug.Assert(chunkSize >= 0 && chunkSize <= System.Array.MaxLength);
+            Debug.Assert(chunkSize % 8 != 0);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)System.Array.MaxLength);
+            var _ = checked(count + offset);
+
             if(count == 0)
             {
                 yield return new(owner, 0, offset, read);
                 yield break;
             }
 
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)System.Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)System.Array.MaxLength);
-
-            var chunkByteSize = chunkSize.DivCeil(8);
+            var chunkByteSize = chunkSize / 8;
             for(long start = 0, i = 0; start < count; i++)
             {
                 var stride = (int)Math.Min(chunkSize, count - start);

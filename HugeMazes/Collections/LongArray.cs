@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using HugeMazes.Extensions;
@@ -10,8 +11,7 @@ namespace HugeMazes.Collections;
 public class LongArray<T> : Storable, ILongArray<T> where T : struct
 {
     private static readonly int ItemSize = IStore.SizeOf<T>();
-    private const int MaxChunkByteSize = 256 * 1024 * 1024;
-    private static readonly int ChunkSize = (MaxChunkByteSize - 1) / ItemSize;
+    private static readonly int ChunkSize = ((256 * 1024 * 1024) - 1) / ItemSize;
 
     private Chunk[] chunks;
     private long length;
@@ -165,15 +165,15 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
         public static IEnumerable<Chunk> Produce(LongArray<T> owner, long count, int chunkSize, long offset, bool read)
         {
+            Debug.Assert(chunkSize >= 0 && chunkSize <= System.Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)System.Array.MaxLength);
+            var _ = checked((ItemSize * count) + offset);
+
             if(count == 0)
             {
                 yield return new(owner, 0, 0, offset, read);
                 yield break;
             }
-
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)System.Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)System.Array.MaxLength);
-            var _ = checked((ItemSize * count) + offset);
 
             var chunkByteSize = ItemSize * chunkSize;
             for(long start = 0, i = 0; start < count; i++)

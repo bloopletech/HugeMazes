@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -234,7 +235,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
         public static IEnumerable<Chunk> Produce(LongList<T> owner, long count, int chunkSize, long offset)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)chunkSize, (uint)Array.MaxLength);
+            Debug.Assert(chunkSize >= 0 && chunkSize <= Array.MaxLength);
             ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)Array.MaxLength);
             var _ = checked((ItemSize * count) + offset);
 
