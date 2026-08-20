@@ -79,7 +79,7 @@ public sealed class StreamStore(Stream stream) : IStore
 
     public void Read<T>(long position, Span<T> buffer) where T : struct
     {
-        Read(position, MemoryMarshal.AsBytes(buffer));
+        ReadExactly(position, MemoryMarshal.AsBytes(buffer));
     }
 
     public T[] ReadArray<T>(long position) where T : struct
