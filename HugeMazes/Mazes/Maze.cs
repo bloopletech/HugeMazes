@@ -22,7 +22,7 @@ public class Maze : Storable, IMaze
     {
         this.id = id;
         this.size = size;
-        array = new(store.Offset<Header>(true), size.Area);
+        array = new(store.Offset<Header>(true), size.Area, true);
     }
 
     public override long Extent => array.Extent + MazeSize.SizeOf;
@@ -50,7 +50,7 @@ public class Maze : Storable, IMaze
     public override void Read()
     {
         (id, size) = store.Read<Header>(0);
-        array = new(store.Offset<Header>(true), size.Area);
+        array = new(store.Offset<Header>(true), size.Area, true);
         array.Read();
     }
 

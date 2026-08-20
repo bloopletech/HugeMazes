@@ -19,7 +19,7 @@ public class MazePath : Storable, IMazePath
     public MazePath(IStore store, Guid mazeId, bool leaveOpen = false) : base(store, leaveOpen)
     {
         this.mazeId = mazeId;
-        points = new(store.Offset<Guid>(true));
+        points = new(store.Offset<Guid>(true), true);
     }
 
     public override long Extent => points.Extent + MazeSize.SizeOf;
@@ -54,7 +54,7 @@ public class MazePath : Storable, IMazePath
     public override void Read()
     {
         mazeId = store.Read<Guid>(0);
-        points = new(store.Offset<Guid>(true));
+        points = new(store.Offset<Guid>(true), true);
         points.Read();
     }
 

@@ -28,7 +28,7 @@ public class DirectionMazePath : Storable, IMazePath
     {
         this.mazeId = mazeId;
         this.delta = delta;
-        directions = new(store.Offset<Header>(true));
+        directions = new(store.Offset<Header>(true), true);
     }
 
     private bool HasStart => start != MazePoint.Empty;
@@ -136,7 +136,7 @@ public class DirectionMazePath : Storable, IMazePath
     public override void Read()
     {
         (mazeId, start, end, delta) = store.Read<Header>(0);
-        directions = new(store.Offset<Header>(true));
+        directions = new(store.Offset<Header>(true), true);
         directions.Read();
     }
 
