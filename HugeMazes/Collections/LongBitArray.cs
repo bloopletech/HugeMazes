@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using HugeMazes.Extensions;
@@ -11,7 +12,7 @@ public class LongBitArray : Storable, ILongBitArray
 {
     private const int ChunkSize = 0x40000000; // (2 ^ 30)
 
-    private Chunk[] chunks = null!;
+    private Chunk[] chunks;
     private long length;
 
     public LongBitArray(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
@@ -23,6 +24,12 @@ public class LongBitArray : Storable, ILongBitArray
     {
         this.length = length;
         InitChunks(false);
+    }
+
+    [MemberNotNull(nameof(chunks))]
+    private void InitChunks(bool read)
+    {
+        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long), read)];
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -70,11 +77,6 @@ public class LongBitArray : Storable, ILongBitArray
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public bool Peek() => this[length - 1];
-
-    private void InitChunks(bool read)
-    {
-        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long), read)];
-    }
 
     public void EvictOldest()
     {

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using HugeMazes.Extensions;
 using HugeMazes.IO;
@@ -12,7 +13,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     private const int MaxChunkByteSize = 256 * 1024 * 1024;
     private static readonly int ChunkSize = (MaxChunkByteSize - 1) / ItemSize;
 
-    private Chunk[] chunks = null!;
+    private Chunk[] chunks;
     private long length;
 
     public LongArray(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
@@ -24,6 +25,12 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     {
         this.length = length;
         InitChunks(false);
+    }
+
+    [MemberNotNull(nameof(chunks))]
+    private void InitChunks(bool read)
+    {
+        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long), read)];
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -90,11 +97,6 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     }
 
     public T Peek() => this[length - 1];
-
-    private void InitChunks(bool read)
-    {
-        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long), read)];
-    }
 
     public void EvictOldest()
     {

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using HugeMazes.Collections;
 using HugeMazes.Extensions;
 using HugeMazes.IO;
@@ -7,28 +8,18 @@ using HugeMazes.Structures;
 
 namespace HugeMazes.Paths;
 
-public class DirectionMazePath : Storable, IMazePath
+public class DirectionMazePath(
+    IStore store,
+    Guid mazeId,
+    int delta = 1,
+    bool leaveOpen = false) : Storable(store, leaveOpen), IMazePath
 {
-    private Guid mazeId;
-    private LongList<MazeDirection> directions;
+    private LongList<MazeDirection> directions = new(store.Offset<Header>(true), true);
     private MazePoint start = MazePoint.Empty;
     private MazePoint end = MazePoint.Empty;
-    private int delta;
 
-    public DirectionMazePath(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
+    public DirectionMazePath(IStore store, bool leaveOpen = false) : this(store, default, leaveOpen: leaveOpen)
     {
-        directions = null!;
-    }
-
-    public DirectionMazePath(
-        IStore store,
-        Guid mazeId,
-        int delta = 1,
-        bool leaveOpen = false) : base(store, leaveOpen)
-    {
-        this.mazeId = mazeId;
-        this.delta = delta;
-        directions = new(store.Offset<Header>(true), true);
     }
 
     private bool HasStart => start != MazePoint.Empty;
@@ -157,7 +148,8 @@ public class DirectionMazePath : Storable, IMazePath
         return result;
     }
 
-    private record struct Header(Guid MazeId, MazePoint Start, MazePoint End, int Delta)
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    private readonly record struct Header(Guid MazeId, MazePoint Start, MazePoint End, int Delta)
     {
         public static readonly int SizeOf = IStore.SizeOf<Header>();
     }

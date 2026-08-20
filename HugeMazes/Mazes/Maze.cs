@@ -7,22 +7,12 @@ using HugeMazes.Structures;
 
 namespace HugeMazes.Mazes;
 
-public class Maze : Storable, IMaze
+public class Maze(IStore store, Guid id, MazeSize size, bool leaveOpen = false) : Storable(store, leaveOpen), IMaze
 {
-    private Guid id;
-    private LongBitArray array;
-    private MazeSize size;
+    private LongBitArray array = new(store.Offset<Header>(true), size.Area, true);
 
-    public Maze(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
+    public Maze(IStore store, bool leaveOpen = false) : this(store, default, default, leaveOpen)
     {
-        array = null!;
-    }
-
-    public Maze(IStore store, Guid id, MazeSize size, bool leaveOpen = false) : base(store, leaveOpen)
-    {
-        this.id = id;
-        this.size = size;
-        array = new(store.Offset<Header>(true), size.Area, true);
     }
 
     public override long Extent => array.Extent + MazeSize.SizeOf;
@@ -54,7 +44,6 @@ public class Maze : Storable, IMaze
         array.Read();
     }
 
-
     public override void Write()
     {
         store.Write(0, new Header(id, size));
@@ -75,7 +64,7 @@ public class Maze : Storable, IMaze
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    private record struct Header(Guid Id, MazeSize Size)
+    private readonly record struct Header(Guid Id, MazeSize Size)
     {
         public static readonly int SizeOf = IStore.SizeOf<Header>();
     }

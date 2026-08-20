@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using HugeMazes.Extensions;
@@ -17,7 +18,13 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
     public LongList(IStore store, bool leaveOpen = false) : base(store, leaveOpen)
     {
-        chunks = InitChunks(0);
+        InitChunks(0);
+    }
+
+    [MemberNotNull(nameof(chunks))]
+    private void InitChunks(long count)
+    {
+        chunks = [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -73,10 +80,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Clear()
-    {
-        chunks = InitChunks(0);
-    }
+    public void Clear() => InitChunks(0);
 
     public bool Contains(T item) => chunks.Any(c => c.List.Contains(item));
 
@@ -164,18 +168,13 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
     public T Peek() => this[Count - 1];
 
-    private List<Chunk> InitChunks(long count) => [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
-
     public void EvictOldest()
     {
         var toEvict = chunks.OrderByDescending(c => c.LastUsedAt).Skip(3);
         foreach(var c in toEvict) c.Evict();
     }
 
-    public override void Read()
-    {
-        chunks = InitChunks(store.Read<long>(0));
-    }
+    public override void Read() => InitChunks(store.Read<long>(0));
 
     public override void Write()
     {
