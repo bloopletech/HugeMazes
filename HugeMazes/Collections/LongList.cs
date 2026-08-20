@@ -25,7 +25,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
     [MemberNotNull(nameof(chunks))]
     private void InitChunks(long count)
     {
-        chunks = [..Chunk.Produce(this, count, ChunkSize, sizeof(long))];
+        chunks = [..Chunk.Produce(this, count)];
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -233,23 +233,22 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
         public Chunk Next() => new(owner, End, 0, EndOffset);
 
-        public static IEnumerable<Chunk> Produce(LongList<T> owner, long count, int chunkSize, long offset)
+        public static IEnumerable<Chunk> Produce(LongList<T> owner, long count)
         {
-            Debug.Assert(chunkSize >= 0 && chunkSize <= Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)Array.MaxLength);
-            var _ = checked((ItemSize * count) + offset);
+            Debug.Assert(ChunkSize >= 0 && ChunkSize <= Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(ChunkSize), (uint)Array.MaxLength);
 
             if(count == 0)
             {
-                yield return new(owner, 0, 0, offset);
+                yield return new(owner, 0, 0, sizeof(long));
                 yield break;
             }
 
-            var chunkByteSize = ItemSize * chunkSize;
+            var chunkByteSize = ItemSize * ChunkSize;
             for(long start = 0, i = 0; start < count; i++)
             {
-                var stride = (int)Math.Min(chunkSize, count - start);
-                yield return new(owner, start, stride, (i * chunkByteSize) + offset);
+                var stride = (int)Math.Min(ChunkSize, count - start);
+                yield return new(owner, start, stride, (i * chunkByteSize) + sizeof(long));
                 start += stride;
             }
         }

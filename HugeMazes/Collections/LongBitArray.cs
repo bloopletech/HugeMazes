@@ -30,7 +30,7 @@ public class LongBitArray : Storable, ILongBitArray
     [MemberNotNull(nameof(chunks))]
     private void InitChunks(bool read)
     {
-        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long), read)];
+        chunks = [..Chunk.Produce(this, length, read)];
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -137,26 +137,23 @@ public class LongBitArray : Storable, ILongBitArray
             LastUsedAt = 0;
         }
 
-        public static IEnumerable<Chunk> Produce(LongBitArray owner, long count, int chunkSize, long offset, bool read)
+        public static IEnumerable<Chunk> Produce(LongBitArray owner, long count, bool read)
         {
-            Debug.Assert(chunkSize >= 0 && chunkSize <= System.Array.MaxLength);
-            Debug.Assert(chunkSize % 8 != 0);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)System.Array.MaxLength);
-            var _ = checked(count + offset);
+            Debug.Assert(ChunkSize >= 0 && ChunkSize <= System.Array.MaxLength);
+            Debug.Assert(ChunkSize % 8 == 0);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(ChunkSize), (uint)System.Array.MaxLength);
 
             if(count == 0)
             {
-                yield return new(owner, 0, offset, read);
+                yield return new(owner, 0, sizeof(long), read);
                 yield break;
             }
 
-            var chunkByteSize = chunkSize / 8;
+            var chunkByteSize = ChunkSize / 8;
             for(long start = 0, i = 0; start < count; i++)
             {
-                var stride = (int)Math.Min(chunkSize, count - start);
-                var chunk = new Chunk(owner, stride, (i * chunkByteSize) + offset, read);
-                var _ = checked(chunk.EndOffset);
-                yield return chunk;
+                var stride = (int)Math.Min(ChunkSize, count - start);
+                yield return new(owner, stride, (i * chunkByteSize) + sizeof(long), read);
                 start += stride;
             }
         }

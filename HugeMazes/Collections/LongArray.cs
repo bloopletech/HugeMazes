@@ -30,7 +30,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
     [MemberNotNull(nameof(chunks))]
     private void InitChunks(bool read)
     {
-        chunks = [..Chunk.Produce(this, length, ChunkSize, sizeof(long), read)];
+        chunks = [..Chunk.Produce(this, length, read)];
     }
 
     public override long Extent => chunks[^1].EndOffset;
@@ -135,10 +135,6 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         public long LastUsedAt { get; private set; }
 
         public long Start => start;
-        public int Count => count;
-        public long End => start + count;
-
-        public long Offset => offset;
         public long EndOffset => offset + (ItemSize * count);
 
         private T[] Load()
@@ -163,23 +159,22 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
 
         public Span<T> AsSpan() => Array.AsSpan();
 
-        public static IEnumerable<Chunk> Produce(LongArray<T> owner, long count, int chunkSize, long offset, bool read)
+        public static IEnumerable<Chunk> Produce(LongArray<T> owner, long count, bool read)
         {
-            Debug.Assert(chunkSize >= 0 && chunkSize <= System.Array.MaxLength);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(chunkSize), (uint)System.Array.MaxLength);
-            var _ = checked((ItemSize * count) + offset);
+            Debug.Assert(ChunkSize >= 0 && ChunkSize <= System.Array.MaxLength);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count.DivCeil(ChunkSize), (uint)System.Array.MaxLength);
 
             if(count == 0)
             {
-                yield return new(owner, 0, 0, offset, read);
+                yield return new(owner, 0, 0, sizeof(long), read);
                 yield break;
             }
 
-            var chunkByteSize = ItemSize * chunkSize;
+            var chunkByteSize = ItemSize * ChunkSize;
             for(long start = 0, i = 0; start < count; i++)
             {
-                var stride = (int)Math.Min(chunkSize, count - start);
-                yield return new(owner, start, stride, (i * chunkByteSize) + offset, read);
+                var stride = (int)Math.Min(ChunkSize, count - start);
+                yield return new(owner, start, stride, (i * chunkByteSize) + sizeof(long), read);
                 start += stride;
             }
         }
