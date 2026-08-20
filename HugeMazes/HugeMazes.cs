@@ -69,7 +69,7 @@ public static class HugeMazes
         bool plain = true)
     {
         colours ??= RenderPalette.Default;
-        path.ValidateMazeId(maze);
+        IMazePath.EnsureRelated(maze, path);
         return Renderer.Render(store, maze, path, colours.Value, plain);
     }
 

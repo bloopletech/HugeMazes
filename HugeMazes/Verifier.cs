@@ -50,7 +50,7 @@ public class Verifier
 
     public static bool IsPerfectPath(IMaze maze, IMazePath path)
     {
-        path.ValidateMazeId(maze);
+        IMazePath.EnsureRelated(maze, path);
 
         MazePoint last = MazePoint.Empty;
 

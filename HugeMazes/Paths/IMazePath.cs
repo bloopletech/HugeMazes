@@ -21,11 +21,8 @@ public interface IMazePath : IEnumerable<MazePoint>, IStorable
     IMazePath Clone();
     IMazePath Clone(IStore destination, bool leaveOpen = false);
 
-    public void ValidateMazeId(IMaze maze)
+    public static void EnsureRelated(IMaze maze, IMazePath path)
     {
-        if(maze.Id != MazeId)
-        {
-            throw new ArgumentException("MazeId must match maze Id", "path.MazeId");
-        }
+        if(maze.Id != path.MazeId) throw new ArgumentException("path.MazeId must match maze.Id");
     }
 }
