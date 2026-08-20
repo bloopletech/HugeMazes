@@ -44,9 +44,7 @@ public class TiffIndexedImage(IStore store, Guid mazeId, MazeSize size, MazeColo
         }
     }
 
-    public override void Read()
-    {
-    }
+    public override void Read() => throw new NotSupportedException();
 
     public override void Write()
     {

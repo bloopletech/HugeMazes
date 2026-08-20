@@ -60,9 +60,7 @@ public class TiffIndexed16Image(
         return (index >> 1, long.IsEvenInteger(index));
     }
 
-    public override void Read()
-    {
-    }
+    public override void Read() => throw new NotSupportedException();
 
     public override void Write()
     {

@@ -38,9 +38,7 @@ public class TiffImage(IStore store, Guid mazeId, MazeSize size) : Storable(stor
         }
     }
 
-    public override void Read()
-    {
-    }
+    public override void Read() => throw new NotSupportedException();
 
     public override void Write()
     {
