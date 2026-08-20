@@ -13,23 +13,22 @@ public abstract class Storable(IStore store, bool leaveOpen = false) : IStorable
     public abstract void Read();
     public abstract void Write();
 
-    protected virtual void Dispose(bool disposing)
+    protected void Dispose(bool disposing)
     {
-        if(!disposed)
-        {
-            if(disposing)
-            {
-                Write();
-                if(!leaveOpen) store.Dispose();
-            }
+        if(disposed) return;
 
-            disposed = true;
+        if(disposing)
+        {
+            Write();
+            if(!leaveOpen) store.Dispose();
         }
+
+        disposed = true;
     }
 
     public void Dispose()
     {
-        Dispose(disposing: true);
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
 }

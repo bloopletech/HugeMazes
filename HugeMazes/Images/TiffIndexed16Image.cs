@@ -26,7 +26,6 @@ public class TiffIndexed16Image(
         store.Offset(ArrayOffset - sizeof(long), true),
         (size.WidthStride * size.Height).DivCeil(2),
         true);
-    private bool written;
 
     public override long Extent => array.Extent + ArrayOffset;
     public Guid MazeId => mazeId;
@@ -64,9 +63,6 @@ public class TiffIndexed16Image(
 
     public override void Write()
     {
-        if(written) return;
-        written = true;
-
         array.Write();
 
         var mazeIdBytes = Tiff.GetAsciiBytes(mazeId.ToString());
