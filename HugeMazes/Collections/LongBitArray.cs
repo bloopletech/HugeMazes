@@ -120,7 +120,7 @@ public class LongBitArray : Storable, ILongBitArray
             owner.EvictOldest();
 
             var array = new BitArray(count);
-            if(read) owner.Store.ReadExactly(offset, CollectionsMarshal.AsBytes(array));
+            if(read) owner.store.ReadExactly(offset, CollectionsMarshal.AsBytes(array));
             else read = true;
             return array;
         }
@@ -129,7 +129,7 @@ public class LongBitArray : Storable, ILongBitArray
         {
             if(array == null) return;
 
-            owner.Store.Write(offset, CollectionsMarshal.AsBytes(array));
+            owner.store.Write(offset, CollectionsMarshal.AsBytes(array));
             array = null;
             LastUsedAt = 0;
         }

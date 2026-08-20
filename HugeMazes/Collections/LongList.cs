@@ -214,7 +214,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
 
             var list = new List<T>();
             CollectionsMarshal.SetCount(list, count);
-            owner.Store.Read(offset, CollectionsMarshal.AsSpan(list));
+            owner.store.Read(offset, CollectionsMarshal.AsSpan(list));
             return list;
         }
 
@@ -222,7 +222,7 @@ public class LongList<T> : Storable, ILongList<T> where T : struct
         {
             if(list == null) return;
 
-            owner.Store.Write(offset, CollectionsMarshal.AsSpan(list));
+            owner.store.Write(offset, CollectionsMarshal.AsSpan(list));
             count = list.Count;
             list = null;
             LastUsedAt = 0;

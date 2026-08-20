@@ -7,7 +7,11 @@ using HugeMazes.Structures;
 namespace HugeMazes.Images;
 
 // Based on https://paulbourke.net/dataformats/tiff/
-public class TiffIndexedImage(IStore store, Guid mazeId, MazeSize size, MazeColor[] palette) : Storable(store, false), IImage<byte>
+public class TiffIndexedImage(
+    IStore store,
+    Guid mazeId,
+    MazeSize size,
+    MazeColor[] palette) : Storable(store), IImage<byte>
 {
     public const int PaletteSize = 256;
     private static readonly long MazeIdOffset = Tiff.HeaderLength + Tiff.DirectoryLength(11);
@@ -48,7 +52,7 @@ public class TiffIndexedImage(IStore store, Guid mazeId, MazeSize size, MazeColo
 
     public override void Write()
     {
-        if(written) return;
+        if(written) throw new StorableWrittenException();
         written = true;
 
         array.Write();
@@ -79,6 +83,4 @@ public class TiffIndexedImage(IStore store, Guid mazeId, MazeSize size, MazeColo
             ..Tiff.GetColorMapBytes(palette.Extend(PaletteSize))
         ]);
     }
-
-
 }

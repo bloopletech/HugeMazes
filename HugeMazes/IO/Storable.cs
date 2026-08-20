@@ -19,7 +19,14 @@ public abstract class Storable(IStore store, bool leaveOpen = false) : IStorable
 
         if(disposing)
         {
-            Write();
+            try
+            {
+                Write();
+            }
+            catch(StorableWrittenException)
+            {
+            }
+
             if(!leaveOpen) store.Dispose();
         }
 

@@ -6,7 +6,7 @@ using HugeMazes.Structures;
 namespace HugeMazes.Images;
 
 // Based on https://paulbourke.net/dataformats/tiff/
-public class TiffImage(IStore store, Guid mazeId, MazeSize size) : Storable(store, false), IImage<MazeColor>
+public class TiffImage(IStore store, Guid mazeId, MazeSize size) : Storable(store), IImage<MazeColor>
 {
     private static readonly long MazeIdOffset = Tiff.HeaderLength + Tiff.DirectoryLength(14);
     private const long MazeIdLength = 37;
@@ -42,7 +42,7 @@ public class TiffImage(IStore store, Guid mazeId, MazeSize size) : Storable(stor
 
     public override void Write()
     {
-        if(written) return;
+        if(written) throw new StorableWrittenException();
         written = true;
 
         array.Write();

@@ -145,7 +145,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
             owner.EvictOldest();
 
             var array = new T[count];
-            if(read) owner.Store.Read(offset, array);
+            if(read) owner.store.Read(offset, array);
             else read = true;
             return array;
         }
@@ -154,7 +154,7 @@ public class LongArray<T> : Storable, ILongArray<T> where T : struct
         {
             if(array == null) return;
 
-            owner.Store.Write(offset, array);
+            owner.store.Write(offset, array);
             array = null;
             LastUsedAt = 0;
         }
