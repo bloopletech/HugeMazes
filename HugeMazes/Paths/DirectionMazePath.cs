@@ -34,7 +34,7 @@ public class DirectionMazePath(
         get
         {
             if((ulong)index >= (ulong)Count) ExceptionExtensions.ThrowOutOfRangeException(index);
-            return index > (Count >> 2) ? GetFromEnd(index) : GetFromStart(index);
+            return index > (Count >> 1) ? GetFromEnd(index) : GetFromStart(index);
         }
     }
 

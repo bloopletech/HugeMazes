@@ -15,8 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.16.0-preview.1" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.16.0-preview.1" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.16.0-nightly.20260816.607" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.16.0-nightly.20260816.607" />
     <PackageReference Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.7.37220.1" />
   </ItemGroup>
 

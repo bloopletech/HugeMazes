@@ -21,6 +21,14 @@ public static class TypeExtensions
             ?? throw new MissingFieldException(type.FullName, name);
     }
 
+    public static MethodInfo GetRequiredMethod(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] this Type type,
+        string name)
+    {
+        return type.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            ?? throw new MissingMethodException(type.FullName, name);
+    }
+
     public static object GetRequiredValue(this FieldInfo field, object receiver)
     {
         return field.GetValue(receiver) ?? throw new NullReferenceException($"receiver.{field.Name} value is null");
@@ -33,6 +41,8 @@ public static class TypeExtensions
         if(result is T t) return t;
         else throw new InvalidCastException($"Expected receiver.{field.Name} to contain a value of type {nameof(T)}");
     }
+
+    public static void SetValue<T>(this FieldInfo field, object receiver, T? value) => field.SetValue(receiver, value);
 
     public static T GetRequiredValue<T>(this FieldInfo field, object receiver)
     {
@@ -76,5 +86,25 @@ public static class TypeExtensions
     {
         var field = type.GetRequiredField(name);
         return field.GetRequiredValue<T>(receiver);
+    }
+
+    public static void SetFieldValue(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)] this Type type,
+        object receiver,
+        string name,
+        object value)
+    {
+        var field = type.GetRequiredField(name);
+        field.SetValue(receiver, value);
+    }
+
+    public static void SetFieldValue<T>(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)] this Type type,
+        object receiver,
+        string name,
+        T? value)
+    {
+        var field = type.GetRequiredField(name);
+        field.SetValue<T>(receiver, value);
     }
 }

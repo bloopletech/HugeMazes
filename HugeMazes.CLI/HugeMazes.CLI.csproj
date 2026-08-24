@@ -11,6 +11,7 @@
     <PublishTrimmed>true</PublishTrimmed>
 
     <OptimizationPreference>Speed</OptimizationPreference>
+		<!--<IlcInstructionSet>x86-x64-v2</IlcInstructionSet>-->
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
     <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
     <InvariantGlobalization>true</InvariantGlobalization>

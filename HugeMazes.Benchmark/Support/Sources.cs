@@ -17,7 +17,7 @@ public abstract class FullJobs
 {
 }
 
-//[SimpleJob(RuntimeMoniker.Net11_0)]
+[SimpleJob(RuntimeMoniker.Net11_0)]
 [SimpleJob(RuntimeMoniker.NativeAot11_0)]
 public abstract class SimpleJobs
 {

@@ -27,7 +27,8 @@ public static class HugeMazes
         GeneratorType generatorType = GeneratorType.Backtrack)
     {
         var maze = MazeSerializer.Create(store, mazeType, id, new(width, height));
-        var random = seed.HasValue ? new Random(seed.Value) : new Random();
+        var random = new Random();
+        if(seed.HasValue) random.SetSeed(seed.Value);
         var realSeed = random.GetSeed();
 
         var generator = IGenerator.Create(generatorType, maze, random);

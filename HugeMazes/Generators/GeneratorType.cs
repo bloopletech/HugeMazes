@@ -4,5 +4,5 @@ public enum GeneratorType : ushort
 {
     Unknown,
     Backtrack,
-    Backtrack2_Deluxe2_AsByte
+    Backtrack2_Deluxe2_AsByte,
 }

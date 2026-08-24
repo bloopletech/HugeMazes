@@ -1,20 +1,25 @@
 using BenchmarkDotNet.Attributes;
-using HugeMazes.Benchmark.Support;
+using HugeMazes.Generators;
+using HugeMazes.IO;
+using HugeMazes.Mazes;
 
 namespace HugeMazes.Benchmark;
 
-[Use<SimpleJobs>]
 public class GenerateBenchmark : BaseBenchmark
 {
-    [Benchmark(Baseline = true)]
+    [ParamsAllValues]
+    public GeneratorType GeneratorType { get; set; }// = GeneratorType.Backtrack;
+
+    [Benchmark]
     public void Generate()
     {
-        HugeMazes.BenchmarkBaseline();
+        using var maze = HugeMazes.Generate(
+            IStore.Create(),
+            Guid.NewGuid(),
+            HugeMazes.BenchmarkSize,
+            HugeMazes.BenchmarkSize,
+            HugeMazes.BenchmarkSeed,
+            MazeType.Maze,
+            GeneratorType);
     }
-
-    //[Benchmark]
-    //public void GenerateFast()
-    //{
-    //    HugeMazes.BenchmarkFast();
-    //}
 }
