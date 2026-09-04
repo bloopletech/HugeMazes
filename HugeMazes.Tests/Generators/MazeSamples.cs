@@ -1,10 +1,10 @@
 using System;
 using HugeMazes.Generators;
+using HugeMazes.Images;
 using HugeMazes.IO;
 using HugeMazes.Mazes;
 using HugeMazes.Paths;
 using HugeMazes.Solvers;
-using HugeMazes.Structures;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HugeMazes.Tests.Generators;

@@ -1,5 +1,5 @@
 using HugeMazes.IO;
-using HugeMazes.Structures;
+using HugeMazes.Mazes;
 
 namespace HugeMazes.Images;
 

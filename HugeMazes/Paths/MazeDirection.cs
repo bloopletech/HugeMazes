@@ -1,4 +1,4 @@
-namespace HugeMazes.Structures;
+namespace HugeMazes.Paths;
 
 public enum MazeDirection : byte
 {

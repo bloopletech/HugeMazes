@@ -1,8 +1,9 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using HugeMazes.IO;
+using HugeMazes.Paths;
 
-namespace HugeMazes.Structures;
+namespace HugeMazes.Mazes;
 
 /// <summary>
 /// Contains a position.

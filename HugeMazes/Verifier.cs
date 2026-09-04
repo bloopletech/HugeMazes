@@ -2,7 +2,6 @@ using HugeMazes.Collections;
 using HugeMazes.IO;
 using HugeMazes.Mazes;
 using HugeMazes.Paths;
-using HugeMazes.Structures;
 
 namespace HugeMazes;
 

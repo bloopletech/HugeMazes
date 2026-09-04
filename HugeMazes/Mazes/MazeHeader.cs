@@ -1,8 +1,7 @@
 using System.Runtime.InteropServices;
 using HugeMazes.IO;
-using HugeMazes.Mazes;
 
-namespace HugeMazes.Structures;
+namespace HugeMazes.Mazes;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public readonly record struct MazeHeader(long MagicHuman, long MagicBinary, ushort Version, MazeType MazeType)

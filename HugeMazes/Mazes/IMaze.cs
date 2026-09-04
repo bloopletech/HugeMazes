@@ -1,5 +1,4 @@
 using HugeMazes.IO;
-using HugeMazes.Structures;
 
 namespace HugeMazes.Mazes;
 

@@ -1,8 +1,7 @@
 using System.Runtime.InteropServices;
 using HugeMazes.IO;
-using HugeMazes.Paths;
 
-namespace HugeMazes.Structures;
+namespace HugeMazes.Paths;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public readonly record struct MazePathHeader(

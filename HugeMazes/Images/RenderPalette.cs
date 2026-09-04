@@ -1,6 +1,6 @@
 using System.Drawing;
 
-namespace HugeMazes.Structures;
+namespace HugeMazes.Images;
 
 public readonly record struct RenderPalette(
     MazeColor Background,

@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using HugeMazes.Collections;
 using HugeMazes.Extensions;
 using HugeMazes.IO;
-using HugeMazes.Structures;
+using HugeMazes.Mazes;
 
 namespace HugeMazes.Images;
 

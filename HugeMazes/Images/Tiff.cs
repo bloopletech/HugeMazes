@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using HugeMazes.Extensions;
-using HugeMazes.Structures;
 
 namespace HugeMazes.Images;
 

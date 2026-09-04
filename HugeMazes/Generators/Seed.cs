@@ -1,4 +1,4 @@
-namespace HugeMazes.Structures;
+namespace HugeMazes.Generators;
 
 public interface ISeed
 {

@@ -1,6 +1,5 @@
 using HugeMazes.Mazes;
 using HugeMazes.Paths;
-using HugeMazes.Structures;
 
 namespace HugeMazes.Solvers;
 
@@ -10,7 +9,7 @@ public class BacktrackSolver(IMaze maze, IMazePath path) : ISolver
     {
         maze.EnsureMinimumSize();
 
-        var start = new MazePoint(1, 1);
+        var start = MazePoint.Start;
         var end = new MazePoint(maze.Width - 2, maze.Height - 2);
 
         var width = maze.Width - 1;

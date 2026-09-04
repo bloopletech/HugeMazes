@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using HugeMazes.Collections;
 using HugeMazes.Extensions;
 using HugeMazes.IO;
-using HugeMazes.Structures;
 
 namespace HugeMazes.Mazes;
 

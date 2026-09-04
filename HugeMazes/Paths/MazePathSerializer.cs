@@ -1,6 +1,5 @@
 using System.Text;
 using HugeMazes.IO;
-using HugeMazes.Structures;
 
 namespace HugeMazes.Paths;
 

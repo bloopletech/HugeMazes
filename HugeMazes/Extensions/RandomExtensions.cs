@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using HugeMazes.Structures;
+using HugeMazes.Generators;
 
 namespace HugeMazes.Extensions;
 

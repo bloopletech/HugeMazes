@@ -1,6 +1,5 @@
 using HugeMazes.IO;
 using HugeMazes.Mazes;
-using HugeMazes.Structures;
 
 namespace HugeMazes.Paths;
 

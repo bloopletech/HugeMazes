@@ -2,7 +2,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using HugeMazes.IO;
 
-namespace HugeMazes.Structures;
+namespace HugeMazes.Images;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
 public readonly record struct MazeColor(byte R, byte G, byte B)

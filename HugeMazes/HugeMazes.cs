@@ -5,7 +5,6 @@ using HugeMazes.IO;
 using HugeMazes.Mazes;
 using HugeMazes.Paths;
 using HugeMazes.Solvers;
-using HugeMazes.Structures;
 
 namespace HugeMazes;
 

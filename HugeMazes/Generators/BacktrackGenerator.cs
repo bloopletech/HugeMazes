@@ -2,7 +2,6 @@ using System.Diagnostics;
 using HugeMazes.IO;
 using HugeMazes.Mazes;
 using HugeMazes.Paths;
-using HugeMazes.Structures;
 
 namespace HugeMazes.Generators;
 
@@ -19,7 +18,7 @@ public class BacktrackGenerator(IMaze maze, Random random) : IGenerator
         var height = maze.Height - 1;
 
         using var stack = new DirectionMazePath(IStore.Create(), maze.Id, 2);
-        stack.Push(new(1, 1));
+        stack.Push(MazePoint.Start);
         maze[1, 1] = true;
 
         Span<MazePoint> targets = stackalloc MazePoint[4];
