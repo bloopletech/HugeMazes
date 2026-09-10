@@ -3,11 +3,14 @@ using System.Runtime.InteropServices;
 
 namespace HugeMazes.IO;
 
-public sealed class StreamStore(Stream stream) : IStore
+public sealed class StreamStore(Stream stream, bool leaveOpen = false) : IStore
 {
     public Stream Stream => stream;
     public void Close() => stream.Close();
-    public void Dispose() => stream.Dispose();
+    public void Dispose()
+    {
+        if(!leaveOpen) stream.Dispose();
+    }
 
     public long Length
     {

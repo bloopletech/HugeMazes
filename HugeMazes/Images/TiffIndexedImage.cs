@@ -11,7 +11,8 @@ public class TiffIndexedImage(
     IStore store,
     Guid mazeId,
     MazeSize size,
-    MazeColor[] palette) : Storable(store), IImage<byte>
+    MazeColor[] palette,
+    bool leaveOpen = false) : Storable(store, leaveOpen), IImage<byte>
 {
     public const int PaletteSize = 256;
     private static readonly long MazeIdOffset = Tiff.HeaderLength + Tiff.DirectoryLength(11);

@@ -1,16 +1,35 @@
-namespace HugeMazes.Web;
+using HugeMazes.Extensions;
+using HugeMazes.IO;
+using static HugeMazes.HugeMazes;
 
-public class Program
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+//app.UseHttpsRedirection();
+
+app.Map("/{width}/{height}/{seed?}", (int width, int height, int? seed) =>
 {
-    public static void Main(string[] args)
-    {
-        CreateHostBuilder(args).Build().Run();
-    }
+    var id = Guid.NewGuid();
+    using var maze = Generate(IStore.Create(), id, width.RoundDownOdd(), height.RoundDownOdd(), seed);
+    var imageStream = new MemoryStream();
+    using var image = Render(new StreamStore(imageStream, true), maze);
+    image.Write();
 
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<Startup>();
-            });
-}
+    imageStream.Position = 0;
+    return TypedResults.Stream(imageStream, "image/tiff", $"{id}.tiff");
+});
+
+app.Map("/path/{width}/{height}/{seed?}", (int width, int height, int? seed) =>
+{
+    var id = Guid.NewGuid();
+    using var maze = Generate(IStore.Create(), id, width.RoundDownOdd(), height.RoundDownOdd(), seed);
+    using var path = Solve(IStore.Create(), maze);
+    var imageStream = new MemoryStream();
+    using var image = Render(new StreamStore(imageStream, true), maze, path);
+    image.Write();
+
+    imageStream.Position = 0;
+    return TypedResults.Stream(imageStream, "image/tiff", $"{id}.path.tiff");
+});
+
+app.Run();

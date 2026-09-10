@@ -6,7 +6,11 @@ using HugeMazes.Mazes;
 namespace HugeMazes.Images;
 
 // Based on https://paulbourke.net/dataformats/tiff/
-public class TiffImage(IStore store, Guid mazeId, MazeSize size) : Storable(store), IImage<MazeColor>
+public class TiffImage(
+    IStore store,
+    Guid mazeId,
+    MazeSize size,
+    bool leaveOpen = false) : Storable(store, leaveOpen), IImage<MazeColor>
 {
     private static readonly long MazeIdOffset = Tiff.HeaderLength + Tiff.DirectoryLength(14);
     private const long MazeIdLength = 37;
